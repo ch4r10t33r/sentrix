@@ -4,3 +4,8 @@ uvicorn>=0.27.0
 pydantic>=2.6.0
 eth-account>=0.10.0
 web3>=6.15.0
+
+# P2P Discovery (libp2p sidecar bridge)
+anyio>=4.3.0
+# coincurve is already used in anr.py
+coincurve>=13.0.0

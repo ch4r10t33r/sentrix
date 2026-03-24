@@ -16,6 +16,7 @@ Deps (Cargo.toml): reqwest, serde_json, tokio
 */
 
 use crate::discovery::{IAgentDiscovery, DiscoveryEntry};
+use crate::discovery_libp2p::{Libp2pDiscovery, Libp2pDiscoveryConfig};
 use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::{json, Value};
@@ -148,24 +149,45 @@ use crate::discovery::LocalDiscovery;
 pub enum AnyDiscovery {
     Local(LocalDiscovery),
     Http(HttpDiscovery),
+    Libp2p(Libp2pDiscovery),
 }
 
 #[async_trait]
 impl IAgentDiscovery for AnyDiscovery {
     async fn register(&self, e: DiscoveryEntry) -> Result<(), Box<dyn std::error::Error>> {
-        match self { Self::Local(d) => d.register(e).await, Self::Http(d) => d.register(e).await }
+        match self {
+            Self::Local(d)  => d.register(e).await,
+            Self::Http(d)   => d.register(e).await,
+            Self::Libp2p(d) => d.register(e).await,
+        }
     }
     async fn unregister(&self, id: &str) -> Result<(), Box<dyn std::error::Error>> {
-        match self { Self::Local(d) => d.unregister(id).await, Self::Http(d) => d.unregister(id).await }
+        match self {
+            Self::Local(d)  => d.unregister(id).await,
+            Self::Http(d)   => d.unregister(id).await,
+            Self::Libp2p(d) => d.unregister(id).await,
+        }
     }
     async fn query(&self, cap: &str) -> Result<Vec<DiscoveryEntry>, Box<dyn std::error::Error>> {
-        match self { Self::Local(d) => d.query(cap).await, Self::Http(d) => d.query(cap).await }
+        match self {
+            Self::Local(d)  => d.query(cap).await,
+            Self::Http(d)   => d.query(cap).await,
+            Self::Libp2p(d) => d.query(cap).await,
+        }
     }
     async fn list_all(&self) -> Result<Vec<DiscoveryEntry>, Box<dyn std::error::Error>> {
-        match self { Self::Local(d) => d.list_all().await, Self::Http(d) => d.list_all().await }
+        match self {
+            Self::Local(d)  => d.list_all().await,
+            Self::Http(d)   => d.list_all().await,
+            Self::Libp2p(d) => d.list_all().await,
+        }
     }
     async fn heartbeat(&self, id: &str) -> Result<(), Box<dyn std::error::Error>> {
-        match self { Self::Local(d) => d.heartbeat(id).await, Self::Http(d) => d.heartbeat(id).await }
+        match self {
+            Self::Local(d)  => d.heartbeat(id).await,
+            Self::Http(d)   => d.heartbeat(id).await,
+            Self::Libp2p(d) => d.heartbeat(id).await,
+        }
     }
 }
 
@@ -193,5 +215,21 @@ impl DiscoveryFactory {
         HttpDiscovery::from_env()
             .map(AnyDiscovery::Http)
             .unwrap_or_else(|| AnyDiscovery::Local(LocalDiscovery::default()))
+    }
+
+    /// Use libp2p P2P discovery (QUIC + Kademlia DHT).
+    pub async fn libp2p(cfg: Libp2pDiscoveryConfig) -> Result<AnyDiscovery, Box<dyn std::error::Error + Send + Sync>> {
+        Ok(AnyDiscovery::Libp2p(Libp2pDiscovery::start(cfg).await?))
+    }
+
+    /// Auto-select: libp2p if SENTRIX_P2P=true, HTTP if SENTRIX_DISCOVERY_URL set, else Local.
+    pub async fn from_env_async() -> AnyDiscovery {
+        if std::env::var("SENTRIX_P2P").as_deref() == Ok("true") {
+            let cfg = Libp2pDiscoveryConfig::default();
+            if let Ok(d) = Libp2pDiscovery::start(cfg).await {
+                return AnyDiscovery::Libp2p(d);
+            }
+        }
+        Self::from_env()
     }
 }

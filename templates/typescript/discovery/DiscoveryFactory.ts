@@ -3,11 +3,11 @@
  *
  * Priority order (highest → lowest):
  *   1. Explicit `type` in config
- *   2. SENTRIX_DISCOVERY_URL env var  → HttpDiscovery
- *   3. default                       → LocalDiscovery
+ *   2. SENTRIX_DISCOVERY_URL env var    → HttpDiscovery
+ *   3. default                          → LocalDiscovery
  *
  * Usage:
- *   const registry = DiscoveryFactory.create(config);
+ *   const registry = await DiscoveryFactory.create({ type: 'libp2p', libp2p: { privateKey } });
  *   await registry.register(entry);
  */
 
@@ -15,10 +15,11 @@ import { IAgentDiscovery } from '../interfaces/IAgentDiscovery';
 import { LocalDiscovery }  from './LocalDiscovery';
 import { HttpDiscovery }   from './HttpDiscovery';
 
-export type DiscoveryType = 'local' | 'http' | 'gossip' | 'onchain';
+export type DiscoveryType = 'local' | 'http' | 'libp2p' | 'onchain';
 
 export interface DiscoveryConfig {
   type?: DiscoveryType;
+
   /** Required when type === 'http' */
   http?: {
     baseUrl: string;
@@ -26,28 +27,66 @@ export interface DiscoveryConfig {
     timeoutMs?: number;
     heartbeatIntervalMs?: number;
   };
+
+  /**
+   * Required when type === 'libp2p'.
+   * All fields are optional — sensible defaults apply for development.
+   */
+  libp2p?: {
+    /**
+     * 32-byte raw secp256k1 private key (same key used to sign ANR records).
+     * Omit only for ephemeral / throwaway nodes.
+     */
+    privateKey?: Uint8Array;
+    /** Multiaddrs to listen on. Default: ['/ip4/0.0.0.0/udp/0/quic-v1'] */
+    listenAddresses?: string[];
+    /**
+     * Known bootstrap peer multiaddrs.
+     * Also read from SENTRIX_BOOTSTRAP_PEERS env var (comma-separated).
+     */
+    bootstrapPeers?: string[];
+    /** DHT record re-publish interval in ms. Default: 30_000 */
+    heartbeatIntervalMs?: number;
+    /** Enable mDNS for local network discovery. Default: true */
+    enableMdns?: boolean;
+    /**
+     * DHT client mode — participates in discovery but does not store records
+     * for others.  Default: false
+     */
+    dhtClientMode?: boolean;
+  };
 }
 
 export class DiscoveryFactory {
-  static create(config: DiscoveryConfig = {}): IAgentDiscovery {
+  /**
+   * Create a discovery backend.
+   * Returns a Promise because the libp2p backend requires async initialisation.
+   */
+  static async create(config: DiscoveryConfig = {}): Promise<IAgentDiscovery> {
     const type = config.type
       ?? (process.env['SENTRIX_DISCOVERY_URL'] ? 'http' : 'local');
 
     switch (type) {
       case 'http': {
         const url = config.http?.baseUrl ?? process.env['SENTRIX_DISCOVERY_URL'];
-        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl');
+        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl or SENTRIX_DISCOVERY_URL');
         return new HttpDiscovery({
-          baseUrl: url,
-          apiKey:               config.http?.apiKey               ?? process.env['SENTRIX_DISCOVERY_KEY'],
+          baseUrl:              url,
+          apiKey:               config.http?.apiKey              ?? process.env['SENTRIX_DISCOVERY_KEY'],
           timeoutMs:            config.http?.timeoutMs,
           heartbeatIntervalMs:  config.http?.heartbeatIntervalMs,
         });
       }
-      case 'gossip':
-        throw new Error('[DiscoveryFactory] GossipDiscovery not yet implemented — contribute at github.com/sentrix');
+
+      case 'libp2p': {
+        // Lazy import so consumers that don't use libp2p don't pay the import cost
+        const { Libp2pDiscovery } = await import('./Libp2pDiscovery');
+        return Libp2pDiscovery.create(config.libp2p ?? {});
+      }
+
       case 'onchain':
-        throw new Error('[DiscoveryFactory] OnChainDiscovery not yet implemented — contribute at github.com/sentrix');
+        throw new Error('[DiscoveryFactory] OnChainDiscovery not yet implemented — contribute at github.com/ch4r10t33r/sentrix');
+
       case 'local':
       default:
         return LocalDiscovery.getInstance();

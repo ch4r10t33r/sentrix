@@ -111,34 +111,42 @@ class DiscoveryFactory:
 
     Priority:
       1. explicit type argument
-      2. SENTRIX_DISCOVERY_URL env var → HttpDiscovery
-      3. default                      → LocalDiscovery
+      2. SENTRIX_P2P=true env var          → Libp2pDiscovery
+      3. SENTRIX_DISCOVERY_URL env var     → HttpDiscovery
+      4. default                           → LocalDiscovery
     """
 
     @staticmethod
-    def create(
+    async def create(
         discovery_type: Optional[str] = None,
         http_base_url: Optional[str] = None,
         api_key: Optional[str] = None,
+        libp2p_config=None,
     ) -> IAgentDiscovery:
         from discovery.local_discovery import LocalDiscovery
 
         t = discovery_type or (
-            'http' if os.environ.get('SENTRIX_DISCOVERY_URL') else 'local'
+            'libp2p' if os.environ.get('SENTRIX_P2P') == 'true' else
+            'http'   if os.environ.get('SENTRIX_DISCOVERY_URL') else
+            'local'
         )
 
         if t == 'http':
             url = http_base_url or os.environ.get('SENTRIX_DISCOVERY_URL')
             if not url:
-                raise ValueError("HttpDiscovery requires a base URL")
+                raise ValueError('HttpDiscovery requires a base URL')
             return HttpDiscovery(
                 base_url=url,
                 api_key=api_key or os.environ.get('SENTRIX_DISCOVERY_KEY'),
             )
-        if t == 'gossip':
-            raise NotImplementedError("GossipDiscovery not yet implemented")
+
+        if t == 'libp2p':
+            from discovery.libp2p_discovery import Libp2pDiscovery, Libp2pDiscoveryConfig
+            cfg = libp2p_config or Libp2pDiscoveryConfig()
+            return await Libp2pDiscovery.start(cfg)
+
         if t == 'onchain':
-            raise NotImplementedError("OnChainDiscovery not yet implemented")
+            raise NotImplementedError('OnChainDiscovery not yet implemented')
 
         return LocalDiscovery.get_instance()
 

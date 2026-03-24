@@ -1,5 +1,8 @@
 pub mod agent;
 pub mod discovery;
+pub mod discovery_http;
+pub mod discovery_libp2p;
 pub mod request;
 pub mod response;
 pub mod example_agent;
+pub mod anr;
