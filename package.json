@@ -1,5 +1,5 @@
 {
-  "name": "sentrix-cli",
+  "name": "@ch4r10teer41/sentrix-cli",
   "version": "1.0.0",
   "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
@@ -66,5 +66,8 @@
     "url": "https://github.com/ch4r10t33r/sentrix/issues"
   },
   "homepage": "https://github.com/ch4r10t33r/sentrix#readme",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
