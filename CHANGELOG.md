@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/ch4r10t33r/sentrix/compare/v1.3.0...v1.4.0) (2026-03-25)
+
+### Features
+
+* **examples:** cross-framework A2A example — Google ADK + CrewAI ([f475462](https://github.com/ch4r10t33r/sentrix/commit/f4754628c7d82cc31a4e63bb30b4cdfd30e0e7c1))
+
 ## [1.3.0](https://github.com/ch4r10t33r/sentrix/compare/v1.2.0...v1.3.0) (2026-03-25)
 
 ### Features
