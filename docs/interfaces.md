@@ -427,21 +427,157 @@ entries = await client.gossip_query("weather_forecast", ttl=3, timeout_ms=5_000)
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### x402 Payment flow (when agent B requires payment)
+---
 
-```
-  session.call("premium_analysis", {...})
-      ── AgentRequest ───────────────────► (no payment)
-      ◄─ payment_required ───────────────  (X402PaymentRequirements)
-      ── AgentRequest + x402 proof ──────► verify payment
-      ◄─ AgentResponse (success) ────────
-```
+## x402 payments
 
-Pass `x402_wallet` to `AgentClient` to handle this automatically:
+Sentrix agents can require micropayment for individual capabilities using the [x402 protocol](https://x402.org). Payment is enforced at the `handleRequest` level — no execution happens until a valid proof is attached.
+
+### How an agent signals payment is required
+
+Opt in via the **functional wrapper** (works with any `IAgent`):
+
+```typescript
+// TypeScript
+import { withX402Payment } from '../addons/x402/server';
+import { usdcBase }        from '../addons/x402/types';
+
+const agent = withX402Payment(myAgent, {
+  pricing: {
+    premium_analysis: usdcBase(50, '0xYourWallet'),   // $0.50 USDC on Base
+    generate_image:   usdcBase(200, '0xYourWallet'),  // $2.00 USDC on Base
+  },
+});
+```
 
 ```python
-from addons.x402.client import MockWalletProvider   # dev
+# Python
+from addons.x402.server import with_x402_payment
+from addons.x402.types  import usdc_base
+
+agent = with_x402_payment(my_agent, pricing={
+    "premium_analysis": usdc_base(50,  "0xYourWallet"),
+    "generate_image":   usdc_base(200, "0xYourWallet"),
+})
+```
+
+Or subclass **`X402Agent`** (TypeScript) / **`X402AgentMixin`** (Python) to bake pricing into your class.
+
+When a request arrives for a priced capability **without** an `x402` field, the server immediately returns — **without executing the capability**:
+
+```json
+{
+  "status": "payment_required",
+  "errorMessage": "Capability 'premium_analysis' requires payment.",
+  "paymentRequirements": [{
+    "scheme": "exact",
+    "network": "base",
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "maxAmountRequired": "500000",
+    "payTo": "0xYourWallet",
+    "memo": "<requestId>",
+    "maxTimeoutSeconds": 300,
+    "description": "$0.50 USD",
+    "extra": { "name": "USDC", "version": "2" }
+  }]
+}
+```
+
+### Protocol flow
+
+```
+  Client                                     Agent (x402-wrapped)
+  ──────                                     ────────────────────
+  call("premium_analysis", {...})
+    ─── AgentRequest (no x402) ──────────►  check pricing[capability]
+                                            ↳ no proof → return payment_required
+    ◄── payment_required ────────────────   paymentRequirements[0]
+
+  wallet.signPayment(requirements, req)
+    ↳ returns X402Payment proof
+
+    ─── AgentRequest + x402: proof ──────►  verify proof (facilitator / dev-mode)
+                                            ↳ verified → execute capability
+    ◄── AgentResponse (success) ─────────
+```
+
+### Automatic handling on the client
+
+**Remote agents (over HTTP) — `AgentClient`:**
+
+```typescript
+// TypeScript
+import { AgentClient }         from '../interfaces/IAgentClient';
+import { MockWalletProvider }  from '../addons/x402/client';   // dev only
+
+const client = new AgentClient(discovery, {
+  x402Wallet: new MockWalletProvider(),
+  autoPay: true,   // sign and retry transparently
+});
+const resp = await client.callCapability('premium_analysis', { query: '...' });
+// payment_required → auto-sign → retry is invisible to the caller
+```
+
+```python
+# Python
+from interfaces.iagent_client import AgentClient
+from addons.x402.client       import MockWalletProvider
+
 client = AgentClient(discovery, x402_wallet=MockWalletProvider(), auto_pay=True)
+resp   = await client.call_capability("premium_analysis", {"query": "..."})
+```
+
+**Local / in-process agents — `X402Client`:**
+
+```typescript
+import { X402Client } from '../addons/x402/client';
+
+const x402 = new X402Client({ wallet: new MyWallet(), autoPay: false });
+const resp = await x402.call(agent, req);
+// autoPay=false → onPaymentRequired() is called first so you can confirm
+```
+
+Override `onPaymentRequired()` to prompt a human before signing:
+
+```typescript
+class ConfirmingClient extends X402Client {
+  protected async onPaymentRequired(requirements, req) {
+    const ok = await promptUser(
+      `Pay ${requirements.maxAmountRequired} to ${requirements.payTo}?`
+    );
+    return ok;   // false cancels; original payment_required response is returned
+  }
+}
+```
+
+### Pricing helpers
+
+```typescript
+usdcBase(amountCents, payTo, description?)   // USDC on Base (most common)
+ethBase(amountWei,   payTo, description?)    // ETH on Base
+// or build CapabilityPricing manually for any ERC-20 on any chain
+```
+
+### Verification modes
+
+| Configuration | Behaviour |
+|---|---|
+| No `verify` option (default) | **DEV MODE** — accepts all proofs, logs a warning. Never use in production. |
+| `strict: true`, no `verify` | Rejects all proofs with an error. Safe fallback. |
+| `verify: X402Facilitator.verify` | Full on-chain settlement via the x402 facilitator service. |
+| Custom `verify` function | Bring your own on-chain / off-chain verifier. |
+
+The facilitator client is in `addons/x402/facilitator.ts` (TypeScript) and `addons/x402/facilitator.py` (Python).
+
+### Startup banner
+
+When a capability has x402 pricing configured, it appears in the startup banner so it's visible immediately on run:
+
+```
+  Capabilities (3)
+           • answer_question
+           • summarise_ticket  [x402 $0.0010]
+           • generate_image    [x402 $2.0000]
 ```
 
 ---
