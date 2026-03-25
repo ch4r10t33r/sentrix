@@ -165,6 +165,17 @@ resp = await peer.handle_request(AgentRequest(capability='web_search', ...))
 
 → Full example: **[docs/examples/05-cross-framework.md](docs/examples/05-cross-framework.md)**
 
+### Runnable example — Google ADK + CrewAI
+
+[`examples/cross-framework/`](examples/cross-framework/) is a working end-to-end demo you can run right now:
+
+```bash
+git clone https://github.com/ch4r10t33r/sentrix
+python3 examples/cross-framework/run.py
+```
+
+A **ResearchAgent** (Google ADK) and a **WriterAgent** (CrewAI) register with `LocalDiscovery`, then the orchestrator uses `AgentClient` to discover and call them in sequence — research findings flow from ADK into CrewAI without either agent knowing the other's framework. Runs in **demo mode by default** (no API keys needed); set `GOOGLE_API_KEY` and `OPENAI_API_KEY` to enable real LLMs.
+
 ---
 
 ## x402 Payments (opt-in)
