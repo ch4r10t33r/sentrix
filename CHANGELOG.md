@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/ch4r10t33r/sentrix/compare/v1.1.0...v1.2.0) (2026-03-25)
+
+### Features
+
+* add IAgentClient with lookup and A2A interaction across all languages ([dfb21f9](https://github.com/ch4r10t33r/sentrix/commit/dfb21f9b65a72a883f2c49022d60f969d6681b01))
+
 ## [1.1.0](https://github.com/ch4r10t33r/sentrix/compare/v1.0.0...v1.1.0) (2026-03-25)
 
 ### Features
