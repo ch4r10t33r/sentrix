@@ -4,6 +4,18 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/ch4r10t33r/sentrix/compare/v1.2.0...v1.3.0) (2026-03-25)
+
+### Features
+
+* **mesh:** heartbeat, capability exchange (handshake), and gossip protocols ([971c053](https://github.com/ch4r10t33r/sentrix/commit/971c053534d47c42fd9cd45f4b816465baf5e62a))
+* **mesh:** startup banner on register_discovery(); rewrite docs/interfaces.md ([b91d713](https://github.com/ch4r10t33r/sentrix/commit/b91d71336824f60c2a38936160a9d688fd5b2d74))
+
+### Bug Fixes
+
+* **cli:** dynamic import ora to fix ERR_REQUIRE_ESM on Node 18 ([ac2e4ce](https://github.com/ch4r10t33r/sentrix/commit/ac2e4cedc261c5a47482e28469ca400a63b6e618))
+* **deps:** downgrade chalk/ora/inquirer to last CJS-compatible versions ([fd42d9f](https://github.com/ch4r10t33r/sentrix/commit/fd42d9fd82bf9954f1616a9e1a4f462a19c27c69))
+
 ## [1.2.0](https://github.com/ch4r10t33r/sentrix/compare/v1.1.0...v1.2.0) (2026-03-25)
 
 ### Features
