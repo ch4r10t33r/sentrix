@@ -1,10 +1,18 @@
 {
   "name": "sentrix-cli",
-  "version": "0.1.0",
-  "description": "CLI scaffolding tool for Sentrix — ERC-8004 compliant agent framework",
+  "version": "0.0.0",
+  "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
     "sentrix": "./bin/sentrix.js"
   },
+  "main": "./dist/cli.js",
+  "files": [
+    "bin/",
+    "dist/",
+    "templates/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/cli.ts",
@@ -18,9 +26,17 @@
     "ora": "^8.0.1"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.3.5",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.11.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "semantic-release": "^24.2.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
@@ -30,11 +46,25 @@
   "keywords": [
     "sentrix",
     "agent",
-    "erc-8004",
+    "agent-mesh",
+    "interoperability",
     "p2p",
+    "libp2p",
+    "did",
     "discovery",
+    "ai-agents",
+    "langgraph",
+    "crewai",
     "cli",
     "scaffold"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ch4r10t33r/sentrix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ch4r10t33r/sentrix/issues"
+  },
+  "homepage": "https://github.com/ch4r10t33r/sentrix#readme",
   "license": "MIT"
 }
