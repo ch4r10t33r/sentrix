@@ -14,3 +14,8 @@ coincurve>=13.0.0
 # Wraps any MCP server as a Sentrix agent, or exposes a Sentrix agent as MCP.
 # Supports stdio, SSE, and Streamable HTTP transports.
 mcp>=1.0.0
+
+# OpenAI Agents SDK (optional — only needed if using OpenAIPlugin)
+# pip install openai-agents
+# export OPENAI_API_KEY=sk-...
+openai-agents>=0.0.3
