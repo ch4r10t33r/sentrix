@@ -27,7 +27,9 @@
     "@noble/curves":             "^1.4.0",
     "@noble/hashes":             "^1.4.0",
 
-    "@modelcontextprotocol/sdk": "^1.10.0"
+    "@modelcontextprotocol/sdk": "^1.10.0",
+
+    "@openai/agents":            "^0.0.3"
   },
   "devDependencies": {
     "@types/express":  "^4.17.21",
