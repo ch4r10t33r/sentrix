@@ -1,7 +1,9 @@
-import path from 'path';
-import fs   from 'fs-extra';
-import ora  from 'ora';
-import chalk from 'chalk';
+import path       from 'path';
+import fs         from 'fs-extra';
+import ora        from 'ora';
+import chalk      from 'chalk';
+import inquirer   from 'inquirer';
+import { execSync } from 'child_process';
 import { detectLanguage } from '../utils/detect-lang';
 import { logger }         from '../utils/logger';
 
@@ -14,6 +16,7 @@ interface CreateOptions {
   capabilities:  string;
   framework:     Framework;
   addon?:        string;   // e.g. 'x402'
+  yes?:          boolean;  // skip confirmation prompts (CI / --yes flag)
 }
 
 type TemplateFn = (name: string, caps: string[]) => string;
@@ -670,8 +673,37 @@ export async function createCommand(
   const hint = INSTALL_HINTS[framework]?.[lang];
   if (hint) {
     console.log('');
-    console.log(chalk.cyan('  Install dependencies:'));
+    console.log(chalk.cyan('  Framework dependencies:'));
     console.log(chalk.dim(`    ${hint}`));
+    console.log('');
+
+    // ── Auto-install ──────────────────────────────────────────────────────────
+    let shouldInstall = options.yes ?? false;
+
+    if (!shouldInstall) {
+      const { install } = await inquirer.prompt([{
+        type:    'confirm',
+        name:    'install',
+        message: `Install ${framework} dependencies now?`,
+        default: true,
+      }]);
+      shouldInstall = install as boolean;
+    }
+
+    if (shouldInstall) {
+      const installSpinner = ora(`Installing ${framework} dependencies...`).start();
+      try {
+        execSync(hint, { encoding: 'utf8', cwd: projectDir });
+        installSpinner.succeed(`${framework} dependencies installed`);
+      } catch (err: any) {
+        installSpinner.fail('Dependency install failed');
+        const output = (err.stdout || err.stderr || err.message || '').trim();
+        if (output) console.log(chalk.red(`\n${output}`));
+        console.log(chalk.yellow(`\n  Run manually:  ${hint}`));
+      }
+    } else {
+      console.log(chalk.dim(`  Skipped. Run later:  ${hint}`));
+    }
   }
 
   // ── x402 add-on hint ────────────────────────────────────────────────────────
@@ -698,7 +730,7 @@ export async function createCommand(
   console.log(chalk.dim('  Next steps:'));
   console.log(chalk.dim(`    1. Edit  agents/${fileName}  — fill in your implementations`));
   if (framework !== 'none') {
-    console.log(chalk.dim(`    2. ${hint ? 'Install deps (above), then r' : 'R'}egister your agent: await ${agentName}.register_discovery()`));
+    console.log(chalk.dim(`    2. Register your agent: await ${agentName}.register_discovery()`));
   } else {
     console.log(chalk.dim(`    2. Register your agent: await ${agentName}.register_discovery()`));
   }

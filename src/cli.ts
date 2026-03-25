@@ -27,6 +27,8 @@ program
   .option('-l, --lang <language>', 'Target language (auto-detected from project if omitted)')
   .option('-c, --capabilities <caps>', 'Comma-separated list of capability names', 'exampleCapability')
   .option('-f, --framework <framework>', 'Agent framework: none | google-adk | crewai | langgraph | agno | llamaindex | smolagents', 'none')
+  .option('--addon <addon>', 'Optional add-on: x402')
+  .option('-y, --yes', 'Skip confirmation prompts and auto-install dependencies')
   .action(createCommand);
 
 program
