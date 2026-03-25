@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/ch4r10t33r/sentrix/compare/v1.0.0...v1.1.0) (2026-03-25)
+
+### Features
+
+* expose get_anr() and get_peer_id() on IAgent across all languages ([2bf2073](https://github.com/ch4r10t33r/sentrix/commit/2bf2073c52e9c4f5164cfb60c12b9ff9425885bb))
+
 ## 1.0.0 (2026-03-25)
 
 ### Features
