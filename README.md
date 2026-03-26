@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.svg" alt="Sentrix" width="220"/>
+</p>
+
 # Sentrix
 
 > **Autonomous Agentic Coordination Middleware** — scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework, with optional ERC-8004 on-chain compliance.
