@@ -1,3 +1,15 @@
+# Changelog
+
+All notable changes to `sentrix-cli` are documented here.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.15.2](https://github.com/ch4r10t33r/sentrix/compare/v1.15.1...v1.15.2) (2026-03-26)
+
+### Bug Fixes
+
+* **release:** sync Cargo/npm versions and reliable CLI trigger ([d259762](https://github.com/ch4r10t33r/sentrix/commit/d259762cb136fefde2c91dac60f5861149cbaca1))
+
 ## [1.15.1](https://github.com/ch4r10t33r/sentrix/compare/v1.15.0...v1.15.1) (2026-03-26)
 
 

@@ -1,8 +1,15 @@
 {
   "name": "@ch4r10teer41/sentrix-cli",
-  "version": "1.15.1",
+  "version": "1.15.2",
   "description": "Scaffold P2P-discoverable, DID-native AI agents across any framework",
-  "keywords": ["sentrix", "agents", "p2p", "libp2p", "did", "ai"],
+  "keywords": [
+    "sentrix",
+    "agents",
+    "p2p",
+    "libp2p",
+    "did",
+    "ai"
+  ],
   "bin": {
     "sentrix": "./bin/sentrix"
   },
@@ -11,11 +18,11 @@
     "README.md"
   ],
   "optionalDependencies": {
-    "@ch4r10teer41/sentrix-cli-linux-x64":    "1.15.1",
-    "@ch4r10teer41/sentrix-cli-linux-arm64":  "1.15.1",
-    "@ch4r10teer41/sentrix-cli-darwin-x64":   "1.15.1",
-    "@ch4r10teer41/sentrix-cli-darwin-arm64": "1.15.1",
-    "@ch4r10teer41/sentrix-cli-win32-x64":    "1.15.1"
+    "@ch4r10teer41/sentrix-cli-linux-x64": "1.15.2",
+    "@ch4r10teer41/sentrix-cli-linux-arm64": "1.15.2",
+    "@ch4r10teer41/sentrix-cli-darwin-x64": "1.15.2",
+    "@ch4r10teer41/sentrix-cli-darwin-arm64": "1.15.2",
+    "@ch4r10teer41/sentrix-cli-win32-x64": "1.15.2"
   },
   "engines": {
     "node": ">=18.0.0"
