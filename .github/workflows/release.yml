@@ -27,10 +27,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Node 20
+      - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
           registry-url: "https://registry.npmjs.org"
 
@@ -42,30 +42,16 @@ jobs:
 
       - name: Semantic release
         id: semantic
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npx semantic-release
-          # Check if semantic-release pushed a new tag (i.e. a release was made)
-          git fetch --tags
-          LATEST_TAG=$(git tag --sort=-version:refname | head -1)
-          LATEST_TAG_COMMIT=$(git rev-list -n1 "$LATEST_TAG" 2>/dev/null || echo "")
-          HEAD_COMMIT=$(git rev-parse HEAD)
-          if [ "$LATEST_TAG_COMMIT" = "$HEAD_COMMIT" ] || git log --oneline -3 | grep -q "chore(release)"; then
-            VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
-            echo "released=true"  >> "$GITHUB_OUTPUT"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          else
-            echo "released=false" >> "$GITHUB_OUTPUT"
-            echo "version="       >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Trigger Release CLI (build & publish binaries)
-        if: steps.semantic.outputs.released == 'true'
+        if: steps.semantic.outputs.new_release_published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run release-cli.yml --ref "v${{ steps.semantic.outputs.version }}"
-          echo "Triggered release-cli.yml for v${{ steps.semantic.outputs.version }}"
+          gh workflow run release-cli.yml --ref "v${{ steps.semantic.outputs.new_release_version }}"
+          echo "Triggered release-cli.yml for v${{ steps.semantic.outputs.new_release_version }}"
