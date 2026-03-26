@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.svg" alt="Sentrix" width="220"/>
+  <img src="https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/docs/logo.svg" alt="Sentrix" width="220"/>
 </p>
 
 # Sentrix
