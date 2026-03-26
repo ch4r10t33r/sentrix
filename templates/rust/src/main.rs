@@ -118,3 +118,7 @@ async fn main() {
     println!("\n  AgentClient.call_capability() dispatches over HTTP to the discovered endpoint.");
     println!("  In this dev runner both agent and client share the same in-memory LocalDiscovery.\n");
 }
+
+// To run as a standalone HTTP server:
+// use crate::server::serve;
+// serve(agent, 8080).await.expect("Server failed");

@@ -33,3 +33,4 @@ zig-out/
 
 # Internal planning docs (not for public repo)
 docs/roadmap.md
+docs/differentiation.md

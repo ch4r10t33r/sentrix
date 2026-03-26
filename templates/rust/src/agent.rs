@@ -35,6 +35,15 @@ pub trait IAgent: Send + Sync {
         Ok(())
     }
 
+    // ── Payment gating (x402) ──────────────────────────────────────────────
+
+    /// Return `true` if this agent requires an x402 payment on every `/invoke`
+    /// call.  The default is `false` (open access).  Override and return `true`
+    /// when `required_payment` is non-empty.
+    fn requires_payment(&self) -> bool {
+        false
+    }
+
     // ── Permissions (optional) ─────────────────────────────────────────────
     async fn check_permission(&self, _caller: &str, _capability: &str) -> bool {
         true // open by default; override for production
