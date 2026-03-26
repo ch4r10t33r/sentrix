@@ -220,11 +220,16 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          VERSION="${{ steps.version.outputs.version }}"
           for pkg in sentrix-cli-linux-x64 sentrix-cli-linux-arm64 \
                      sentrix-cli-darwin-x64 sentrix-cli-darwin-arm64 \
                      sentrix-cli-win32-x64; do
             cd npm/$pkg
-            npm publish --access public
+            if npm view "@ch4r10teer41/$pkg@$VERSION" version >/dev/null 2>&1; then
+              echo "@ch4r10teer41/$pkg@$VERSION already published — skipping"
+            else
+              npm publish --access public
+            fi
             cd ../..
           done
 
@@ -232,5 +237,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd npm/sentrix-cli
-          npm publish --access public
+          VERSION="${{ steps.version.outputs.version }}"
+          if npm view "@ch4r10teer41/sentrix-cli@$VERSION" version >/dev/null 2>&1; then
+            echo "@ch4r10teer41/sentrix-cli@$VERSION already published — skipping"
+          else
+            cd npm/sentrix-cli
+            npm publish --access public
+          fi
