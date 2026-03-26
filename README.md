@@ -56,14 +56,14 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 | **AgentRequest / AgentResponse** | ✅ | ✅ | ✅ | ✅ |
 | **ANR (Agent Network Record)** | ✅ | ✅ | ✅ | ✅ |
 | **DID identity (`did:key`)** | ✅ | ✅ | 🔜 | 🔜 |
-| **HTTP server (`sentrix run`)** | ✅ | ✅ | 🔜 | 🔜 |
+| **HTTP server (`sentrix run`)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — local (in-memory)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — HTTP** | ✅ | ✅ | ✅ | 🔜 |
 | **Discovery — libp2p + Kademlia DHT** | ✅ | ✅ | ✅ | 🔜 |
 | **Discovery — gossip fan-out** | ✅ | ✅ | 🔜 | 🔜 |
 | **AgentClient (mesh protocols)** | ✅ | ✅ | ✅ | ✅ |
 | **Example agent** | ✅ | ✅ | ✅ | ✅ |
-| **Plugin system (framework adapters)** | ✅ | ✅ | 🔜 | 🔜 |
+| **Plugin system (framework adapters)** | ✅ | ✅ | ✅ | ✅ |
 | **LangGraph plugin** | ✅ | ✅ | — | — |
 | **Google ADK plugin** | ✅ | 🔜 | — | — |
 | **CrewAI plugin** | ✅ | — | — | — |
@@ -83,7 +83,7 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 ## Installation
 
 ```bash
-npm install -g @ch4r01teer41/sentrix-cli
+npm install -g @ch4r10teer41/sentrix-cli
 ```
 
 ---
@@ -261,6 +261,256 @@ resp = await client.call_capability("web_search", {"query": "latest AI news"})
 
 ---
 
+## Protocol Reference
+
+### Agent DID and Identity
+
+Every agent has a **DID** derived from its secp256k1 keypair — no wallet or gas required.
+
+| Mode | DID format | `agentId` |
+|---|---|---|
+| `local` (default) | `did:key:zQ3sh…` | `sentrix://agent/<eth-addr>` |
+| `env` | `did:key:zQ3sh…` | same, driven by `SENTRIX_AGENT_KEY` |
+| `erc8004` | `did:pkh:eip155:<chainId>:0x…` | on-chain verified owner |
+
+The DID is a multicodec-prefixed, base58btc-encoded secp256k1 compressed public key:
+
+```
+did:key:z  <base58btc( 0xe701 || compressed-secp256k1-pubkey )>
+            ↑ secp256k1 multicodec varint
+```
+
+### Agent Network Record (ANR)
+
+The ANR is the canonical self-description of an agent. It is returned by `GET /anr`, stored in the Kademlia DHT, and broadcast via gossip. Its shape is `DiscoveryEntry`:
+
+```typescript
+interface DiscoveryEntry {
+  agentId:      string;           // "sentrix://agent/0xABC…" or a DID
+  name:         string;           // human-readable label
+  owner:        string;           // Ethereum address or DID of the keyholder
+  capabilities: string[];         // ["echo", "web_search", "generate_image"]
+  network: {
+    protocol:  'http' | 'websocket' | 'grpc' | 'tcp' | 'libp2p';
+    host:      string;            // "192.168.1.5" or "agent.example.com"
+    port:      number;
+    tls:       boolean;
+    peerId?:   string;            // libp2p PeerId (when protocol === 'libp2p')
+    multiaddr?: string;           // full multiaddr, e.g. "/ip4/…/udp/…/quic-v1/p2p/…"
+  };
+  health: {
+    status:         'healthy' | 'degraded' | 'unhealthy';
+    lastHeartbeat:  string;       // ISO 8601
+    uptimeSeconds:  number;
+  };
+  registeredAt: string;           // ISO 8601
+  metadataUri?: string;           // IPFS / HTTPS link to extended metadata
+}
+```
+
+The DHT stores a signed envelope around this record:
+
+```json
+{
+  "v": 1,
+  "seq": 42,
+  "entry": { /* StoredEntry fields */ },
+  "sig": "<base64-compact-secp256k1-signature-over-sha256(unsigned-envelope)>"
+}
+```
+
+### Capabilities
+
+Capabilities are **plain strings** declared by `getCapabilities()`. They form the unit of discovery and billing:
+
+```typescript
+getCapabilities(): string[]   // e.g. ["echo", "web_search", "generate_image"]
+```
+
+For plugin-wrapped agents a `CapabilityDescriptor` carries richer metadata:
+
+```typescript
+interface CapabilityDescriptor {
+  name:          string;
+  description:   string;
+  inputSchema?:  Record<string, unknown>;   // JSON Schema
+  outputSchema?: Record<string, unknown>;   // JSON Schema
+  pricePerCall?: string;                    // "0.05 USDC" — triggers x402 gate
+}
+```
+
+When `pricePerCall` is set the HTTP server automatically returns HTTP 402 on calls that carry no payment proof.
+
+---
+
+### `POST /invoke` — AgentRequest / AgentResponse
+
+**Request**
+
+```typescript
+interface AgentRequest {
+  requestId:  string;                        // UUID v4
+  from:       string;                        // caller agentId or wallet address
+  capability: string;                        // target capability name
+  payload:    Record<string, unknown>;       // capability-specific body
+  signature?: string;                        // EIP-712 signature over the envelope
+  timestamp?: number;                        // Unix ms — used to reject stale calls
+  sessionKey?: string;                       // delegated execution session
+  payment?:   { type, token, amount, txHash? };  // legacy payment field
+  x402?:      X402Payment;                   // x402 micropayment proof (auto-attached by X402Client)
+  stream?:    boolean;                       // true → use POST /invoke/stream (SSE)
+}
+```
+
+**Response**
+
+```typescript
+interface AgentResponse {
+  requestId:  string;
+  status:     'success' | 'error' | 'payment_required';
+  result?:    Record<string, unknown>;       // present on success
+  errorMessage?: string;                     // present on error / payment_required
+  proof?:     string;                        // optional ZK proof or attestation
+  signature?: string;                        // EIP-712 response signature
+  timestamp?: number;                        // Unix ms
+  paymentRequirements?: X402PaymentRequirements[];  // present on payment_required
+}
+```
+
+**Wire example**
+
+```json
+// POST /invoke
+{ "requestId": "a1b2", "from": "sentrix://agent/caller", "capability": "web_search",
+  "payload": { "query": "latest AI news" }, "timestamp": 1711234567000 }
+
+// 200 OK
+{ "requestId": "a1b2", "status": "success",
+  "result": { "content": "…", "sources": ["…"] }, "timestamp": 1711234567120 }
+
+// 402 Payment Required
+{ "requestId": "a1b2", "status": "payment_required",
+  "errorMessage": "Capability 'generate_image' requires payment.",
+  "paymentRequirements": [{ "network": "base", "asset": "0x833…", "maxAmountRequired": "50000", "payTo": "0xYour…" }] }
+```
+
+---
+
+### Mesh Protocols — Heartbeat, Capability Exchange, Gossip
+
+These are dispatched via the same `POST /invoke` endpoint using **reserved capability names**.
+
+#### Heartbeat — `__heartbeat`
+
+```typescript
+// AgentRequest.capability = "__heartbeat"
+// AgentRequest.payload cast to:
+interface HeartbeatRequest {
+  senderId:  string;
+  timestamp: number;   // Unix ms
+  nonce?:    string;
+}
+
+// AgentResponse.result cast to:
+interface HeartbeatResponse {
+  agentId:           string;
+  status:            'healthy' | 'degraded' | 'unhealthy';
+  timestamp:         number;
+  capabilitiesCount: number;
+  uptimeMs?:         number;
+  version?:          string;
+  nonce?:            string;   // echoed from request
+}
+```
+
+#### Capability Exchange — `__capabilities`
+
+```typescript
+// AgentRequest.payload cast to:
+interface CapabilityExchangeRequest {
+  senderId:   string;
+  timestamp:  number;
+  includeAnr: boolean;   // true → response includes full DiscoveryEntry
+}
+
+// AgentResponse.result cast to:
+interface CapabilityExchangeResponse {
+  agentId:      string;
+  capabilities: string[];
+  timestamp:    number;
+  anr?:         DiscoveryEntry;   // present when includeAnr was true
+}
+```
+
+#### Gossip — `POST /gossip`
+
+Gossip is **fire-and-forget** — the server always returns `{ "ok": true }`. Messages propagate hop by hop; each hop decrements `ttl` and appends its own ID to `seenBy` to prevent loops.
+
+```typescript
+interface GossipMessage {
+  type:        'announce' | 'revoke' | 'heartbeat' | 'query';
+  senderId:    string;
+  timestamp:   number;           // Unix ms
+  ttl:         number;           // decremented each hop; dropped at 0
+  seenBy:      string[];         // agent IDs that have already forwarded this
+  entry?:      DiscoveryEntry;   // present for announce / revoke
+  capability?: string;           // present for query
+  nonce?:      string;
+}
+```
+
+**Wire example**
+
+```json
+// POST /gossip
+{ "type": "announce", "senderId": "sentrix://agent/0xABC",
+  "timestamp": 1711234567000, "ttl": 3, "seenBy": [],
+  "entry": { "agentId": "sentrix://agent/0xABC", "capabilities": ["web_search"], … } }
+
+// 200 OK
+{ "ok": true }
+```
+
+---
+
+### Streaming — `POST /invoke/stream`
+
+Set `AgentRequest.stream = true` (or call `POST /invoke/stream` directly). The server responds with `Content-Type: text/event-stream` and emits SSE frames until the terminal `StreamEnd` frame.
+
+```typescript
+// Each incremental frame:
+interface StreamChunk {
+  requestId: string;
+  type:      'chunk';
+  delta:     string;       // LLM token text or incremental output
+  result?:   unknown;      // optional partial structured result
+  sequence:  number;       // monotonically increasing per request
+  timestamp: number;
+}
+
+// Terminal frame:
+interface StreamEnd {
+  requestId:    string;
+  type:         'end';
+  finalResult?: unknown;   // fully assembled result
+  error?:       string;    // set on abnormal termination
+  sequence:     number;
+  timestamp:    number;
+}
+```
+
+**Wire example**
+
+```
+data: {"type":"chunk","requestId":"a1b2","delta":"The ","sequence":1,"timestamp":1711234567100}
+
+data: {"type":"chunk","requestId":"a1b2","delta":"latest ","sequence":2,"timestamp":1711234567110}
+
+data: {"type":"end","requestId":"a1b2","finalResult":{"text":"The latest AI news…"},"sequence":47,"timestamp":1711234567890}
+```
+
+---
+
 ## Discovery Adapters
 
 | Adapter | Backend | Use case |
@@ -371,11 +621,10 @@ python run_example.py
 ## TODOs
 
 - [ ] More examples, tutorials and videos
-- [ ] Rust + Zig mesh protocol implementations
-- [ ] `sentrix test` — unit-test framework for agents
-- [ ] `sentrix inspect <endpoint>` — CLI ANR + capability inspector
-- [ ] Streaming responses (SSE / WebSocket)
+- [ ] Rust + Zig gossip discovery implementation
+- [ ] Streaming responses (SSE / WebSocket) for Rust and Zig
 - [ ] Public hosted discovery registry
+- [ ] ERC-8004 delegation (`checkPermission`) on-chain enforcement
 
 ---
 
