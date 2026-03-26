@@ -256,7 +256,7 @@ fn rlp_decode_list(data: &[u8]) -> Option<Vec<Vec<u8>>> {
     Some(items)
 }
 
-fn rlp_item_at<'a>(data: &'a [u8], offset: usize) -> Option<(&'a [u8], usize)> {
+fn rlp_item_at(data: &[u8], offset: usize) -> Option<(&[u8], usize)> {
     if offset >= data.len() {
         return None;
     }
@@ -389,7 +389,7 @@ fn inspect_agents(host: &str, port: u16, raw: bool) -> Result<()> {
             println!(
                 "  {:<20} {}",
                 "Capabilities:".bright_black(),
-                a.capabilities.join(", ").cyan().to_string()
+                a.capabilities.join(", ").cyan()
             );
         }
         if !a.network.host.is_empty() {

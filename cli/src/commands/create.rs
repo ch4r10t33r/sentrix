@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use clap::Args;
 use std::io::{self, Write as IoWrite};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use crate::detect_lang::{self, Lang};
 use crate::logger;
@@ -134,12 +134,6 @@ fn caps_as_ts(caps: &[String]) -> String {
     format!("[{}]", inner.join(", "))
 }
 
-/// `["echo", "ping"]`  — Python list literal
-fn caps_as_py(caps: &[String]) -> String {
-    let inner: Vec<String> = caps.iter().map(|c| format!("'{c}'")).collect();
-    format!("[{}]", inner.join(", "))
-}
-
 /// `vec!["echo", "ping"]`  — Rust macro
 fn caps_as_rs(caps: &[String]) -> String {
     let inner: Vec<String> = caps
@@ -181,7 +175,7 @@ fn install_deps(lang: &Lang, dir: &Path) {
 
 fn template_ts_none(name: &str, caps: &[String]) -> String {
     let name_lower = name.to_lowercase();
-    let cap_tags = caps_as_ts(caps);
+    let _cap_tags = caps_as_ts(caps);
     let cap_list = {
         let inner: Vec<String> = caps.iter().map(|c| format!("'{c}'")).collect();
         inner.join(", ")
@@ -308,7 +302,7 @@ fn template_ts_crewai(name: &str, caps: &[String]) -> String {
 fn template_ts_langgraph(name: &str, caps: &[String]) -> String {
     let name_lower = name.to_lowercase();
     let cap_list_sq: Vec<String> = caps.iter().map(|c| format!("'{c}'")).collect();
-    let cap_list = cap_list_sq.join(", ");
+    let _cap_list = cap_list_sq.join(", ");
     let tags_with_lg = {
         let mut v = cap_list_sq.clone();
         v.push("'langgraph'".to_string());

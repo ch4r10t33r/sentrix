@@ -75,7 +75,7 @@ pub fn run(args: DiscoverArgs) -> Result<()> {
             Some(h) => match h.status.as_str() {
                 "healthy" => format!("{} healthy", "✔".green()),
                 "degraded" => format!("{} degraded", "⚠".yellow()),
-                other => format!("{} {}", "✖".red(), other.red().to_string()),
+                other => format!("{} {}", "✖".red(), other.red()),
             },
             None => format!("{} unknown", "✖".red()),
         };
@@ -85,7 +85,7 @@ pub fn run(args: DiscoverArgs) -> Result<()> {
         println!(
             "  {:20} {}",
             "Capabilities:".bright_black(),
-            agent.capabilities.join(", ").cyan().to_string()
+            agent.capabilities.join(", ").cyan()
         );
     }
 

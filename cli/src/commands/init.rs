@@ -27,7 +27,7 @@ pub struct InitArgs {
 /// Convert a hyphen/underscore-separated string to PascalCase.
 /// e.g. "my-cool_agent" → "MyCoolAgent"
 fn pascal_case(s: &str) -> String {
-    s.split(|c| c == '-' || c == '_')
+    s.split(['-', '_'])
         .filter(|w| !w.is_empty())
         .map(|w| {
             let mut chars = w.chars();
@@ -142,8 +142,8 @@ pub fn run(args: InitArgs) -> Result<()> {
         }
 
         // Strip .tpl suffix from the destination filename
-        let rel_dest = if rel.ends_with(".tpl") {
-            rel[..rel.len() - 4].to_string()
+        let rel_dest = if let Some(stripped) = rel.strip_suffix(".tpl") {
+            stripped.to_string()
         } else {
             rel.to_string()
         };

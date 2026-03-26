@@ -5,23 +5,23 @@ pub fn info(msg: &str) {
 }
 
 pub fn success(msg: &str) {
-    println!("{} {}", "✔".green(), msg.green().to_string());
+    println!("{} {}", "✔".green(), msg.green());
 }
 
 pub fn warn(msg: &str) {
-    println!("{} {}", "⚠".yellow(), msg.yellow().to_string());
+    println!("{} {}", "⚠".yellow(), msg.yellow());
 }
 
 pub fn error(msg: &str) {
-    eprintln!("{} {}", "✖".red(), msg.red().to_string());
+    eprintln!("{} {}", "✖".red(), msg.red());
 }
 
 pub fn title(msg: &str) {
-    println!("\n{}", msg.bold().to_string());
+    println!("\n{}", msg.bold());
 }
 
 pub fn dim(msg: &str) {
-    println!("{}", msg.dimmed().to_string());
+    println!("{}", msg.dimmed());
 }
 
 /// Print a tree entry, e.g. `  ├── src/agent.ts`
