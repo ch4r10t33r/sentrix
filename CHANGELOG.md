@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/ch4r10t33r/sentrix/compare/v1.13.0...v1.14.0) (2026-03-26)
+
+
+### Features
+
+* add single-line curl installer with platform auto-detection ([f8ce930](https://github.com/ch4r10t33r/sentrix/commit/f8ce9303246898fab935073495bc9cf30793bf1a))
+
 # [1.13.0](https://github.com/ch4r10t33r/sentrix/compare/v1.12.0...v1.13.0) (2026-03-26)
 
 
