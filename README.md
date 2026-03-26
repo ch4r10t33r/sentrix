@@ -85,39 +85,28 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 ### npm (recommended)
 
 Works on macOS, Linux, and Windows. npm downloads the correct pre-built
-Rust binary for your platform automatically.
+binary for your platform automatically.
 
 ```bash
 npm install -g @ch4r10teer41/sentrix-cli
 ```
 
-### Direct binary download
+### curl installer (macOS / Linux)
 
-Pre-built binaries for every platform are attached to each
-[GitHub Release](https://github.com/ch4r10t33r/sentrix/releases).
-Download the binary for your platform, make it executable, and place it
-somewhere on your `PATH`:
+Auto-detects your OS and architecture, installs to `/usr/local/bin`:
 
 ```bash
-# macOS (Apple Silicon)
-curl -L https://github.com/ch4r10t33r/sentrix/releases/latest/download/sentrix-darwin-arm64 \
-  -o /usr/local/bin/sentrix && chmod +x /usr/local/bin/sentrix
-
-# macOS (Intel)
-curl -L https://github.com/ch4r10t33r/sentrix/releases/latest/download/sentrix-darwin-x64 \
-  -o /usr/local/bin/sentrix && chmod +x /usr/local/bin/sentrix
-
-# Linux (x86_64)
-curl -L https://github.com/ch4r10t33r/sentrix/releases/latest/download/sentrix-linux-x64 \
-  -o /usr/local/bin/sentrix && chmod +x /usr/local/bin/sentrix
-
-# Linux (ARM64)
-curl -L https://github.com/ch4r10t33r/sentrix/releases/latest/download/sentrix-linux-arm64 \
-  -o /usr/local/bin/sentrix && chmod +x /usr/local/bin/sentrix
+curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/install.sh | sh
 ```
 
-Windows users can download `sentrix-win32-x64.exe` from the releases page
-and add it to their `PATH` manually.
+To install to a custom directory set `SENTRIX_INSTALL_DIR` before piping:
+
+```bash
+SENTRIX_INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/install.sh | sh
+```
+
+> **Windows** — use npm above, or download `sentrix-win32-x64.exe` directly from the
+> [Releases page](https://github.com/ch4r10t33r/sentrix/releases/latest).
 
 ### Build from source
 

@@ -165,6 +165,16 @@ jobs:
       - name: Copy README into wrapper package
         run: cp README.md npm/sentrix-cli/README.md
 
+      - name: Stage release binaries with platform names
+        shell: bash
+        run: |
+          mkdir -p dist/
+          cp npm/sentrix-cli-linux-x64/bin/sentrix    dist/sentrix-linux-x64
+          cp npm/sentrix-cli-linux-arm64/bin/sentrix  dist/sentrix-linux-arm64
+          cp npm/sentrix-cli-darwin-x64/bin/sentrix   dist/sentrix-darwin-x64
+          cp npm/sentrix-cli-darwin-arm64/bin/sentrix dist/sentrix-darwin-arm64
+          cp npm/sentrix-cli-win32-x64/bin/sentrix.exe dist/sentrix-win32-x64.exe
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -173,11 +183,12 @@ jobs:
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --generate-notes \
-            npm/sentrix-cli-linux-x64/bin/sentrix \
-            npm/sentrix-cli-linux-arm64/bin/sentrix \
-            npm/sentrix-cli-darwin-x64/bin/sentrix \
-            npm/sentrix-cli-darwin-arm64/bin/sentrix \
-            npm/sentrix-cli-win32-x64/bin/sentrix.exe
+            dist/sentrix-linux-x64 \
+            dist/sentrix-linux-arm64 \
+            dist/sentrix-darwin-x64 \
+            dist/sentrix-darwin-arm64 \
+            dist/sentrix-win32-x64.exe \
+            install.sh
 
       - name: Publish platform packages
         env:
