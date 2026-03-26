@@ -18,19 +18,10 @@
       </feMerge>
     </filter>
 
-    <!-- Glow: text -->
-    <filter id="textGlow" x="-10%" y="-40%" width="120%" height="180%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-
-    <!-- Background radial -->
-    <radialGradient id="bgGrad" cx="50%" cy="46%" r="46%">
-      <stop offset="0%"   stop-color="#1a083e"/>
-      <stop offset="100%" stop-color="#04020e"/>
+    <!-- Full-card background gradient -->
+    <radialGradient id="cardBg" cx="50%" cy="44%" r="55%">
+      <stop offset="0%"   stop-color="#1e0b45"/>
+      <stop offset="100%" stop-color="#06030f"/>
     </radialGradient>
 
     <!-- Center node fill -->
@@ -54,89 +45,87 @@
     </linearGradient>
   </defs>
 
-  <!-- ── Dark circular backdrop ──────────────────────────────────────────── -->
-  <circle cx="200" cy="192" r="168" fill="url(#bgGrad)"/>
+  <!-- ── Full dark card background (covers the whole SVG incl. text area) ── -->
+  <rect width="400" height="440" rx="20" fill="url(#cardBg)"/>
 
   <!-- ── Outer hex frame (dashed, very subtle) ──────────────────────────── -->
   <polygon
     points="200,34 336,111 336,265 200,342 64,265 64,111"
-    stroke="#7c3aed" stroke-width="1.2" stroke-opacity="0.22"
+    stroke="#7c3aed" stroke-width="1.2" stroke-opacity="0.25"
     stroke-dasharray="5,10" fill="none"/>
 
-  <!-- ── Second, inner hex ring ─────────────────────────────────────────── -->
+  <!-- ── Inner hex ring ─────────────────────────────────────────────────── -->
   <polygon
     points="200,80 269,120 269,200 200,240 131,200 131,120"
     stroke="#22d3ee" stroke-width="0.8" stroke-opacity="0.12"
     fill="none"/>
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       Node positions (ring radius 92 px around center 200,192):
-         N   (200, 100)   NE (280, 146)   SE (280, 238)
-         S   (200, 284)   SW (120, 238)   NW (120, 146)
+       Node positions (ring radius 92 px around center 200,188):
+         N   (200, 96)    NE (280, 142)   SE (280, 234)
+         S   (200, 280)   SW (120, 234)   NW (120, 142)
        ══════════════════════════════════════════════════════════════════════ -->
 
   <!-- ── Spokes: center → ring ──────────────────────────────────────────── -->
-  <line x1="200" y1="192" x2="200" y2="100" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="200" y1="192" x2="280" y2="146" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="200" y1="192" x2="280" y2="238" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="200" y1="192" x2="200" y2="284" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="200" y1="192" x2="120" y2="238" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
-  <line x1="200" y1="192" x2="120" y2="146" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="200" y2="96"  stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="280" y2="142" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="280" y2="234" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="200" y2="280" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="120" y2="234" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="200" y1="188" x2="120" y2="142" stroke="url(#spokeGrad)" stroke-width="1.6" stroke-linecap="round"/>
 
-  <!-- ── Ring edges (adjacent outer nodes) ─────────────────────────────── -->
-  <line x1="200" y1="100" x2="280" y2="146" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
-  <line x1="280" y1="146" x2="280" y2="238" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
-  <line x1="280" y1="238" x2="200" y2="284" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
-  <line x1="200" y1="284" x2="120" y2="238" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
-  <line x1="120" y1="238" x2="120" y2="146" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
-  <line x1="120" y1="146" x2="200" y2="100" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <!-- ── Ring edges ─────────────────────────────────────────────────────── -->
+  <line x1="200" y1="96"  x2="280" y2="142" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <line x1="280" y1="142" x2="280" y2="234" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <line x1="280" y1="234" x2="200" y2="280" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <line x1="200" y1="280" x2="120" y2="234" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <line x1="120" y1="234" x2="120" y2="142" stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
+  <line x1="120" y1="142" x2="200" y2="96"  stroke="#22d3ee" stroke-width="1"   stroke-opacity="0.30" stroke-linecap="round"/>
 
-  <!-- ── Skip-one diagonals (cross-mesh) ───────────────────────────────── -->
-  <line x1="200" y1="100" x2="280" y2="238" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
-  <line x1="280" y1="146" x2="200" y2="284" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
-  <line x1="280" y1="238" x2="120" y2="146" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
+  <!-- ── Cross-mesh diagonals ───────────────────────────────────────────── -->
+  <line x1="200" y1="96"  x2="280" y2="234" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
+  <line x1="280" y1="142" x2="200" y2="280" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
+  <line x1="280" y1="234" x2="120" y2="142" stroke="#818cf8" stroke-width="0.7" stroke-opacity="0.14" stroke-linecap="round"/>
 
-  <!-- ── Outer node halo rings ─────────────────────────────────────────── -->
-  <circle cx="200" cy="100" r="12" fill="#22d3ee" opacity="0.12"/>
-  <circle cx="280" cy="146" r="12" fill="#22d3ee" opacity="0.12"/>
-  <circle cx="280" cy="238" r="12" fill="#22d3ee" opacity="0.12"/>
-  <circle cx="200" cy="284" r="12" fill="#22d3ee" opacity="0.12"/>
-  <circle cx="120" cy="238" r="12" fill="#22d3ee" opacity="0.12"/>
-  <circle cx="120" cy="146" r="12" fill="#22d3ee" opacity="0.12"/>
+  <!-- ── Outer node halos ───────────────────────────────────────────────── -->
+  <circle cx="200" cy="96"  r="12" fill="#22d3ee" opacity="0.12"/>
+  <circle cx="280" cy="142" r="12" fill="#22d3ee" opacity="0.12"/>
+  <circle cx="280" cy="234" r="12" fill="#22d3ee" opacity="0.12"/>
+  <circle cx="200" cy="280" r="12" fill="#22d3ee" opacity="0.12"/>
+  <circle cx="120" cy="234" r="12" fill="#22d3ee" opacity="0.12"/>
+  <circle cx="120" cy="142" r="12" fill="#22d3ee" opacity="0.12"/>
 
   <!-- ── Outer nodes ────────────────────────────────────────────────────── -->
-  <circle cx="200" cy="100" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
-  <circle cx="280" cy="146" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
-  <circle cx="280" cy="238" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
-  <circle cx="200" cy="284" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
-  <circle cx="120" cy="238" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
-  <circle cx="120" cy="146" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="200" cy="96"  r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="280" cy="142" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="280" cy="234" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="200" cy="280" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="120" cy="234" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
+  <circle cx="120" cy="142" r="7.5" fill="url(#nodeGrad)" filter="url(#nodeGlow)"/>
 
-  <!-- ── Center node aura layers ───────────────────────────────────────── -->
-  <circle cx="200" cy="192" r="34" fill="#7c3aed" opacity="0.10"/>
-  <circle cx="200" cy="192" r="24" fill="#8b5cf6" opacity="0.18"/>
+  <!-- ── Center node aura ───────────────────────────────────────────────── -->
+  <circle cx="200" cy="188" r="34" fill="#7c3aed" opacity="0.10"/>
+  <circle cx="200" cy="188" r="24" fill="#8b5cf6" opacity="0.18"/>
 
   <!-- ── Center node ───────────────────────────────────────────────────── -->
-  <circle cx="200" cy="192" r="16" fill="url(#coreGrad)" filter="url(#coreGlow)"/>
-  <!-- Inner bright spot -->
-  <circle cx="195" cy="187" r="5" fill="white" opacity="0.75"/>
+  <circle cx="200" cy="188" r="16" fill="url(#coreGrad)" filter="url(#coreGlow)"/>
+  <circle cx="195" cy="183" r="5"  fill="white" opacity="0.75"/>
 
-  <!-- ══════════════════════════════════════════════════════════════════════
-       Typography
-       ══════════════════════════════════════════════════════════════════════ -->
+  <!-- ── Divider ────────────────────────────────────────────────────────── -->
+  <line x1="60" y1="322" x2="340" y2="322"
+        stroke="#7c3aed" stroke-width="0.75" stroke-opacity="0.35"/>
 
-  <!-- SENTRIX wordmark -->
+  <!-- ── Wordmark ───────────────────────────────────────────────────────── -->
   <text
-    x="200" y="370"
+    x="200" y="372"
     font-family="'SF Pro Display','Segoe UI',system-ui,-apple-system,sans-serif"
     font-size="44" font-weight="700" letter-spacing="10"
-    fill="white" text-anchor="middle"
-    filter="url(#textGlow)">SENTRIX</text>
+    fill="#f5f3ff" text-anchor="middle">SENTRIX</text>
 
-  <!-- Tagline -->
+  <!-- ── Tagline ────────────────────────────────────────────────────────── -->
   <text
-    x="200" y="400"
+    x="200" y="402"
     font-family="'SF Pro Display','Segoe UI',system-ui,sans-serif"
-    font-size="11.5" font-weight="400" letter-spacing="4"
-    fill="#67e8f9" text-anchor="middle" opacity="0.72">P2P · AGENT MESH · DID-NATIVE</text>
+    font-size="11.5" font-weight="400" letter-spacing="3.5"
+    fill="#67e8f9" text-anchor="middle" opacity="0.85">P2P · AGENT MESH · DID-NATIVE</text>
 </svg>
