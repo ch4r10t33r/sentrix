@@ -26,16 +26,25 @@ pub struct TestArgs {
 }
 
 pub fn run(args: TestArgs) -> Result<()> {
-    let cwd  = std::env::current_dir()?;
+    let cwd = std::env::current_dir()?;
     let lang = detect_lang::detect(args.lang.as_deref(), &cwd)?;
 
     if args.generate {
-        let name = args.agent.as_deref()
-            .ok_or_else(|| anyhow::anyhow!("--generate requires an agent name: sentrix test --generate <AgentName>"))?;
+        let name = args.agent.as_deref().ok_or_else(|| {
+            anyhow::anyhow!(
+                "--generate requires an agent name: sentrix test --generate <AgentName>"
+            )
+        })?;
         return generate_test(&cwd, &lang, name);
     }
 
-    run_tests(&cwd, &lang, args.agent.as_deref(), args.watch, args.coverage)
+    run_tests(
+        &cwd,
+        &lang,
+        args.agent.as_deref(),
+        args.watch,
+        args.coverage,
+    )
 }
 
 // ── generate test scaffold ────────────────────────────────────────────────────
@@ -51,17 +60,26 @@ fn generate_test(project_dir: &Path, lang: &Lang, agent_name: &str) -> Result<()
         ),
         Lang::Python => {
             let snake = snake_case(agent_name);
-            (tests_dir.join(format!("test_{snake}.py")), py_test_template(agent_name, &snake))
+            (
+                tests_dir.join(format!("test_{snake}.py")),
+                py_test_template(agent_name, &snake),
+            )
         }
         Lang::Rust => {
             let snake = snake_case(agent_name);
             let dir = project_dir.join("src").join("tests");
             std::fs::create_dir_all(&dir)?;
-            (dir.join(format!("{snake}_test.rs")), rust_test_template(agent_name))
+            (
+                dir.join(format!("{snake}_test.rs")),
+                rust_test_template(agent_name),
+            )
         }
         Lang::Zig => {
             let snake = snake_case(agent_name);
-            (tests_dir.join(format!("{snake}_test.zig")), zig_test_template(agent_name))
+            (
+                tests_dir.join(format!("{snake}_test.zig")),
+                zig_test_template(agent_name),
+            )
         }
     };
 
@@ -76,9 +94,18 @@ fn generate_test(project_dir: &Path, lang: &Lang, agent_name: &str) -> Result<()
 
 // ── run tests ─────────────────────────────────────────────────────────────────
 
-fn run_tests(project_dir: &Path, lang: &Lang, agent: Option<&str>, watch: bool, coverage: bool) -> Result<()> {
+fn run_tests(
+    project_dir: &Path,
+    lang: &Lang,
+    agent: Option<&str>,
+    watch: bool,
+    coverage: bool,
+) -> Result<()> {
     let label = agent.unwrap_or("all");
-    println!("\n{}", format!("Running Sentrix tests ({lang}) — {label}").bold());
+    println!(
+        "\n{}",
+        format!("Running Sentrix tests ({lang}) — {label}").bold()
+    );
 
     let (cmd, args) = build_runner(lang, agent, watch, coverage);
     logger::info(&format!("Running: {} {}", cmd, args.join(" ")));
@@ -100,7 +127,12 @@ fn run_tests(project_dir: &Path, lang: &Lang, agent: Option<&str>, watch: bool, 
     }
 }
 
-fn build_runner<'a>(lang: &Lang, agent: Option<&str>, watch: bool, coverage: bool) -> (&'a str, Vec<String>) {
+fn build_runner<'a>(
+    lang: &Lang,
+    agent: Option<&str>,
+    watch: bool,
+    coverage: bool,
+) -> (&'a str, Vec<String>) {
     match lang {
         Lang::TypeScript => {
             let mut a = vec!["jest".to_string(), "--passWithNoTests".to_string()];
@@ -108,8 +140,12 @@ fn build_runner<'a>(lang: &Lang, agent: Option<&str>, watch: bool, coverage: boo
                 a.push("--testPathPattern".to_string());
                 a.push(format!("tests/{name}.test.ts"));
             }
-            if watch    { a.push("--watch".to_string()); }
-            if coverage { a.push("--coverage".to_string()); }
+            if watch {
+                a.push("--watch".to_string());
+            }
+            if coverage {
+                a.push("--coverage".to_string());
+            }
             ("npx", a)
         }
         Lang::Python => {
@@ -117,24 +153,27 @@ fn build_runner<'a>(lang: &Lang, agent: Option<&str>, watch: bool, coverage: boo
             if let Some(name) = agent {
                 a.push(format!("tests/test_{}.py", snake_case(name)));
             }
-            if coverage { a.push("--cov".to_string()); }
+            if coverage {
+                a.push("--cov".to_string());
+            }
             ("python", a)
         }
         Lang::Rust => {
             let mut a = vec!["test".to_string()];
-            if let Some(name) = agent { a.push(snake_case(name)); }
+            if let Some(name) = agent {
+                a.push(snake_case(name));
+            }
             ("cargo", a)
         }
-        Lang::Zig => {
-            ("zig", vec!["build".to_string(), "test".to_string()])
-        }
+        Lang::Zig => ("zig", vec!["build".to_string(), "test".to_string()]),
     }
 }
 
 // ── test templates ────────────────────────────────────────────────────────────
 
 fn ts_test_template(name: &str) -> String {
-    format!(r#"/**
+    format!(
+        r#"/**
  * Unit tests for {name}
  * Generated by: sentrix test --generate {name}
  */
@@ -192,11 +231,13 @@ describe('{name}', () => {{
     expect(typeof anr.network.port).toBe('number');
   }});
 }});
-"#)
+"#
+    )
 }
 
 fn py_test_template(name: &str, snake: &str) -> String {
-    format!(r#""""
+    format!(
+        r#""""
 Unit tests for {name}
 Generated by: sentrix test --generate {name}
 """
@@ -241,12 +282,14 @@ def test_get_anr(agent):
     entry = agent.get_anr()
     assert entry.agent_id
     assert isinstance(entry.capabilities, list)
-"#)
+"#
+    )
 }
 
 fn rust_test_template(name: &str) -> String {
     let snake = snake_case(name);
-    format!(r#"#[cfg(test)]
+    format!(
+        r#"#[cfg(test)]
 mod {snake}_tests {{
     use crate::request::AgentRequest;
     use crate::example_agent::{name};
@@ -293,12 +336,14 @@ mod {snake}_tests {{
         assert_eq!(r.status, "error");
     }}
 }}
-"#)
+"#
+    )
 }
 
 fn zig_test_template(name: &str) -> String {
     let snake = snake_case(name);
-    format!(r#"const std   = @import("std");
+    format!(
+        r#"const std   = @import("std");
 const types = @import("../src/types.zig");
 const mod   = @import("../src/{snake}.zig");
 
@@ -324,7 +369,8 @@ test "{name} — unknown capability returns error" {{
     const resp = a.handleRequest(req);
     try std.testing.expectEqualStrings("error", resp.status);
 }}
-"#)
+"#
+    )
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -332,7 +378,9 @@ test "{name} — unknown capability returns error" {{
 fn snake_case(s: &str) -> String {
     let mut out = String::new();
     for (i, c) in s.chars().enumerate() {
-        if c.is_uppercase() && i > 0 { out.push('_'); }
+        if c.is_uppercase() && i > 0 {
+            out.push('_');
+        }
         out.push(c.to_lowercase().next().unwrap());
     }
     out

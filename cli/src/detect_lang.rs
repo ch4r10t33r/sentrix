@@ -15,10 +15,10 @@ impl Lang {
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "typescript" | "ts" => Some(Self::TypeScript),
-            "python"     | "py" => Some(Self::Python),
-            "rust"       | "rs" => Some(Self::Rust),
-            "zig"               => Some(Self::Zig),
-            _                   => None,
+            "python" | "py" => Some(Self::Python),
+            "rust" | "rs" => Some(Self::Rust),
+            "zig" => Some(Self::Zig),
+            _ => None,
         }
     }
 
@@ -26,9 +26,9 @@ impl Lang {
     pub fn template_dir(&self) -> &'static str {
         match self {
             Self::TypeScript => "typescript",
-            Self::Python     => "python",
-            Self::Rust       => "rust",
-            Self::Zig        => "zig",
+            Self::Python => "python",
+            Self::Rust => "rust",
+            Self::Zig => "zig",
         }
     }
 
@@ -57,8 +57,12 @@ struct SentrixConfig {
 ///   4. Default: TypeScript
 pub fn detect(explicit: Option<&str>, dir: &Path) -> Result<Lang> {
     if let Some(s) = explicit {
-        return Lang::from_str(s)
-            .with_context(|| format!("Unknown language '{}'. Valid: typescript, python, rust, zig", s));
+        return Lang::from_str(s).with_context(|| {
+            format!(
+                "Unknown language '{}'. Valid: typescript, python, rust, zig",
+                s
+            )
+        });
     }
 
     // 2. sentrix.config.json
@@ -76,10 +80,10 @@ pub fn detect(explicit: Option<&str>, dir: &Path) -> Result<Lang> {
 
     // 3. Sniff
     let sniff: &[(&str, Lang)] = &[
-        ("tsconfig.json",    Lang::TypeScript),
+        ("tsconfig.json", Lang::TypeScript),
         ("requirements.txt", Lang::Python),
-        ("Cargo.toml",       Lang::Rust),
-        ("build.zig",        Lang::Zig),
+        ("Cargo.toml", Lang::Rust),
+        ("build.zig", Lang::Zig),
     ];
     for (file, lang) in sniff {
         if dir.join(file).exists() {

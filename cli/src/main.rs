@@ -46,13 +46,13 @@ enum Command {
 fn main() {
     let cli = Cli::parse();
     let result = match cli.command {
-        Command::Init(args)     => commands::init::run(args),
-        Command::Create(args)   => commands::create::run(args),
-        Command::Run(args)      => commands::run::run(args),
+        Command::Init(args) => commands::init::run(args),
+        Command::Create(args) => commands::create::run(args),
+        Command::Run(args) => commands::run::run(args),
         Command::Discover(args) => commands::discover::run(args),
-        Command::Test(args)     => commands::test::run(args),
-        Command::Inspect(args)  => commands::inspect::run(args),
-        Command::Version        => commands::version::run(),
+        Command::Test(args) => commands::test::run(args),
+        Command::Inspect(args) => commands::inspect::run(args),
+        Command::Version => commands::version::run(),
     };
     if let Err(e) = result {
         logger::error(&format!("{e:#}"));

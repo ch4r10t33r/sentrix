@@ -61,10 +61,7 @@ fn unix_to_iso8601(secs: u64) -> String {
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = if m <= 2 { y + 1 } else { y };
 
-    format!(
-        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
-        y, m, d, hh, mm, ss
-    )
+    format!("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z", y, m, d, hh, mm, ss)
 }
 
 pub fn run(args: InitArgs) -> Result<()> {
@@ -80,8 +77,12 @@ pub fn run(args: InitArgs) -> Result<()> {
     }
 
     // 2. Parse language
-    let lang = detect_lang::Lang::from_str(&args.lang)
-        .ok_or_else(|| anyhow!("Unknown language '{}'. Valid: typescript, python, rust, zig", args.lang))?;
+    let lang = detect_lang::Lang::from_str(&args.lang).ok_or_else(|| {
+        anyhow!(
+            "Unknown language '{}'. Valid: typescript, python, rust, zig",
+            args.lang
+        )
+    })?;
 
     // 3. Create project directory
     let project_path: PathBuf = std::env::current_dir()?.join(&args.name);
@@ -202,17 +203,14 @@ pub fn run(args: InitArgs) -> Result<()> {
     });
 
     let config_path = project_path.join("sentrix.config.json");
-    let config_file = std::fs::File::create(&config_path)
-        .context("Failed to create sentrix.config.json")?;
+    let config_file =
+        std::fs::File::create(&config_path).context("Failed to create sentrix.config.json")?;
     serde_json::to_writer_pretty(config_file, &config)
         .context("Failed to write sentrix.config.json")?;
 
     // 7. Print summary
     spinner.finish_and_clear();
-    logger::success(&format!(
-        "Project '{}' scaffolded successfully!",
-        args.name
-    ));
+    logger::success(&format!("Project '{}' scaffolded successfully!", args.name));
 
     logger::title(&format!("{}/", args.name));
     for f in &created_files {
@@ -226,10 +224,7 @@ pub fn run(args: InitArgs) -> Result<()> {
     logger::tree("└──", "sentrix.config.json");
 
     logger::title("Next steps:");
-    logger::dim(&format!(
-        "  cd {} && sentrix run {}",
-        args.name, agent_name
-    ));
+    logger::dim(&format!("  cd {} && sentrix run {}", args.name, agent_name));
 
     Ok(())
 }

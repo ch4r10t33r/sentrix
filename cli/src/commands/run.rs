@@ -46,14 +46,8 @@ pub fn run(args: RunArgs) -> Result<()> {
             "npx",
             vec!["ts-node", "--project", "tsconfig.json", &ts_agent_path],
         ),
-        detect_lang::Lang::Python => (
-            "python",
-            vec![&py_agent_path],
-        ),
-        detect_lang::Lang::Rust => (
-            "cargo",
-            vec!["run", "--", &args.agent, "--port", &port_str],
-        ),
+        detect_lang::Lang::Python => ("python", vec![&py_agent_path]),
+        detect_lang::Lang::Rust => ("cargo", vec!["run", "--", &args.agent, "--port", &port_str]),
         detect_lang::Lang::Zig => (
             "zig",
             vec!["build", "run", "--", &args.agent, "--port", &port_str],

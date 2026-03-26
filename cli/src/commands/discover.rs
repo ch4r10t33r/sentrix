@@ -18,8 +18,8 @@ pub struct DiscoverArgs {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct AgentSummary {
-    agent_id:     String,
-    name:         String,
+    agent_id: String,
+    name: String,
     capabilities: Vec<String>,
     #[serde(default)]
     health: Option<HealthInfo>,
@@ -39,8 +39,7 @@ pub fn run(args: DiscoverArgs) -> Result<()> {
     logger::title("Sentrix Discovery Query");
     logger::info(&format!("Querying: {}", url));
 
-    let response = reqwest::blocking::get(&url)
-        .context("Could not reach discovery server")?;
+    let response = reqwest::blocking::get(&url).context("Could not reach discovery server")?;
 
     // Handle both array `[...]` and object `{"agents": [...]}` shapes.
     let raw: serde_json::Value = response
@@ -74,9 +73,9 @@ pub fn run(args: DiscoverArgs) -> Result<()> {
         // Health status icon.
         let health_line = match &agent.health {
             Some(h) => match h.status.as_str() {
-                "healthy"  => format!("{} healthy",  "✔".green()),
+                "healthy" => format!("{} healthy", "✔".green()),
                 "degraded" => format!("{} degraded", "⚠".yellow()),
-                other      => format!("{} {}", "✖".red(), other.red().to_string()),
+                other => format!("{} {}", "✖".red(), other.red().to_string()),
             },
             None => format!("{} unknown", "✖".red()),
         };

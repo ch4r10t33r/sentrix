@@ -43,22 +43,22 @@ impl Framework {
     fn from_str(s: &str) -> Self {
         match s.to_lowercase().replace(['-', '_'], "").as_str() {
             "googleadk" => Self::GoogleAdk,
-            "crewai"    => Self::CrewAi,
+            "crewai" => Self::CrewAi,
             "langgraph" => Self::LangGraph,
-            "agno"      => Self::Agno,
-            "llamaindex"=> Self::LlamaIndex,
-            "smolagents"=> Self::Smolagents,
-            _           => Self::None,
+            "agno" => Self::Agno,
+            "llamaindex" => Self::LlamaIndex,
+            "smolagents" => Self::Smolagents,
+            _ => Self::None,
         }
     }
 
     fn as_str(&self) -> &'static str {
         match self {
-            Self::None       => "none",
-            Self::GoogleAdk  => "google-adk",
-            Self::CrewAi     => "crewai",
-            Self::LangGraph  => "langgraph",
-            Self::Agno       => "agno",
+            Self::None => "none",
+            Self::GoogleAdk => "google-adk",
+            Self::CrewAi => "crewai",
+            Self::LangGraph => "langgraph",
+            Self::Agno => "agno",
             Self::LlamaIndex => "llamaindex",
             Self::Smolagents => "smolagents",
         }
@@ -67,24 +67,25 @@ impl Framework {
     /// Install hint for a given language, if any.
     fn install_hint(&self, lang: &Lang) -> Option<&'static str> {
         match (self, lang) {
-            (Self::GoogleAdk,  Lang::TypeScript) =>
-                Some("npm install @google/generative-ai @google-labs/agent-development-kit"),
-            (Self::GoogleAdk,  Lang::Python)     =>
-                Some("pip install google-adk google-generativeai"),
-            (Self::CrewAi,     Lang::Python)     =>
-                Some("pip install crewai crewai-tools"),
-            (Self::LangGraph,  Lang::TypeScript) =>
-                Some("npm install @langchain/langgraph @langchain/openai @langchain/core zod"),
-            (Self::LangGraph,  Lang::Python)     =>
-                Some("pip install langgraph langchain-openai langchain-core"),
-            (Self::Agno,       Lang::Python)     =>
-                Some("pip install agno openai"),
-            (Self::LlamaIndex, Lang::TypeScript) =>
-                Some("npm install llamaindex @llamaindex/openai"),
-            (Self::LlamaIndex, Lang::Python)     =>
-                Some("pip install llama-index llama-index-llms-openai"),
-            (Self::Smolagents, Lang::Python)     =>
-                Some("pip install smolagents"),
+            (Self::GoogleAdk, Lang::TypeScript) => {
+                Some("npm install @google/generative-ai @google-labs/agent-development-kit")
+            }
+            (Self::GoogleAdk, Lang::Python) => Some("pip install google-adk google-generativeai"),
+            (Self::CrewAi, Lang::Python) => Some("pip install crewai crewai-tools"),
+            (Self::LangGraph, Lang::TypeScript) => {
+                Some("npm install @langchain/langgraph @langchain/openai @langchain/core zod")
+            }
+            (Self::LangGraph, Lang::Python) => {
+                Some("pip install langgraph langchain-openai langchain-core")
+            }
+            (Self::Agno, Lang::Python) => Some("pip install agno openai"),
+            (Self::LlamaIndex, Lang::TypeScript) => {
+                Some("npm install llamaindex @llamaindex/openai")
+            }
+            (Self::LlamaIndex, Lang::Python) => {
+                Some("pip install llama-index llama-index-llms-openai")
+            }
+            (Self::Smolagents, Lang::Python) => Some("pip install smolagents"),
             _ => None,
         }
     }
@@ -102,7 +103,7 @@ fn pascal_case(s: &str) -> String {
         .map(|p| {
             let mut chars = p.chars();
             match chars.next() {
-                None    => String::new(),
+                None => String::new(),
                 Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
             }
         })
@@ -141,7 +142,10 @@ fn caps_as_py(caps: &[String]) -> String {
 
 /// `vec!["echo", "ping"]`  — Rust macro
 fn caps_as_rs(caps: &[String]) -> String {
-    let inner: Vec<String> = caps.iter().map(|c| format!(r#""{c}".to_string()"#)).collect();
+    let inner: Vec<String> = caps
+        .iter()
+        .map(|c| format!(r#""{c}".to_string()"#))
+        .collect();
     format!("vec![{}]", inner.join(", "))
 }
 
@@ -155,10 +159,10 @@ fn caps_as_zig(caps: &[String]) -> String {
 
 fn install_deps(lang: &Lang, dir: &Path) {
     let (prog, args): (&str, Vec<&str>) = match lang {
-        Lang::TypeScript => ("npm",   vec!["install"]),
-        Lang::Python     => ("pip",   vec!["install", "-r", "requirements.txt"]),
-        Lang::Rust       => ("cargo", vec!["build"]),
-        Lang::Zig        => ("zig",   vec!["build"]),
+        Lang::TypeScript => ("npm", vec!["install"]),
+        Lang::Python => ("pip", vec!["install", "-r", "requirements.txt"]),
+        Lang::Rust => ("cargo", vec!["build"]),
+        Lang::Zig => ("zig", vec!["build"]),
     };
 
     let status = std::process::Command::new(prog)
@@ -177,8 +181,8 @@ fn install_deps(lang: &Lang, dir: &Path) {
 
 fn template_ts_none(name: &str, caps: &[String]) -> String {
     let name_lower = name.to_lowercase();
-    let cap_tags   = caps_as_ts(caps);
-    let cap_list   = {
+    let cap_tags = caps_as_ts(caps);
+    let cap_list = {
         let inner: Vec<String> = caps.iter().map(|c| format!("'{c}'")).collect();
         inner.join(", ")
     };
@@ -188,7 +192,8 @@ fn template_ts_none(name: &str, caps: &[String]) -> String {
         )
     }).collect::<Vec<_>>().join("\n");
 
-    format!(r#"import {{ IAgent }}        from '../interfaces/IAgent';
+    format!(
+        r#"import {{ IAgent }}        from '../interfaces/IAgent';
 import {{ AgentRequest }}  from '../interfaces/IAgentRequest';
 import {{ AgentResponse }} from '../interfaces/IAgentResponse';
 
@@ -214,7 +219,8 @@ export class {name} implements IAgent {{
     console.log('[{name}] registered with discovery layer');
   }}
 }}
-"#)
+"#
+    )
 }
 
 // ── Template: TypeScript × google-adk ────────────────────────────────────────
@@ -235,10 +241,14 @@ fn template_ts_google_adk(name: &str, caps: &[String]) -> String {
         )
     }).collect::<Vec<_>>().join("\n");
 
-    let function_tools: Vec<String> = caps.iter().map(|c| format!("new FunctionTool({c})")).collect();
+    let function_tools: Vec<String> = caps
+        .iter()
+        .map(|c| format!("new FunctionTool({c})"))
+        .collect();
     let function_tools_str = function_tools.join(", ");
 
-    format!(r#"/**
+    format!(
+        r#"/**
  * {name} — Google ADK agent, wrapped for the Sentrix mesh.
  *
  * Install: npm install @google-labs/agent-development-kit @google/generative-ai
@@ -283,7 +293,8 @@ export const {name}: IAgent = {{
     console.log('[{name}] registered with discovery layer (ADK)');
   }},
 }};
-"#)
+"#
+    )
 }
 
 // ── Template: TypeScript × crewai — fallback (Python-only) ───────────────────
@@ -304,9 +315,11 @@ fn template_ts_langgraph(name: &str, caps: &[String]) -> String {
         v.join(", ")
     };
 
-    let tool_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let tool_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 const {c}Tool = tool(
   async ({{ query }}: {{ query: string }}) => {{
     // TODO: implement {c}
@@ -318,13 +331,16 @@ const {c}Tool = tool(
     schema:      z.object({{ query: z.string().describe('Input for {c}') }}),
   }},
 );"#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
     let tool_refs: Vec<String> = caps.iter().map(|c| format!("{c}Tool")).collect();
     let tool_refs_str = tool_refs.join(", ");
 
-    format!(r#"/**
+    format!(
+        r#"/**
  * {name} — LangGraph ReAct agent, wrapped for the Sentrix mesh.
  *
  * Install: npm install @langchain/langgraph @langchain/openai @langchain/core zod
@@ -355,7 +371,8 @@ export const {name} = wrapLangGraph(_graph, {{
   stateInputKey:  'messages',
   stateOutputKey: 'messages',
 }});
-"#)
+"#
+    )
 }
 
 // ── Template: TypeScript × agno — fallback (Python-only) ─────────────────────
@@ -395,19 +412,23 @@ fn template_ts_llamaindex(name: &str, caps: &[String]) -> String {
         )
     }).collect::<Vec<_>>().join("\n");
 
-    let tool_refs: Vec<String> = caps.iter().map(|c| {
-        let cap_title = {
-            let mut chars = c.chars();
-            match chars.next() {
-                None    => String::new(),
-                Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
-            }
-        };
-        format!("_tool{cap_title}")
-    }).collect();
+    let tool_refs: Vec<String> = caps
+        .iter()
+        .map(|c| {
+            let cap_title = {
+                let mut chars = c.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+                }
+            };
+            format!("_tool{cap_title}")
+        })
+        .collect();
     let tool_refs_str = tool_refs.join(", ");
 
-    format!(r#"/**
+    format!(
+        r#"/**
  * {name} — LlamaIndex agent, wrapped for the Sentrix mesh.
  *
  * Install: npm install llamaindex @llamaindex/openai
@@ -453,7 +474,8 @@ export const {name}: IAgent = {{
     console.log('[{name}] registered with discovery layer (LlamaIndex)');
   }},
 }};
-"#)
+"#
+    )
 }
 
 // ── Template: TypeScript × smolagents — fallback (Python-only) ───────────────
@@ -473,7 +495,8 @@ fn template_py_none(name: &str, caps: &[String]) -> String {
         format!("            '{c}': lambda r: AgentResponse.success(r.request_id, {{'message': '{c} called'}})")
     }).collect::<Vec<_>>().join(",\n");
 
-    format!(r#"from interfaces.iagent         import IAgent
+    format!(
+        r#"from interfaces.iagent         import IAgent
 from interfaces.agent_request  import AgentRequest
 from interfaces.agent_response import AgentResponse
 from typing import List
@@ -497,7 +520,8 @@ class {name}(IAgent):
 
     async def register_discovery(self) -> None:
         print(f'[{name}] registered with discovery layer')
-"#)
+"#
+    )
 }
 
 // ── Template: Python × google-adk ────────────────────────────────────────────
@@ -505,15 +529,19 @@ class {name}(IAgent):
 fn template_py_google_adk(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let fn_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let fn_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation."""
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
     let function_tools: Vec<String> = caps.iter().map(|c| format!("FunctionTool({c})")).collect();
     let function_tools_str = function_tools.join(", ");
@@ -525,7 +553,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — Google ADK agent, wrapped for the Sentrix mesh.
 
 Each function below becomes one Sentrix capability.  The wrap_google_adk()
@@ -559,7 +588,8 @@ _adk_agent = Agent(
     owner    = "0xYourWalletAddress",
     tags     = [{tags_str}],
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Python × crewai ─────────────────────────────────────────────────
@@ -567,19 +597,27 @@ _adk_agent = Agent(
 fn template_py_crewai(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let tool_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let tool_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 @tool("{c}")
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation."""
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let caps_joined   = caps.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", ");
-    let tools_list    = caps_joined.clone();
+    let caps_joined = caps
+        .iter()
+        .map(|c| c.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let tools_list = caps_joined.clone();
 
     let tags_dq: Vec<String> = caps.iter().map(|c| format!(r#""{c}""#)).collect();
     let tags_str = {
@@ -588,7 +626,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — CrewAI agent, wrapped for the Sentrix mesh.
 
 Each @tool-decorated function becomes one Sentrix capability.  The
@@ -626,7 +665,8 @@ _crew_agent = CrewAgent(
     owner    = "0xYourWalletAddress",
     tags     = [{tags_str}],
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Python × langgraph ─────────────────────────────────────────────
@@ -634,19 +674,27 @@ _crew_agent = CrewAgent(
 fn template_py_langgraph(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let tool_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let tool_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 @tool
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation."""
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let caps_joined = caps.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", ");
-    let tools_list  = caps_joined.clone();
+    let caps_joined = caps
+        .iter()
+        .map(|c| c.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let tools_list = caps_joined.clone();
 
     let tags_dq: Vec<String> = caps.iter().map(|c| format!(r#""{c}""#)).collect();
     let tags_str = {
@@ -655,7 +703,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — LangGraph ReAct agent, wrapped for the Sentrix mesh.
 
 Each @tool-decorated function becomes one Sentrix capability.  The
@@ -687,7 +736,8 @@ _graph = create_react_agent(_llm, tools=[{tools_list}])
     tags     = [{tags_str}],
     tools    = [{tools_list}],   # explicit list speeds up capability discovery
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Python × agno ───────────────────────────────────────────────────
@@ -695,17 +745,25 @@ _graph = create_react_agent(_llm, tools=[{tools_list}])
 fn template_py_agno(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let fn_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let fn_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation."""
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let tools_list = caps.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", ");
+    let tools_list = caps
+        .iter()
+        .map(|c| c.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
 
     let tags_dq: Vec<String> = caps.iter().map(|c| format!(r#""{c}""#)).collect();
     let tags_str = {
@@ -714,7 +772,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — Agno agent, wrapped for the Sentrix mesh.
 
 Each tool function becomes one Sentrix capability.  wrap_agno() handles
@@ -746,7 +805,8 @@ _agno_agent = Agent(
     owner    = "0xYourWalletAddress",
     tags     = [{tags_str}],
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Python × llamaindex ─────────────────────────────────────────────
@@ -754,17 +814,22 @@ _agno_agent = Agent(
 fn template_py_llamaindex(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let fn_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let fn_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation."""
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let tool_vars: String = caps.iter()
+    let tool_vars: String = caps
+        .iter()
         .map(|c| format!("_tool_{c} = FunctionTool.from_defaults(fn={c})"))
         .collect::<Vec<_>>()
         .join("\n");
@@ -779,7 +844,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — LlamaIndex ReAct agent, wrapped for the Sentrix mesh.
 
 Each FunctionTool becomes one Sentrix capability.  wrap_llamaindex() handles
@@ -815,7 +881,8 @@ _agent = ReActAgent.from_tools(
     tags     = [{tags_str}],
     tools    = [{tool_refs_str}],
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Python × smolagents ────────────────────────────────────────────
@@ -823,9 +890,11 @@ _agent = ReActAgent.from_tools(
 fn template_py_smolagents(name: &str, caps: &[String]) -> String {
     let snake = snake_case(name);
 
-    let tool_defs: String = caps.iter().map(|c| {
-        format!(
-            r#"
+    let tool_defs: String = caps
+        .iter()
+        .map(|c| {
+            format!(
+                r#"
 @tool
 def {c}(query: str) -> str:
     """{c} — replace this with your real implementation.
@@ -838,10 +907,16 @@ def {c}(query: str) -> str:
     """
     # TODO: implement {c}
     return f"{c} result for: {{query}}""#
-        )
-    }).collect::<Vec<_>>().join("\n");
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
 
-    let tools_list = caps.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", ");
+    let tools_list = caps
+        .iter()
+        .map(|c| c.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
 
     let tags_dq: Vec<String> = caps.iter().map(|c| format!(r#""{c}""#)).collect();
     let tags_str = {
@@ -850,7 +925,8 @@ def {c}(query: str) -> str:
         v.join(", ")
     };
 
-    format!(r#""""
+    format!(
+        r#""""
 {name} — smolagents agent, wrapped for the Sentrix mesh.
 
 Each @tool-decorated function becomes one Sentrix capability.
@@ -885,20 +961,22 @@ _agent = ToolCallingAgent(
     owner    = "0xYourWalletAddress",
     tags     = [{tags_str}],
 )
-"#)
+"#
+    )
 }
 
 // ── Template: Rust × none ─────────────────────────────────────────────────────
 
 fn template_rs_none(name: &str, caps: &[String]) -> String {
     let name_lower = name.to_lowercase();
-    let caps_vec   = caps_as_rs(caps);
+    let caps_vec = caps_as_rs(caps);
 
     let match_arms: String = caps.iter().map(|c| {
         format!(r#"            "{c}" => AgentResponse::success(req.request_id, json!({{ "message": "{c} called" }}))"#)
     }).collect::<Vec<_>>().join(",\n");
 
-    format!(r#"use crate::agent::IAgent;
+    format!(
+        r#"use crate::agent::IAgent;
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 use async_trait::async_trait;
@@ -922,7 +1000,8 @@ impl IAgent for {name} {{
         }}
     }}
 }}
-"#)
+"#
+    )
 }
 
 // ── Template: Rust × google-adk — stub (no Rust SDK) ─────────────────────────
@@ -955,7 +1034,7 @@ fn template_rs_smolagents(name: &str, caps: &[String]) -> String {
 
 fn template_zig_none(name: &str, caps: &[String]) -> String {
     let name_lower = name.to_lowercase();
-    let caps_zig   = caps_as_zig(caps);
+    let caps_zig = caps_as_zig(caps);
 
     // Build if/else if chain
     let if_chain: String = caps.iter().enumerate().map(|(i, c)| {
@@ -966,7 +1045,8 @@ fn template_zig_none(name: &str, caps: &[String]) -> String {
         )
     }).collect::<Vec<_>>().join("\n");
 
-    format!(r#"const std   = @import("std");
+    format!(
+        r#"const std   = @import("std");
 const types = @import("../interfaces/types.zig");
 
 pub const {name} = struct {{
@@ -984,7 +1064,8 @@ pub const {name} = struct {{
         }}
     }}
 }};
-"#)
+"#
+    )
 }
 
 fn template_zig_google_adk(name: &str, caps: &[String]) -> String {
@@ -1016,37 +1097,37 @@ fn template_zig_smolagents(name: &str, caps: &[String]) -> String {
 fn generate(lang: &Lang, framework: &Framework, name: &str, caps: &[String]) -> String {
     match (lang, framework) {
         // TypeScript
-        (Lang::TypeScript, Framework::None)       => template_ts_none(name, caps),
-        (Lang::TypeScript, Framework::GoogleAdk)  => template_ts_google_adk(name, caps),
-        (Lang::TypeScript, Framework::CrewAi)     => template_ts_crewai(name, caps),
-        (Lang::TypeScript, Framework::LangGraph)  => template_ts_langgraph(name, caps),
-        (Lang::TypeScript, Framework::Agno)       => template_ts_agno(name, caps),
+        (Lang::TypeScript, Framework::None) => template_ts_none(name, caps),
+        (Lang::TypeScript, Framework::GoogleAdk) => template_ts_google_adk(name, caps),
+        (Lang::TypeScript, Framework::CrewAi) => template_ts_crewai(name, caps),
+        (Lang::TypeScript, Framework::LangGraph) => template_ts_langgraph(name, caps),
+        (Lang::TypeScript, Framework::Agno) => template_ts_agno(name, caps),
         (Lang::TypeScript, Framework::LlamaIndex) => template_ts_llamaindex(name, caps),
         (Lang::TypeScript, Framework::Smolagents) => template_ts_smolagents(name, caps),
         // Python
-        (Lang::Python,     Framework::None)       => template_py_none(name, caps),
-        (Lang::Python,     Framework::GoogleAdk)  => template_py_google_adk(name, caps),
-        (Lang::Python,     Framework::CrewAi)     => template_py_crewai(name, caps),
-        (Lang::Python,     Framework::LangGraph)  => template_py_langgraph(name, caps),
-        (Lang::Python,     Framework::Agno)       => template_py_agno(name, caps),
-        (Lang::Python,     Framework::LlamaIndex) => template_py_llamaindex(name, caps),
-        (Lang::Python,     Framework::Smolagents) => template_py_smolagents(name, caps),
+        (Lang::Python, Framework::None) => template_py_none(name, caps),
+        (Lang::Python, Framework::GoogleAdk) => template_py_google_adk(name, caps),
+        (Lang::Python, Framework::CrewAi) => template_py_crewai(name, caps),
+        (Lang::Python, Framework::LangGraph) => template_py_langgraph(name, caps),
+        (Lang::Python, Framework::Agno) => template_py_agno(name, caps),
+        (Lang::Python, Framework::LlamaIndex) => template_py_llamaindex(name, caps),
+        (Lang::Python, Framework::Smolagents) => template_py_smolagents(name, caps),
         // Rust
-        (Lang::Rust,       Framework::None)       => template_rs_none(name, caps),
-        (Lang::Rust,       Framework::GoogleAdk)  => template_rs_google_adk(name, caps),
-        (Lang::Rust,       Framework::CrewAi)     => template_rs_crewai(name, caps),
-        (Lang::Rust,       Framework::LangGraph)  => template_rs_langgraph(name, caps),
-        (Lang::Rust,       Framework::Agno)       => template_rs_agno(name, caps),
-        (Lang::Rust,       Framework::LlamaIndex) => template_rs_llamaindex(name, caps),
-        (Lang::Rust,       Framework::Smolagents) => template_rs_smolagents(name, caps),
+        (Lang::Rust, Framework::None) => template_rs_none(name, caps),
+        (Lang::Rust, Framework::GoogleAdk) => template_rs_google_adk(name, caps),
+        (Lang::Rust, Framework::CrewAi) => template_rs_crewai(name, caps),
+        (Lang::Rust, Framework::LangGraph) => template_rs_langgraph(name, caps),
+        (Lang::Rust, Framework::Agno) => template_rs_agno(name, caps),
+        (Lang::Rust, Framework::LlamaIndex) => template_rs_llamaindex(name, caps),
+        (Lang::Rust, Framework::Smolagents) => template_rs_smolagents(name, caps),
         // Zig
-        (Lang::Zig,        Framework::None)       => template_zig_none(name, caps),
-        (Lang::Zig,        Framework::GoogleAdk)  => template_zig_google_adk(name, caps),
-        (Lang::Zig,        Framework::CrewAi)     => template_zig_crewai(name, caps),
-        (Lang::Zig,        Framework::LangGraph)  => template_zig_langgraph(name, caps),
-        (Lang::Zig,        Framework::Agno)       => template_zig_agno(name, caps),
-        (Lang::Zig,        Framework::LlamaIndex) => template_zig_llamaindex(name, caps),
-        (Lang::Zig,        Framework::Smolagents) => template_zig_smolagents(name, caps),
+        (Lang::Zig, Framework::None) => template_zig_none(name, caps),
+        (Lang::Zig, Framework::GoogleAdk) => template_zig_google_adk(name, caps),
+        (Lang::Zig, Framework::CrewAi) => template_zig_crewai(name, caps),
+        (Lang::Zig, Framework::LangGraph) => template_zig_langgraph(name, caps),
+        (Lang::Zig, Framework::Agno) => template_zig_agno(name, caps),
+        (Lang::Zig, Framework::LlamaIndex) => template_zig_llamaindex(name, caps),
+        (Lang::Zig, Framework::Smolagents) => template_zig_smolagents(name, caps),
     }
 }
 
@@ -1054,10 +1135,10 @@ fn generate(lang: &Lang, framework: &Framework, name: &str, caps: &[String]) -> 
 
 fn agent_filename(lang: &Lang, name: &str) -> String {
     match lang {
-        Lang::TypeScript => format!("{}.ts",  pascal_case(name)),
-        Lang::Python     => format!("{}.py",  snake_case(name)),
-        Lang::Rust       => format!("{}.rs",  snake_case(name)),
-        Lang::Zig        => format!("{}.zig", snake_case(name)),
+        Lang::TypeScript => format!("{}.ts", pascal_case(name)),
+        Lang::Python => format!("{}.py", snake_case(name)),
+        Lang::Rust => format!("{}.rs", snake_case(name)),
+        Lang::Zig => format!("{}.zig", snake_case(name)),
     }
 }
 
@@ -1074,11 +1155,11 @@ pub fn run(args: CreateArgs) -> Result<()> {
     // 2. Agent name
     let name = match &args.name {
         Some(n) => n.clone(),
-        None    => bail!("Agent name required: sentrix create agent <name>"),
+        None => bail!("Agent name required: sentrix create agent <name>"),
     };
 
     // 3. Detect language
-    let cwd  = std::env::current_dir()?;
+    let cwd = std::env::current_dir()?;
     let lang = detect_lang::detect(args.lang.as_deref(), &cwd)?;
 
     // 4. Parse framework
@@ -1093,7 +1174,8 @@ pub fn run(args: CreateArgs) -> Result<()> {
     }
 
     // 5. Parse capabilities
-    let mut caps: Vec<String> = args.capabilities
+    let mut caps: Vec<String> = args
+        .capabilities
         .split(',')
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
@@ -1104,7 +1186,7 @@ pub fn run(args: CreateArgs) -> Result<()> {
 
     // 6. Detect project root and agents/ directory
     let project_root = detect_lang::find_project_root(&cwd);
-    let agents_dir   = project_root.join("agents");
+    let agents_dir = project_root.join("agents");
 
     if !agents_dir.exists() {
         logger::error("No \"agents/\" folder found. Are you inside a Sentrix project? Run sentrix init first.");
@@ -1131,11 +1213,11 @@ pub fn run(args: CreateArgs) -> Result<()> {
     }
 
     // 8. Generate file content
-    let content  = generate(&lang, &framework, &name, &caps);
+    let content = generate(&lang, &framework, &name, &caps);
 
     // 9. Write to agents/<filename>
     let filename = agent_filename(&lang, &name);
-    let dest     = agents_dir.join(&filename);
+    let dest = agents_dir.join(&filename);
 
     if dest.exists() {
         logger::error(&format!("Agent file \"{}\" already exists.", filename));
@@ -1200,8 +1282,14 @@ pub fn run(args: CreateArgs) -> Result<()> {
     // Next steps
     println!();
     println!("  Next steps:");
-    println!("    1. Edit  agents/{}  — fill in your implementations", filename);
-    println!("    2. Register your agent: await {}.register_discovery()", name);
+    println!(
+        "    1. Edit  agents/{}  — fill in your implementations",
+        filename
+    );
+    println!(
+        "    2. Register your agent: await {}.register_discovery()",
+        name
+    );
     println!(
         "    3. Query from another agent: registry.query('{}')",
         caps.first().map(|s| s.as_str()).unwrap_or("yourCapability")

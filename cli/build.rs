@@ -25,13 +25,17 @@ fn main() {
 fn read_npm_version() -> Option<String> {
     let content = std::fs::read_to_string("../package.json").ok()?;
     // Find the first "version" key (it is always near the top of package.json).
-    let key_pos  = content.find("\"version\"")?;
-    let after    = &content[key_pos + "\"version\"".len()..];
-    let colon    = after.find(':')? + 1;
-    let trimmed  = after[colon..].trim_start();
-    let q_start  = trimmed.find('"')? + 1;
-    let rest     = &trimmed[q_start..];
-    let q_end    = rest.find('"')?;
-    let version  = rest[..q_end].trim().to_string();
-    if version.is_empty() { None } else { Some(version) }
+    let key_pos = content.find("\"version\"")?;
+    let after = &content[key_pos + "\"version\"".len()..];
+    let colon = after.find(':')? + 1;
+    let trimmed = after[colon..].trim_start();
+    let q_start = trimmed.find('"')? + 1;
+    let rest = &trimmed[q_start..];
+    let q_end = rest.find('"')?;
+    let version = rest[..q_end].trim().to_string();
+    if version.is_empty() {
+        None
+    } else {
+        Some(version)
+    }
 }
