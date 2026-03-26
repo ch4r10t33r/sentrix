@@ -88,7 +88,44 @@ pub trait IAgent: Send + Sync {
     }
 
     // ── Signing (optional) ─────────────────────────────────────────────────
-    async fn sign_message(&self, _message: &str) -> Result<String, Box<dyn std::error::Error>> {
-        Err("sign_message not implemented".into())
+    async fn sign_message(&self, message: &str) -> Result<String, Box<dyn std::error::Error>> {
+        use std::env;
+
+        let raw_key = env::var("SENTRIX_AGENT_KEY").map_err(|_| {
+            "sign_message: no signing key — set SENTRIX_AGENT_KEY=<hex-private-key> \
+             or override sign_message() in your agent"
+        })?;
+
+        let key_hex = raw_key.trim_start_matches("0x");
+        let key_bytes = {
+            fn hex_decode(s: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+                if s.len() % 2 != 0 { return Err("odd hex length".into()); }
+                (0..s.len())
+                    .step_by(2)
+                    .map(|i| u8::from_str_radix(&s[i..i+2], 16).map_err(|e| -> Box<dyn std::error::Error> { e.into() }))
+                    .collect()
+            }
+            hex_decode(key_hex).map_err(|_| "sign_message: SENTRIX_AGENT_KEY is not valid hex")?
+        };
+        if key_bytes.len() != 32 {
+            return Err("sign_message: SENTRIX_AGENT_KEY must be 32 bytes (64 hex chars)".into());
+        }
+
+        use k256::ecdsa::{SigningKey, signature::Signer};
+        use k256::elliptic_curve::generic_array::GenericArray;
+        use sha2::{Sha256, Digest};
+        use base64::engine::general_purpose::STANDARD as B64;
+        use base64::Engine;
+
+        // Ethereum personal sign: "\x19Ethereum Signed Message:\n<len><message>"
+        let prefix = format!("\x19Ethereum Signed Message:\n{}", message.len());
+        let mut hasher = Sha256::new();
+        hasher.update(prefix.as_bytes());
+        hasher.update(message.as_bytes());
+        let digest = hasher.finalize();
+
+        let sk = SigningKey::from_bytes(GenericArray::from_slice(&key_bytes))?;
+        let sig: k256::ecdsa::Signature = sk.sign(&digest);
+        Ok(B64.encode(sig.to_bytes()))
     }
 }

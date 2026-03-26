@@ -217,5 +217,57 @@ class IAgent(ABC):
 
     # ── Signing (optional) ─────────────────────────────────────────────────
     async def sign_message(self, message: str) -> str:
-        """EIP-712 compatible message signing. Override with your key."""
-        raise NotImplementedError("sign_message not implemented")
+        """
+        Sign a message with this agent's secp256k1 private key.
+
+        Uses (in priority order):
+          1. self._identity.sign_bytes()  if an IdentityProvider is attached
+          2. SENTRIX_AGENT_KEY env var    (hex private key)
+
+        Raises RuntimeError if no signing key is configured.
+        """
+        import os
+
+        # 1. Use attached identity provider
+        identity = getattr(self, '_identity', None)
+        if identity is not None and hasattr(identity, 'sign_bytes'):
+            sig = identity.sign_bytes(message.encode('utf-8'))
+            if sig is not None:
+                return sig
+
+        # 2. Fall back to SENTRIX_AGENT_KEY env var
+        raw_key = os.environ.get('SENTRIX_AGENT_KEY', '')
+        if raw_key:
+            key_hex = raw_key.lstrip('0x')
+            key_bytes = bytes.fromhex(key_hex)
+            try:
+                from eth_keys import keys as eth_keys
+                pk = eth_keys.PrivateKey(key_bytes)
+                msg_bytes = message.encode('utf-8')
+                # Ethereum personal sign prefix
+                prefix = f"\x19Ethereum Signed Message:\n{len(msg_bytes)}".encode()
+                from eth_hash.auto import keccak
+                msg_hash = keccak(prefix + msg_bytes)
+                return pk.sign_msg_hash(msg_hash).to_hex()
+            except ImportError:
+                pass
+            try:
+                import coincurve, hashlib
+                sk = coincurve.PrivateKey(key_bytes)
+                msg_bytes = message.encode('utf-8')
+                prefix = f"\x19Ethereum Signed Message:\n{len(msg_bytes)}".encode()
+                msg_hash = hashlib.sha3_256(prefix + msg_bytes).digest()  # keccak256 via sha3
+                sig = sk.sign_recoverable(msg_hash, hasher=None)
+                return '0x' + sig.hex()
+            except ImportError:
+                pass
+            raise RuntimeError(
+                "sign_message: eth-keys or coincurve required. "
+                "Install: pip install eth-keys  or  pip install coincurve"
+            )
+
+        raise RuntimeError(
+            "sign_message: no signing key configured. "
+            "Attach an IdentityProvider via self._identity = provider, "
+            "or set SENTRIX_AGENT_KEY=<hex-private-key> env var."
+        )

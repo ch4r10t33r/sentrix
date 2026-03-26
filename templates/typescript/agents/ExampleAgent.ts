@@ -1,7 +1,8 @@
-import { IAgent, AgentMetadata } from '../interfaces/IAgent';
-import { AgentRequest }           from '../interfaces/IAgentRequest';
-import { AgentResponse }          from '../interfaces/IAgentResponse';
-import { DiscoveryEntry }         from '../interfaces/IAgentDiscovery';
+import { IAgent, AgentMetadata }  from '../interfaces/IAgent';
+import { AgentRequest }            from '../interfaces/IAgentRequest';
+import { AgentResponse }           from '../interfaces/IAgentResponse';
+import { DiscoveryEntry,
+         IAgentDiscovery }         from '../interfaces/IAgentDiscovery';
 
 /**
  * ExampleAgent — starter template.
@@ -18,6 +19,9 @@ export class ExampleAgent implements IAgent {
     description: 'A starter Sentrix agent',
     tags:        ['example', 'starter'],
   };
+
+  // ─── Internal state ───────────────────────────────────────────────────────
+  private _registry: IAgentDiscovery | null = null;
 
   // ─── Capabilities ─────────────────────────────────────────────────────────
   getCapabilities(): string[] {
@@ -62,34 +66,34 @@ export class ExampleAgent implements IAgent {
 
   // ─── Discovery ────────────────────────────────────────────────────────────
   async registerDiscovery(): Promise<void> {
-    // TODO: swap LocalDiscovery for GossipDiscovery or OnChainDiscovery
-    const { LocalDiscovery } = await import('../discovery/LocalDiscovery');
-    const registry = LocalDiscovery.getInstance();
-    await registry.register({
-      agentId:      this.agentId,
-      name:         this.metadata.name,
-      owner:        this.owner,
-      capabilities: this.getCapabilities(),
-      network:      { protocol: 'http', host: 'localhost', port: 8080, tls: false },
-      health:       { status: 'healthy', lastHeartbeat: new Date().toISOString(), uptimeSeconds: 0 },
-      registeredAt: new Date().toISOString(),
-    });
+    const { DiscoveryFactory } = await import('../discovery/DiscoveryFactory');
+
+    // Honour SENTRIX_DISCOVERY_TYPE for libp2p / onchain backends; the factory
+    // already handles SENTRIX_DISCOVERY_URL → http and defaults to local.
+    const typeEnv = process.env['SENTRIX_DISCOVERY_TYPE'] as
+      'local' | 'http' | 'libp2p' | 'onchain' | undefined;
+
+    this._registry = await DiscoveryFactory.create(typeEnv ? { type: typeEnv } : {});
+    await this._registry.register(this.getAnr());
     console.log(`[ExampleAgent] registered with discovery layer`);
   }
 
   async unregisterDiscovery(): Promise<void> {
-    const { LocalDiscovery } = await import('../discovery/LocalDiscovery');
-    await LocalDiscovery.getInstance().unregister(this.agentId);
+    await this._registry?.unregister(this.agentId);
   }
 
   // ─── ANR / Identity exposure ──────────────────────────────────────────────
   getAnr(): DiscoveryEntry {
+    const host     = process.env['SENTRIX_HOST'] ?? 'localhost';
+    const port     = parseInt(process.env['SENTRIX_PORT'] ?? '8080', 10);
+    const tls      = (process.env['SENTRIX_TLS'] ?? 'false').toLowerCase() === 'true';
+
     return {
       agentId:      this.agentId,
       name:         this.metadata.name,
       owner:        this.owner,
       capabilities: this.getCapabilities(),
-      network:      { protocol: 'http', host: 'localhost', port: 8080, tls: false },
+      network:      { protocol: 'http', host, port, tls },
       health:       { status: 'healthy', lastHeartbeat: new Date().toISOString(), uptimeSeconds: 0 },
       registeredAt: new Date().toISOString(),
       metadataUri:  this.metadataUri,
@@ -102,10 +106,92 @@ export class ExampleAgent implements IAgent {
   }
 
   // ─── Permissions ──────────────────────────────────────────────────────────
-  async checkPermission(_caller: string, _capability: string): Promise<boolean> {
-    // TODO: implement ERC-8004 delegation checks
-    return true; // open by default for development
+  async checkPermission(caller: string, capability: string): Promise<boolean> {
+    // 1. Owner is always allowed
+    if (caller === this.owner || caller === this.agentId) return true;
+
+    // 2. Capability-specific allow-list (opt-in via SENTRIX_PERMITTED_CALLERS env var)
+    //    Format: "cap1:caller1,caller2;cap2:caller3"
+    const permittedRaw = process.env['SENTRIX_PERMITTED_CALLERS'];
+    if (permittedRaw) {
+      const capMap = parsePermittedCallers(permittedRaw);
+      const allowed = capMap.get(capability) ?? capMap.get('*') ?? null;
+      if (allowed !== null) return allowed.has(caller) || allowed.has('*');
+    }
+
+    // 3. Optional ERC-8004 on-chain delegation check
+    //    Activated by SENTRIX_REGISTRY_ADDRESS env var
+    const registryAddress = process.env['SENTRIX_REGISTRY_ADDRESS'];
+    if (registryAddress) {
+      return this._checkOnChainDelegation(caller, capability, registryAddress);
+    }
+
+    // 4. Default: open (dev mode)
+    return true;
   }
+
+  // ─── Signing ──────────────────────────────────────────────────────────────
+  async signMessage(message: string): Promise<string> {
+    const privKeyHex = process.env['SENTRIX_AGENT_KEY'];
+    if (!privKeyHex) {
+      throw new Error('signMessage: no signing key — set SENTRIX_AGENT_KEY=<hex-private-key>');
+    }
+    const { ethers } = await import('ethers');
+    const wallet = new ethers.Wallet(
+      privKeyHex.startsWith('0x') ? privKeyHex : '0x' + privKeyHex
+    );
+    return wallet.signMessage(message);
+  }
+
+  // ─── Private helpers ──────────────────────────────────────────────────────
+
+  private async _checkOnChainDelegation(
+    caller: string,
+    capability: string,
+    registryAddress: string,
+  ): Promise<boolean> {
+    // Dynamic import so ethers is not a hard dependency
+    const ethersModule = await import('ethers').catch(() => null);
+    if (!ethersModule) return true; // ethers not installed — permissive fallback
+
+    const { ethers } = ethersModule;
+    const rpcUrl = process.env['SENTRIX_RPC_URL'];
+    if (!rpcUrl) return true; // no RPC configured — permissive fallback
+
+    try {
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      const abi = [
+        'function isDelegated(address owner, address delegate, string capability) external view returns (bool)',
+      ];
+      const contract = new ethers.Contract(registryAddress, abi, provider);
+      return await contract['isDelegated'](this.owner, caller, capability) as boolean;
+    } catch (err) {
+      console.warn('[ExampleAgent] on-chain delegation check failed:', err);
+      return true; // permissive fallback on error
+    }
+  }
+}
+
+// ─── Module-level helpers ─────────────────────────────────────────────────────
+
+/**
+ * Parse a SENTRIX_PERMITTED_CALLERS string into a capability → caller-set map.
+ *
+ * Format:  "cap1:caller1,caller2;cap2:caller3"
+ * Special: capability segment "*" matches all capabilities.
+ */
+function parsePermittedCallers(raw: string): Map<string, Set<string>> {
+  const result = new Map<string, Set<string>>();
+  for (const segment of raw.split(';')) {
+    const colonIdx = segment.indexOf(':');
+    if (colonIdx === -1) continue;
+    const cap     = segment.slice(0, colonIdx).trim();
+    const callers = segment.slice(colonIdx + 1).split(',').map(s => s.trim()).filter(Boolean);
+    if (cap && callers.length > 0) {
+      result.set(cap, new Set(callers));
+    }
+  }
+  return result;
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
