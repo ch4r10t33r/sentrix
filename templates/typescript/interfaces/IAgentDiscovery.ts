@@ -57,6 +57,8 @@ export interface DiscoveryEntry {
     host: string;
     port: number;
     tls: boolean;
+    peerId?: string;
+    multiaddr?: string;
   };
   metadataUri?: string;
   health: {

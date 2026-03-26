@@ -18,6 +18,8 @@ class NetworkInfo:
     host: str
     port: int
     tls: bool = False
+    peer_id: str = ""
+    multiaddr: str = ""
 
 
 @dataclass
