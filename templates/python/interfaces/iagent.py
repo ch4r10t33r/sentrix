@@ -14,13 +14,17 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 from .agent_request import AgentRequest
 from .agent_response import AgentResponse
 
 if TYPE_CHECKING:
     from .iagent_discovery import DiscoveryEntry
-    from .iagent_mesh import HeartbeatRequest, HeartbeatResponse, CapabilityExchangeRequest, CapabilityExchangeResponse, GossipMessage
+    from .iagent_mesh import (
+        HeartbeatRequest, HeartbeatResponse,
+        CapabilityExchangeRequest, CapabilityExchangeResponse,
+        GossipMessage, StreamChunk, StreamEnd,
+    )
 
 
 @dataclass
@@ -61,6 +65,61 @@ class IAgent(ABC):
     async def handle_request(self, request: AgentRequest) -> AgentResponse:
         """Primary dispatch — all inbound calls arrive here."""
         ...
+
+    async def stream_request(
+        self,
+        request: AgentRequest,
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Streaming variant of handle_request.
+
+        Yields ``StreamChunk`` objects as incremental output is produced,
+        then a single ``StreamEnd`` to signal completion.
+
+        Default implementation falls back to ``handle_request`` and emits
+        the full result as one chunk followed by a StreamEnd — so all agents
+        support the streaming endpoint out of the box without any changes.
+
+        Override in framework plugins that can produce genuine token streams
+        (e.g. LangGraph with streaming LLMs, OpenAI Agents SDK streaming, etc.)
+
+        Example override::
+
+            async def stream_request(self, request):
+                sequence = 0
+                async for token in my_llm.stream(request.payload["prompt"]):
+                    yield StreamChunk(
+                        request_id=request.request_id,
+                        delta=token,
+                        sequence=sequence,
+                    )
+                    sequence += 1
+                yield StreamEnd(request_id=request.request_id, sequence=sequence)
+        """
+        from .iagent_mesh import StreamChunk, StreamEnd
+        resp = await self.handle_request(request)
+        content = ""
+        if resp.result:
+            content = resp.result.get("content", "") if isinstance(resp.result, dict) else str(resp.result)
+        if resp.error_message:
+            yield StreamEnd(
+                request_id=request.request_id,
+                error=resp.error_message,
+                sequence=0,
+            )
+            return
+        if content:
+            yield StreamChunk(
+                request_id=request.request_id,
+                delta=content,
+                result=resp.result,
+                sequence=0,
+            )
+        yield StreamEnd(
+            request_id=request.request_id,
+            final_result=resp.result,
+            sequence=1 if content else 0,
+        )
 
     async def pre_process(self, request: AgentRequest) -> None:
         """Optional hook: auth, rate-limit, logging. Override as needed."""

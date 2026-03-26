@@ -24,6 +24,12 @@ export interface AgentRequest {
    * receiving a `payment_required` response. See addons/x402.
    */
   x402?: import('../addons/x402/types').X402Payment;
+  /**
+   * Set to `true` to request a streaming response via POST /invoke/stream.
+   * When set, the server emits Server-Sent Events (StreamChunk / StreamEnd)
+   * instead of a single AgentResponse JSON body.
+   */
+  stream?: boolean;
 }
 
 export interface PaymentInfo {

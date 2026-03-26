@@ -31,9 +31,11 @@ class AgentRequest:
     payment: Optional[PaymentInfo] = None
     # ── x402 micropayment proof (set by X402Client on retry) ──────────────
     x402: Optional[Any] = None               # X402Payment — see addons/x402
+    # ── streaming flag — set to True to use POST /invoke/stream SSE ───────
+    stream: bool = False
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "requestId":  self.request_id,
             "from":       self.from_id,
             "capability": self.capability,
@@ -41,3 +43,6 @@ class AgentRequest:
             "signature":  self.signature,
             "timestamp":  self.timestamp,
         }
+        if self.stream:
+            d["stream"] = True
+        return d

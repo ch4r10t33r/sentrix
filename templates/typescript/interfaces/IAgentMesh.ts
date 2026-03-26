@@ -1,17 +1,21 @@
 /**
- * Sentrix Mesh Protocol — Heartbeat, Capability Exchange, and Gossip
+ * Sentrix Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
  * ─────────────────────────────────────────────────────────────────────────────
- * Defines message types and interfaces for the three built-in agent-to-agent
+ * Defines message types and interfaces for the four built-in agent-to-agent
  * protocols that every Sentrix agent understands:
  *
  *   1. Heartbeat          — liveness ping with status payload
  *   2. Capability Exchange — direct capability query (bypasses discovery layer)
  *   3. Gossip             — capability announcements fan-out across the mesh
+ *   4. Streaming          — incremental token / result delivery (SSE or libp2p)
  *
  * Reserved capability names (intercepted before normal dispatch):
  *   "__heartbeat"    → HeartbeatRequest / HeartbeatResponse
  *   "__capabilities" → CapabilityExchangeRequest / CapabilityExchangeResponse
  *   "__gossip"       → GossipMessage (fire-and-forget)
+ *
+ * Streaming uses POST /invoke/stream and emits Server-Sent Events with
+ * StreamChunk frames, terminated by a single StreamEnd frame.
  */
 
 import type { DiscoveryEntry } from './IAgentDiscovery';
@@ -164,6 +168,71 @@ export interface AgentSession {
    */
   refreshCapabilities(options?: { timeoutMs?: number }): Promise<CapabilityExchangeResponse>;
 
+  /**
+   * Stream a capability call on this agent using the established session.
+   *
+   * Yields StreamChunk events as they arrive, followed by a final StreamEnd.
+   * Uses the ``POST /invoke/stream`` SSE endpoint on the remote agent.
+   *
+   * @example
+   * ```ts
+   * for await (const event of session.stream('summarise', { text: longText })) {
+   *   if (event.type === 'chunk') process.stdout.write(event.delta);
+   *   else break;  // StreamEnd
+   * }
+   * ```
+   */
+  stream(
+    capability: string,
+    payload:    Record<string, unknown>,
+  ): AsyncIterable<StreamChunk | StreamEnd>;
+
   /** Signal to the remote agent that this session is ending (best-effort). */
   close(): Promise<void>;
+}
+
+// ── Streaming ─────────────────────────────────────────────────────────────────
+
+/**
+ * A single incremental chunk delivered during a streaming capability call.
+ *
+ * Sent as an SSE frame on POST /invoke/stream while the agent is still
+ * producing output. For LLM agents, `delta` carries the token text.
+ * For search or structured agents, `result` carries a partial structured
+ * result instead (or in addition).
+ *
+ * Wire format (SSE):
+ *   data: {"type":"chunk","requestId":"…","delta":"…","sequence":N,"timestamp":T}
+ */
+export interface StreamChunk {
+  requestId: string;
+  type:      'chunk';
+  /** LLM token text or any incremental text delta. */
+  delta:     string;
+  /** Structured partial result (optional, for non-text agents). */
+  result?:   unknown;
+  /** Monotonically increasing counter per request. */
+  sequence:  number;
+  /** Unix timestamp (ms). */
+  timestamp: number;
+}
+
+/**
+ * Terminal frame of a streaming capability call.
+ *
+ * Sent as the last SSE frame on POST /invoke/stream. `finalResult` carries
+ * the complete assembled result. `error` is set on abnormal termination.
+ *
+ * Wire format (SSE):
+ *   data: {"type":"end","requestId":"…","finalResult":{…},"sequence":N,"timestamp":T}
+ */
+export interface StreamEnd {
+  requestId:    string;
+  type:         'end';
+  /** Complete assembled result (for callers that only want the final value). */
+  finalResult?: unknown;
+  /** Non-null on error or cancellation. */
+  error?:       string;
+  sequence:     number;
+  timestamp:    number;
 }

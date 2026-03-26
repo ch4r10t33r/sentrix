@@ -6,11 +6,12 @@
  *
  * Endpoints
  * ─────────
- *   POST /invoke        AgentRequest  → AgentResponse
- *   POST /gossip        GossipMessage (direct fan-out from peers)
- *   GET  /health        Heartbeat — lightweight, no auth
- *   GET  /anr           Full ANR (Agent Network Record) as JSON
- *   GET  /capabilities  Capability list as JSON
+ *   POST /invoke         AgentRequest  → AgentResponse (JSON)
+ *   POST /invoke/stream  AgentRequest  → Server-Sent Events (StreamChunk / StreamEnd)
+ *   POST /gossip         GossipMessage (direct fan-out from peers)
+ *   GET  /health         Heartbeat — lightweight, no auth
+ *   GET  /anr            Full ANR (Agent Network Record) as JSON
+ *   GET  /capabilities   Capability list as JSON
  *
  * Usage
  * ─────
@@ -114,6 +115,72 @@ export async function serve(
         status:       'error',
         errorMessage: err instanceof Error ? err.message : String(err),
       });
+    }
+  });
+
+  // ── POST /invoke/stream ──────────────────────────────────────────────────────
+  app.post('/invoke/stream', cors, async (req: Request, res: Response): Promise<void> => {
+    const body = req.body ?? {};
+
+    if (!body.capability) {
+      res.status(400).json({ error: 'Missing required field: capability' });
+      return;
+    }
+
+    // x402 gate — same logic as /invoke
+    const x402Challenge = checkX402(agent, body);
+    if (x402Challenge) {
+      // Signal the payment requirement as an SSE error frame then close
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('X-Accel-Buffering', 'no');
+      res.status(402).write(`data: ${JSON.stringify({ type: 'error', error: 'Payment required', x402: x402Challenge })}\n\n`);
+      res.end();
+      return;
+    }
+
+    const agentReq: AgentRequest = {
+      requestId:  body.requestId  ?? crypto.randomUUID(),
+      from:       body.from       ?? 'anonymous',
+      capability: body.capability,
+      payload:    body.payload    ?? {},
+      signature:  body.signature,
+      timestamp:  body.timestamp  ?? Date.now(),
+      x402:       body.x402,
+      stream:     true,
+    };
+
+    // Set up SSE headers
+    res.setHeader('Content-Type',      'text/event-stream');
+    res.setHeader('Cache-Control',     'no-cache');
+    res.setHeader('X-Accel-Buffering', 'no');   // nginx: disable proxy buffering
+    res.flushHeaders();
+
+    try {
+      const streamer = (agent as any).streamRequest;
+      if (typeof streamer !== 'function') {
+        // Agent does not support streaming — fall back to single-shot
+        const agentRes = await agent.handleRequest(agentReq);
+        const content  = (agentRes.result as any)?.content ?? '';
+        if (content) {
+          res.write(`data: ${JSON.stringify({ type: 'chunk', requestId: agentReq.requestId, delta: String(content), result: agentRes.result, sequence: 0, timestamp: Date.now() })}\n\n`);
+        }
+        res.write(`data: ${JSON.stringify({ type: 'end', requestId: agentReq.requestId, finalResult: agentRes.result, sequence: content ? 1 : 0, timestamp: Date.now() })}\n\n`);
+        res.end();
+        return;
+      }
+
+      for await (const event of (agent as any).streamRequest(agentReq)) {
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+        if (event.type === 'end') break;
+      }
+      res.end();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      try {
+        res.write(`data: ${JSON.stringify({ type: 'end', requestId: agentReq.requestId, error: msg, sequence: 0, timestamp: Date.now() })}\n\n`);
+        res.end();
+      } catch { /* client disconnected */ }
     }
   });
 

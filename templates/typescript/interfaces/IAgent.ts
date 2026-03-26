@@ -7,6 +7,8 @@ import type {
   CapabilityExchangeRequest,
   CapabilityExchangeResponse,
   GossipMessage,
+  StreamChunk,
+  StreamEnd,
 } from './IAgentMesh';
 
 /**
@@ -41,6 +43,32 @@ export interface IAgent {
   // ─── Request handling ─────────────────────────────────────────────────────
   /** Primary dispatch method — all inbound calls arrive here */
   handleRequest(request: AgentRequest): Promise<AgentResponse>;
+
+  /**
+   * Streaming variant of handleRequest.
+   *
+   * Yields `StreamChunk` objects as incremental output is produced, then a
+   * single `StreamEnd` to signal completion.
+   *
+   * The default implementation (provided by WrappedAgent) falls back to
+   * `handleRequest` and emits the full result as one chunk + StreamEnd, so all
+   * agents support `POST /invoke/stream` without any changes.
+   *
+   * Override in framework plugins that produce genuine token streams.
+   *
+   * @example
+   * ```ts
+   * async *streamRequest(req) {
+   *   let seq = 0;
+   *   for await (const token of myLlm.stream(req.payload.prompt)) {
+   *     yield { requestId: req.requestId, type: 'chunk', delta: token, sequence: seq++, timestamp: Date.now() };
+   *   }
+   *   yield { requestId: req.requestId, type: 'end', sequence: seq, timestamp: Date.now() };
+   * }
+   * ```
+   */
+  streamRequest?(request: AgentRequest): AsyncIterable<StreamChunk | StreamEnd>;
+
   /** Optional pre-processing hook (auth, rate-limit, logging…) */
   preProcess?(request: AgentRequest): Promise<void>;
   /** Optional post-processing hook (audit log, billing…) */
