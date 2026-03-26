@@ -3,6 +3,7 @@ name: Release CLI
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch:   # allow release.yml to trigger this after semantic-release
 
 permissions:
   contents: write   # create GitHub releases

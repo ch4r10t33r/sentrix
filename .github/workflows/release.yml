@@ -40,8 +40,22 @@ jobs:
         run: npm run build
 
       - name: Semantic release
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+          # Capture whether a new release was actually made
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger Release CLI (build & publish binaries)
+        # Only fire if semantic-release actually cut a new version
+        if: steps.semantic.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release-cli.yml --ref "v${{ steps.semantic.outputs.version }}"
+          echo "Triggered release-cli.yml for v${{ steps.semantic.outputs.version }}"
