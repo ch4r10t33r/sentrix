@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0](https://github.com/ch4r10t33r/sentrix/compare/v1.7.0...v1.8.0) (2026-03-26)
+
+### Features
+
+* add SSE streaming to agents via POST /invoke/stream ([99bc801](https://github.com/ch4r10t33r/sentrix/commit/99bc8016d6e28ea3fd7174ff357f10014da67857))
+
 ## [1.7.0](https://github.com/ch4r10t33r/sentrix/compare/v1.6.0...v1.7.0) (2026-03-25)
 
 ### Features
