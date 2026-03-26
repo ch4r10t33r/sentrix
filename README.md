@@ -59,12 +59,12 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 | **IAgent interface** | ✅ | ✅ | ✅ | ✅ |
 | **AgentRequest / AgentResponse** | ✅ | ✅ | ✅ | ✅ |
 | **ANR (Agent Network Record)** | ✅ | ✅ | ✅ | ✅ |
-| **DID identity (`did:key`)** | ✅ | ✅ | 🔜 | 🔜 |
+| **DID identity (`did:key`)** | ✅ | ✅ | ✅ | ✅ |
 | **HTTP server (`sentrix run`)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — local (in-memory)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — HTTP** | ✅ | ✅ | ✅ | 🔜 |
 | **Discovery — libp2p + Kademlia DHT** | ✅ | ✅ | ✅ | 🔜 |
-| **Discovery — gossip fan-out** | ✅ | ✅ | 🔜 | 🔜 |
+| **Discovery — gossip fan-out** | ✅ | ✅ | ✅ | ✅ |
 | **AgentClient (mesh protocols)** | ✅ | ✅ | ✅ | ✅ |
 | **Example agent** | ✅ | ✅ | ✅ | ✅ |
 | **Plugin system (framework adapters)** | ✅ | ✅ | ✅ | ✅ |
@@ -140,9 +140,14 @@ sentrix run ExampleAgent --port 6174
 
 # Rust
 sentrix init my-agent --lang rust
+cd my-agent
+cargo run --example did_key_identity        # optional: did:key from secp256k1 secret
+cargo run --example gossip_fanout_discovery # optional: in-memory gossip fan-out demo
 
 # Zig
 sentrix init my-agent --lang zig
+cd my-agent
+zig build examples   # optional: builds did:key + gossip fan-out demo binaries
 ```
 
 Once running, the agent prints its full startup banner:
