@@ -1,6 +1,6 @@
 {
   "name": "@ch4r10teer41/sentrix-cli-win32-x64",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "Prebuilt sentrix CLI binary for Windows x64",
   "license": "Apache-2.0",
   "os": [

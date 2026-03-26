@@ -1,6 +1,6 @@
 {
   "name": "@ch4r10teer41/sentrix-cli-darwin-arm64",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "description": "Prebuilt sentrix CLI binary for macOS arm64",
   "license": "Apache-2.0",
   "os": [

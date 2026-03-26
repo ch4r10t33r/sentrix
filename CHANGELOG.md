@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.3](https://github.com/ch4r10t33r/sentrix/compare/v1.15.2...v1.15.3) (2026-03-26)
+
+### Bug Fixes
+
+* normalize package.json bin path and repository url for npm ([462ed26](https://github.com/ch4r10t33r/sentrix/commit/462ed26134656dad2c9a8cc6605d4eeaacf6f5f8))
+
 ## [1.15.2](https://github.com/ch4r10t33r/sentrix/compare/v1.15.1...v1.15.2) (2026-03-26)
 
 ### Bug Fixes
