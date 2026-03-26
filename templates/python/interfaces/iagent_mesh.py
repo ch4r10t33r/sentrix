@@ -1,12 +1,13 @@
 """
-Sentrix Mesh Protocol — Heartbeat, Capability Exchange, and Gossip
-──────────────────────────────────────────────────────────────────
-Defines the message types and interfaces for the three built-in agent-to-agent
+Sentrix Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
+──────────────────────────────────────────────────────────────────────────────
+Defines the message types and interfaces for the four built-in agent-to-agent
 protocols that every Sentrix agent understands:
 
-  1. Heartbeat  — liveness ping with status payload
+  1. Heartbeat          — liveness ping with status payload
   2. Capability Exchange — direct capability query (bypasses discovery layer)
-  3. Gossip     — capability announcements fan-out across the mesh
+  3. Gossip             — capability announcements fan-out across the mesh
+  4. Streaming          — incremental token / result delivery (SSE or libp2p)
 
 These protocols ride on top of the standard AgentRequest / AgentResponse
 envelope using reserved capability names:
@@ -15,15 +16,18 @@ envelope using reserved capability names:
   "__capabilities" → CapabilityExchangeRequest / CapabilityExchangeResponse
   "__gossip"       → GossipMessage (fire-and-forget; no structured response)
 
+Streaming uses a dedicated endpoint (POST /invoke/stream) and emits
+Server-Sent Events with StreamChunk frames, terminated by a StreamEnd frame.
+
 Agents that implement IAgent via WrappedAgent get default implementations
-of all three for free. Override the methods for custom behaviour.
+of all three mesh protocols for free. Override the methods for custom behaviour.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Awaitable, Dict, List, Optional
+from typing import Any, AsyncGenerator, Callable, Awaitable, Dict, List, Optional, Union
 import time
 
 
@@ -339,6 +343,28 @@ class AgentSession:
             self.entry, timeout_ms=10_000,
         )
 
+    async def stream(
+        self,
+        capability: str,
+        payload: Dict[str, Any],
+    ) -> "AsyncGenerator[StreamChunk | StreamEnd, None]":
+        """
+        Stream a capability call on this agent using the established session.
+
+        Yields StreamChunk objects as they arrive, followed by a final StreamEnd.
+        Uses the ``POST /invoke/stream`` SSE endpoint on the remote agent.
+
+        Example::
+
+            async for chunk in session.stream("summarise", {"text": long_text}):
+                if chunk.type == "chunk":
+                    print(chunk.delta, end="", flush=True)
+                elif chunk.type == "end":
+                    break
+        """
+        async for event in self._client.stream_entry(self.entry, capability, payload):
+            yield event
+
     async def close(self) -> None:
         """Signal to the remote agent that this session is ending (best-effort)."""
         try:
@@ -349,3 +375,93 @@ class AgentSession:
             )
         except Exception:
             pass  # close is best-effort
+
+
+# ── Streaming ─────────────────────────────────────────────────────────────────
+
+@dataclass
+class StreamChunk:
+    """
+    A single incremental chunk delivered during a streaming capability call.
+
+    Sent as an SSE frame on POST /invoke/stream while the agent is still
+    producing output. For LLM agents, ``delta`` carries the token text.
+    For search or structured agents, ``result`` carries a partial structured
+    result instead (or in addition).
+
+    Frame wire format (SSE):
+        data: {"type":"chunk","requestId":"…","delta":"…","sequence":N,"timestamp":T}
+    """
+    request_id: str
+    type:       str = "chunk"              # always "chunk"
+    delta:      str = ""                   # LLM token text / text delta
+    result:     Optional[Any] = None       # structured partial result (optional)
+    sequence:   int = 0                    # monotonically increasing per request
+    timestamp:  int = field(default_factory=lambda: int(time.time() * 1000))
+
+    def to_dict(self) -> dict:
+        d: dict = {
+            "type":      self.type,
+            "requestId": self.request_id,
+            "delta":     self.delta,
+            "sequence":  self.sequence,
+            "timestamp": self.timestamp,
+        }
+        if self.result is not None:
+            d["result"] = self.result
+        return d
+
+    @staticmethod
+    def from_dict(d: dict) -> "StreamChunk":
+        return StreamChunk(
+            request_id=d.get("requestId", d.get("request_id", "")),
+            type=d.get("type", "chunk"),
+            delta=d.get("delta", ""),
+            result=d.get("result"),
+            sequence=d.get("sequence", 0),
+            timestamp=d.get("timestamp", int(time.time() * 1000)),
+        )
+
+
+@dataclass
+class StreamEnd:
+    """
+    Terminal frame of a streaming capability call.
+
+    Sent as the last SSE frame on POST /invoke/stream. ``final_result``
+    carries the complete assembled result (for callers that only want the
+    final value). ``error`` is set on abnormal termination.
+
+    Frame wire format (SSE):
+        data: {"type":"end","requestId":"…","finalResult":{…},"sequence":N,"timestamp":T}
+    """
+    request_id:   str
+    type:         str = "end"             # always "end"
+    final_result: Optional[Any] = None    # complete assembled result
+    error:        Optional[str] = None    # set on error / cancellation
+    sequence:     int = 0
+    timestamp:    int = field(default_factory=lambda: int(time.time() * 1000))
+
+    def to_dict(self) -> dict:
+        d: dict = {
+            "type":      self.type,
+            "requestId": self.request_id,
+            "sequence":  self.sequence,
+            "timestamp": self.timestamp,
+        }
+        if self.final_result is not None:
+            d["finalResult"] = self.final_result
+        if self.error is not None:
+            d["error"] = self.error
+        return d
+
+    @staticmethod
+    def from_dict(d: dict) -> "StreamEnd":
+        return StreamEnd(
+            request_id=d.get("requestId", d.get("request_id", "")),
+            type=d.get("type", "end"),
+            final_result=d.get("finalResult", d.get("final_result")),
+            error=d.get("error"),
+            sequence=d.get("sequence", 0),
+            timestamp=d.get("timestamp", int(time.time() * 1000)),
+        )

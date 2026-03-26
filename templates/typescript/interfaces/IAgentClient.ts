@@ -34,6 +34,8 @@ import type {
   GossipMessage,
   HandshakeResult,
   AgentSession,
+  StreamChunk,
+  StreamEnd,
 } from './IAgentMesh';
 
 // ── interface ─────────────────────────────────────────────────────────────────
@@ -134,6 +136,55 @@ export interface IAgentClient {
     capability: string,
     options?:   { ttl?: number; timeoutMs?: number },
   ): Promise<DiscoveryEntry[]>;
+
+  // ── Streaming ──────────────────────────────────────────────────────────────
+
+  /**
+   * Stream a capability call to a specific agent by agentId.
+   *
+   * Connects to `POST {agent_endpoint}/invoke/stream` and yields
+   * `StreamChunk` objects as the remote agent produces output, followed by a
+   * single `StreamEnd` frame.
+   *
+   * @example
+   * ```ts
+   * for await (const event of client.stream('sentrix://agent/llm', 'generate', { prompt })) {
+   *   if (event.type === 'chunk') process.stdout.write(event.delta);
+   *   else break;
+   * }
+   * ```
+   */
+  stream(
+    agentId:    string,
+    capability: string,
+    payload:    Record<string, unknown>,
+    options?:   StreamOptions,
+  ): AsyncIterable<StreamChunk | StreamEnd>;
+
+  /**
+   * Discover the best agent for `capability` then stream it in one step.
+   */
+  streamCapability(
+    capability: string,
+    payload:    Record<string, unknown>,
+    options?:   StreamOptions,
+  ): AsyncIterable<StreamChunk | StreamEnd>;
+
+  /**
+   * Stream a capability call using a DiscoveryEntry you already have.
+   * Skips the lookup step.
+   */
+  streamEntry(
+    entry:      DiscoveryEntry,
+    capability: string,
+    payload:    Record<string, unknown>,
+    options?:   StreamOptions,
+  ): AsyncIterable<StreamChunk | StreamEnd>;
+}
+
+export interface StreamOptions {
+  /** Identity of the calling agent (default: "anonymous"). */
+  callerId?: string;
 }
 
 export interface CallOptions {
@@ -332,6 +383,61 @@ export class AgentClient implements IAgentClient {
     return results;
   }
 
+  // ── streaming ────────────────────────────────────────────────────────────────
+
+  async *stream(
+    agentId:    string,
+    capability: string,
+    payload:    Record<string, unknown>,
+    options:    StreamOptions = {},
+  ): AsyncIterable<StreamChunk | StreamEnd> {
+    const entry = await this.findById(agentId);
+    if (!entry) {
+      yield { requestId: crypto.randomUUID(), type: 'end', error: `Agent not found in discovery: ${agentId}`, sequence: 0, timestamp: Date.now() };
+      return;
+    }
+    yield* this.streamEntry(entry, capability, payload, options);
+  }
+
+  async *streamCapability(
+    capability: string,
+    payload:    Record<string, unknown>,
+    options:    StreamOptions = {},
+  ): AsyncIterable<StreamChunk | StreamEnd> {
+    const entry = await this.find(capability);
+    if (!entry) {
+      yield { requestId: crypto.randomUUID(), type: 'end', error: `No healthy agent found for capability: '${capability}'`, sequence: 0, timestamp: Date.now() };
+      return;
+    }
+    yield* this.streamEntry(entry, capability, payload, options);
+  }
+
+  async *streamEntry(
+    entry:      DiscoveryEntry,
+    capability: string,
+    payload:    Record<string, unknown>,
+    options:    StreamOptions = {},
+  ): AsyncIterable<StreamChunk | StreamEnd> {
+    const requestId = crypto.randomUUID();
+    const callerId  = options.callerId ?? this.callerId;
+    const url       = streamEndpointUrl(entry);
+    const body      = JSON.stringify({
+      requestId,
+      from:       callerId,
+      capability,
+      payload,
+      timestamp:  Date.now(),
+      stream:     true,
+    });
+
+    try {
+      yield* httpStream(url, body);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      yield { requestId, type: 'end', error: msg, sequence: 0, timestamp: Date.now() };
+    }
+  }
+
   // ── transport ────────────────────────────────────────────────────────────────
 
   private async dispatch(
@@ -396,6 +502,13 @@ class AgentSessionImpl implements AgentSession {
     );
   }
 
+  async *stream(
+    capability: string,
+    payload:    Record<string, unknown>,
+  ): AsyncIterable<StreamChunk | StreamEnd> {
+    yield* this.client.streamEntry(this.entry, capability, payload);
+  }
+
   async close(): Promise<void> {
     try {
       await this.client.callEntry(
@@ -415,6 +528,86 @@ function endpointUrl(entry: DiscoveryEntry): string {
     ? 'https'
     : ['http', 'https'].includes(entry.network.protocol) ? entry.network.protocol : 'http';
   return `${scheme}://${entry.network.host}:${entry.network.port}/invoke`;
+}
+
+function streamEndpointUrl(entry: DiscoveryEntry): string {
+  const scheme = entry.network.tls
+    ? 'https'
+    : ['http', 'https'].includes(entry.network.protocol) ? entry.network.protocol : 'http';
+  return `${scheme}://${entry.network.host}:${entry.network.port}/invoke/stream`;
+}
+
+/**
+ * Open a streaming POST request to *url* and yield parsed StreamChunk /
+ * StreamEnd objects from the SSE response.
+ *
+ * Uses the Fetch API with a ReadableStream body reader.  Works in Node 18+
+ * (native fetch) and any browser environment.
+ */
+async function* httpStream(
+  url:  string,
+  body: string,
+): AsyncIterable<StreamChunk | StreamEnd> {
+  const res = await fetch(url, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept':       'text/event-stream',
+    },
+    body,
+  });
+
+  if (!res.ok || !res.body) {
+    // Non-streaming error response — wrap in a StreamEnd
+    let errText = `HTTP ${res.status}`;
+    try { errText = await res.text(); } catch { /* ignore */ }
+    yield { requestId: '', type: 'end', error: errText, sequence: 0, timestamp: Date.now() };
+    return;
+  }
+
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let   buffer  = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE lines are separated by '\n\n' (double newline)
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';   // keep any incomplete line in the buffer
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data:')) continue;
+      const jsonStr = trimmed.slice(5).trim();
+      if (!jsonStr) continue;
+      let d: Record<string, unknown>;
+      try { d = JSON.parse(jsonStr); } catch { continue; }
+      const eventType = (d.type as string) ?? 'chunk';
+      if (eventType === 'end') {
+        yield {
+          requestId:   (d.requestId as string) ?? '',
+          type:        'end',
+          finalResult: d.finalResult,
+          error:       d.error as string | undefined,
+          sequence:    (d.sequence as number) ?? 0,
+          timestamp:   (d.timestamp as number) ?? Date.now(),
+        };
+        return;
+      }
+      yield {
+        requestId: (d.requestId as string) ?? '',
+        type:      'chunk',
+        delta:     (d.delta as string) ?? '',
+        result:    d.result,
+        sequence:  (d.sequence as number) ?? 0,
+        timestamp: (d.timestamp as number) ?? Date.now(),
+      };
+    }
+  }
 }
 
 function buildRequest(

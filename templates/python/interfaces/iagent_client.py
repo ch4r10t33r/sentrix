@@ -3,14 +3,14 @@ IAgentClient — standard interface for discovering and calling other Sentrix ag
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, AsyncGenerator, Dict, List, Optional, TYPE_CHECKING, Union
 import uuid
 import time
 
 if TYPE_CHECKING:
     from .iagent_mesh import (
         HeartbeatResponse, CapabilityExchangeResponse, GossipMessage,
-        HandshakeResult, AgentSession,
+        HandshakeResult, AgentSession, StreamChunk, StreamEnd,
     )
     from .iagent_discovery import DiscoveryEntry
 
@@ -214,6 +214,70 @@ class IAgentClient(ABC):
 
         Returns entries received within timeout_ms. Useful when the local
         discovery cache is empty or stale.
+        """
+        ...
+
+    # ── Streaming ─────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def stream(
+        self,
+        agent_id: str,
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "anonymous",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Stream a capability call to a specific agent by agent_id.
+
+        Connects to ``POST {agent_endpoint}/invoke/stream`` and yields
+        ``StreamChunk`` objects as the remote agent produces output, followed
+        by a single ``StreamEnd`` frame.
+
+        Args:
+            agent_id:   The target agent's Sentrix ID.
+            capability: The capability to invoke.
+            payload:    JSON-serialisable dict passed as the request payload.
+            caller_id:  Identity of the calling agent (default: "anonymous").
+
+        Yields:
+            StreamChunk — incremental output (type="chunk").
+            StreamEnd   — terminal frame (type="end"); may carry ``error``.
+        """
+        ...
+
+    @abstractmethod
+    def stream_capability(
+        self,
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "anonymous",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Discover the best agent for *capability* then stream it in one step.
+
+        Equivalent to:
+            entry = await client.find(capability)
+            async for event in client.stream_entry(entry, capability, payload):
+                yield event
+        """
+        ...
+
+    @abstractmethod
+    def stream_entry(
+        self,
+        entry: "DiscoveryEntry",
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "anonymous",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Stream a capability call to an agent using a DiscoveryEntry you already have.
+
+        Skips the lookup step. Useful when you want to pin a specific endpoint.
         """
         ...
 
@@ -501,6 +565,162 @@ class AgentClient(IAgentClient):
             except Exception:
                 pass
         return results
+
+    # ── streaming ─────────────────────────────────────────────────────────
+
+    async def stream(
+        self,
+        agent_id: str,
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        from .iagent_mesh import StreamEnd
+        entry = await self.find_by_id(agent_id)
+        if entry is None:
+            yield StreamEnd(
+                request_id=str(uuid.uuid4()),
+                error=f"Agent not found in discovery: {agent_id}",
+            )
+            return
+        async for event in self.stream_entry(entry, capability, payload, caller_id=caller_id or self._caller_id):
+            yield event
+
+    async def stream_capability(
+        self,
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        from .iagent_mesh import StreamEnd
+        entry = await self.find(capability)
+        if entry is None:
+            yield StreamEnd(
+                request_id=str(uuid.uuid4()),
+                error=f"No healthy agent found for capability: '{capability}'",
+            )
+            return
+        async for event in self.stream_entry(entry, capability, payload, caller_id=caller_id or self._caller_id):
+            yield event
+
+    async def stream_entry(
+        self,
+        entry: "DiscoveryEntry",
+        capability: str,
+        payload: Dict[str, Any],
+        *,
+        caller_id: str = "",
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Connect to POST {agent_endpoint}/invoke/stream and yield SSE events.
+
+        Parses each ``data: <json>`` line and yields StreamChunk / StreamEnd.
+        Falls back to the regular /invoke endpoint if /invoke/stream returns
+        a non-streaming response.
+        """
+        import json
+        from .iagent_mesh import StreamChunk, StreamEnd
+
+        req = AgentRequest(
+            request_id=str(uuid.uuid4()),
+            from_id=caller_id or self._caller_id,
+            capability=capability,
+            payload=payload,
+            timestamp=int(time.time() * 1000),
+            stream=True,
+        )
+
+        url = self._stream_url(entry)
+        body = json.dumps(req.to_dict()).encode()
+        timeout_s = self._timeout_ms / 1000.0
+
+        try:
+            async for event in self._http_stream(url, body, timeout_s):
+                yield event
+        except Exception as exc:
+            yield StreamEnd(request_id=req.request_id, error=str(exc))
+
+    @staticmethod
+    def _stream_url(entry: "DiscoveryEntry") -> str:
+        scheme = "https" if entry.network.tls else entry.network.protocol
+        if scheme not in ("http", "https"):
+            scheme = "https" if entry.network.tls else "http"
+        return f"{scheme}://{entry.network.host}:{entry.network.port}/invoke/stream"
+
+    @staticmethod
+    async def _http_stream(
+        url: str,
+        body: bytes,
+        timeout_s: float,
+    ) -> "AsyncGenerator[Union[StreamChunk, StreamEnd], None]":
+        """
+        Open an SSE connection to *url*, parse ``data:`` lines, and yield
+        StreamChunk / StreamEnd objects.
+
+        Prefers httpx (async streaming), falls back to aiohttp.
+        """
+        import json
+        from .iagent_mesh import StreamChunk, StreamEnd
+
+        def _parse_event(line: str):
+            raw = line.strip()
+            if not raw.startswith("data:"):
+                return None
+            payload_str = raw[5:].strip()
+            if not payload_str:
+                return None
+            try:
+                d = json.loads(payload_str)
+            except Exception:
+                return None
+            event_type = d.get("type", "chunk")
+            if event_type == "end":
+                return StreamEnd.from_dict(d)
+            return StreamChunk.from_dict(d)
+
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=timeout_s) as client:
+                async with client.stream(
+                    "POST", url, content=body,
+                    headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+                ) as response:
+                    async for line in response.aiter_lines():
+                        event = _parse_event(line)
+                        if event is not None:
+                            yield event
+                            if isinstance(event, StreamEnd):
+                                return
+            return
+        except ImportError:
+            pass
+
+        try:
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url, data=body,
+                    headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+                    timeout=aiohttp.ClientTimeout(total=timeout_s),
+                ) as response:
+                    async for line in response.content:
+                        decoded = line.decode("utf-8", errors="replace").rstrip()
+                        event = _parse_event(decoded)
+                        if event is not None:
+                            yield event
+                            if isinstance(event, StreamEnd):
+                                return
+            return
+        except ImportError:
+            pass
+
+        yield StreamEnd(
+            request_id="unknown",
+            error="No async HTTP backend with streaming support found. "
+                  "Install: pip install httpx  or  pip install aiohttp",
+        )
 
     # ── internal transport ────────────────────────────────────────────────
 

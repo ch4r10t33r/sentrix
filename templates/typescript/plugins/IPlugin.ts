@@ -174,6 +174,51 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
     }
   }
 
+  /**
+   * Streaming variant of handleRequest.
+   *
+   * Default implementation falls back to handleRequest and emits the full
+   * result as one StreamChunk followed by a StreamEnd — so every agent
+   * supports POST /invoke/stream out of the box.
+   *
+   * Override in a subclass or framework plugin to yield genuine token chunks.
+   */
+  async *streamRequest(req: AgentRequest): AsyncIterable<import('../interfaces/IAgentMesh').StreamChunk | import('../interfaces/IAgentMesh').StreamEnd> {
+    const resp = await this.handleRequest(req);
+    let seq = 0;
+
+    if (resp.status === 'error') {
+      yield {
+        requestId: req.requestId,
+        type:      'end' as const,
+        error:     resp.errorMessage,
+        sequence:  0,
+        timestamp: Date.now(),
+      };
+      return;
+    }
+
+    const content = (resp.result as any)?.content ?? '';
+    if (content) {
+      yield {
+        requestId: req.requestId,
+        type:      'chunk' as const,
+        delta:     String(content),
+        result:    resp.result,
+        sequence:  seq++,
+        timestamp: Date.now(),
+      };
+    }
+
+    yield {
+      requestId:   req.requestId,
+      type:        'end' as const,
+      finalResult: resp.result,
+      sequence:    seq,
+      timestamp:   Date.now(),
+    };
+  }
+
   async registerDiscovery(): Promise<void> {
     const { DiscoveryFactory } = await import('../discovery/DiscoveryFactory');
     const registry = DiscoveryFactory.create({

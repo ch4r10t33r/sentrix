@@ -6,11 +6,12 @@ endpoints so agents can discover and call each other over the network.
 
 Endpoints
 ─────────
-  POST /invoke        AgentRequest  → AgentResponse
-  POST /gossip        GossipMessage (direct fan-out from peers)
-  GET  /health        Heartbeat — lightweight, no auth
-  GET  /anr           Full ANR (Agent Network Record) as JSON
-  GET  /capabilities  Capability list as JSON
+  POST /invoke         AgentRequest  → AgentResponse (JSON)
+  POST /invoke/stream  AgentRequest  → Server-Sent Events (StreamChunk/StreamEnd)
+  POST /gossip         GossipMessage (direct fan-out from peers)
+  GET  /health         Heartbeat — lightweight, no auth
+  GET  /anr            Full ANR (Agent Network Record) as JSON
+  GET  /capabilities   Capability list as JSON
 
 Usage
 ─────
@@ -206,11 +207,89 @@ def _register_aiohttp_routes(app: Any, agent: "WrappedAgent") -> None:
     async def handle_options(request: web.Request) -> web.Response:
         return web.Response(status=204, headers=_CORS)
 
-    app.router.add_post("/invoke",       handle_invoke)
-    app.router.add_post("/gossip",       handle_gossip)
-    app.router.add_get ("/health",       handle_health)
-    app.router.add_get ("/anr",          handle_anr)
-    app.router.add_get ("/capabilities", handle_capabilities)
+    # ── POST /invoke/stream ───────────────────────────────────────────────────
+    async def handle_invoke_stream(request: web.Request) -> web.StreamResponse:
+        """
+        Streaming endpoint — emits Server-Sent Events.
+
+        Request body: same JSON shape as POST /invoke.
+        Response:     text/event-stream; each event is a JSON-serialised
+                      StreamChunk (type="chunk") or StreamEnd (type="end").
+
+        Wire format per SSE event:
+            data: {"type":"chunk","requestId":"…","delta":"…","sequence":N}\\n\\n
+            data: {"type":"end","requestId":"…","finalResult":{…}}\\n\\n
+        """
+        try:
+            body = await request.json()
+        except Exception:
+            return web.Response(
+                text='data: {"type":"error","error":"Invalid JSON"}\\n\\n',
+                status=400,
+                content_type="text/event-stream",
+                headers=_CORS,
+            )
+
+        from interfaces.agent_request import AgentRequest
+        req = AgentRequest(
+            request_id=body.get("requestId") or str(uuid.uuid4()),
+            from_id   =body.get("from", "anonymous"),
+            capability=body.get("capability", ""),
+            payload   =body.get("payload", {}),
+            signature =body.get("signature"),
+            timestamp =body.get("timestamp"),
+            x402      =body.get("x402"),
+            stream    =True,
+        )
+
+        # x402 gate — same check as /invoke
+        x402_status = _check_x402(agent, req)
+        if x402_status:
+            import json as _json
+            err_event = f'data: {_json.dumps({"type": "error", "error": "Payment required", "x402": x402_status})}\\n\\n'
+            return web.Response(
+                text=err_event,
+                status=402,
+                content_type="text/event-stream",
+                headers=_CORS,
+            )
+
+        # Start SSE response
+        sse_response = web.StreamResponse(
+            status=200,
+            headers={
+                **_CORS,
+                "Content-Type":  "text/event-stream",
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",   # nginx: disable proxy buffering
+            },
+        )
+        await sse_response.prepare(request)
+
+        import json as _json
+        try:
+            async for event in agent.stream_request(req):
+                frame = _json.dumps(event.to_dict(), ensure_ascii=False)
+                await sse_response.write(f"data: {frame}\n\n".encode())
+                if event.type == "end":
+                    break
+        except Exception as exc:
+            from interfaces.iagent_mesh import StreamEnd
+            end = StreamEnd(request_id=req.request_id, error=str(exc))
+            frame = _json.dumps(end.to_dict(), ensure_ascii=False)
+            try:
+                await sse_response.write(f"data: {frame}\n\n".encode())
+            except Exception:
+                pass
+
+        return sse_response
+
+    app.router.add_post("/invoke",        handle_invoke)
+    app.router.add_post("/invoke/stream", handle_invoke_stream)
+    app.router.add_post("/gossip",        handle_gossip)
+    app.router.add_get ("/health",        handle_health)
+    app.router.add_get ("/anr",           handle_anr)
+    app.router.add_get ("/capabilities",  handle_capabilities)
     app.router.add_route("OPTIONS", "/{path_info:.*}", handle_options)
 
 
@@ -250,6 +329,55 @@ async def _serve_uvicorn(agent: "WrappedAgent", host: str, port: int) -> None:
 
         resp = await agent.handle_request(req)
         return JSONResponse(_serialise(resp), headers=_CORS)
+
+    @app.post("/invoke/stream")
+    async def invoke_stream(request: Request):
+        """Streaming SSE endpoint (FastAPI/uvicorn fallback)."""
+        from fastapi.responses import StreamingResponse
+        import json as _json
+
+        try:
+            body = await request.json()
+        except Exception:
+            async def _err():
+                yield 'data: {"type":"error","error":"Invalid JSON"}\n\n'
+            return StreamingResponse(_err(), status_code=400, media_type="text/event-stream", headers=_CORS)
+
+        from interfaces.agent_request import AgentRequest
+        req = AgentRequest(
+            request_id=body.get("requestId") or str(uuid.uuid4()),
+            from_id   =body.get("from", "anonymous"),
+            capability=body.get("capability", ""),
+            payload   =body.get("payload", {}),
+            signature =body.get("signature"),
+            timestamp =body.get("timestamp"),
+            x402      =body.get("x402"),
+            stream    =True,
+        )
+
+        x402_status = _check_x402(agent, req)
+        if x402_status:
+            async def _x402():
+                yield f'data: {_json.dumps({"type": "error", "error": "Payment required", "x402": x402_status})}\n\n'
+            return StreamingResponse(_x402(), status_code=402, media_type="text/event-stream", headers=_CORS)
+
+        async def _generate():
+            try:
+                async for event in agent.stream_request(req):
+                    frame = _json.dumps(event.to_dict(), ensure_ascii=False)
+                    yield f"data: {frame}\n\n"
+                    if event.type == "end":
+                        break
+            except Exception as exc:
+                from interfaces.iagent_mesh import StreamEnd
+                end = StreamEnd(request_id=req.request_id, error=str(exc))
+                yield f'data: {_json.dumps(end.to_dict(), ensure_ascii=False)}\n\n'
+
+        return StreamingResponse(
+            _generate(),
+            media_type="text/event-stream",
+            headers={**_CORS, "Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
 
     @app.post("/gossip", status_code=204)
     async def gossip(request: Request) -> Response:
