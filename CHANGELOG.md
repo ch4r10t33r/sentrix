@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0](https://github.com/ch4r10t33r/sentrix/compare/v1.16.0...v1.17.0) (2026-03-26)
+
+### Features
+
+* **templates:** add missing plugins and addons for Rust and Zig ([99f52a4](https://github.com/ch4r10t33r/sentrix/commit/99f52a4e9ca3f986592d82ae510c4d3e3e14722e))
+
 ## [1.16.0](https://github.com/ch4r10t33r/sentrix/compare/v1.15.3...v1.16.0) (2026-03-26)
 
 ### Features
