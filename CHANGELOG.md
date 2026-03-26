@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/ch4r10t33r/sentrix/compare/v1.14.0...v1.14.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* chain release-cli.yml from release.yml to fix missing release binaries ([c24fb19](https://github.com/ch4r10t33r/sentrix/commit/c24fb1946b4a6965e7709307f9662fee1243505f))
+
 # [1.14.0](https://github.com/ch4r10t33r/sentrix/compare/v1.13.0...v1.14.0) (2026-03-26)
 
 
