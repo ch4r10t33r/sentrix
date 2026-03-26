@@ -3,7 +3,7 @@
   "version": "1.15.2",
   "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
-    "sentrix": "./bin/sentrix.js"
+    "sentrix": "bin/sentrix.js"
   },
   "main": "./dist/cli.js",
   "files": [
@@ -61,7 +61,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ch4r10t33r/sentrix.git"
+    "url": "git+https://github.com/ch4r10t33r/sentrix.git"
   },
   "bugs": {
     "url": "https://github.com/ch4r10t33r/sentrix/issues"
