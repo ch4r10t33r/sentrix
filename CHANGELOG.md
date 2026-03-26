@@ -1,3 +1,16 @@
+# [1.13.0](https://github.com/ch4r10t33r/sentrix/compare/v1.12.0...v1.13.0) (2026-03-26)
+
+
+### Bug Fixes
+
+* resolve all clippy warnings in sentrix-cli ([11a4339](https://github.com/ch4r10t33r/sentrix/commit/11a4339d3c4396f1e9b8681473fc1b87b3acd086))
+* use package.json as source of truth for reported CLI version ([823e27a](https://github.com/ch4r10t33r/sentrix/commit/823e27ab1ff893862ac48d2369226c376f276e96))
+
+
+### Features
+
+* Rust CLI binary with npm platform-package distribution ([5cb97f1](https://github.com/ch4r10t33r/sentrix/commit/5cb97f1093f4ce05d1793337e5c7a7d901b999e2))
+
 # Changelog
 
 All notable changes to `sentrix-cli` are documented here.
