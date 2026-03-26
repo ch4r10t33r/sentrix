@@ -85,9 +85,22 @@ jobs:
         if: "!matrix.use_cross"
         run: cargo build --release --target ${{ matrix.target }} --package sentrix-cli
 
+      - name: Install binutils for Linux cross strip
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq binutils-aarch64-linux-gnu
+
       - name: Strip binary (Unix)
         if: matrix.os != 'windows-latest'
-        run: strip target/${{ matrix.target }}/release/${{ matrix.bin_name }}
+        shell: bash
+        run: |
+          bin="target/${{ matrix.target }}/release/${{ matrix.bin_name }}"
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            aarch64-linux-gnu-strip "$bin"
+          else
+            strip "$bin"
+          fi
 
       - name: Copy binary into npm package
         shell: bash
@@ -114,7 +127,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
       - name: Extract version from package.json
