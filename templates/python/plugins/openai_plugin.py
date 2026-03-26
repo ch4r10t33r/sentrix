@@ -384,7 +384,7 @@ def wrap_openai(
     agent_id: str,
     owner:    str            = "0xYourWalletAddress",
     version:  str            = "0.1.0",
-    port:     int            = 8080,
+    port:     int            = 6174,
     tags:     list[str] | None = None,
     expose_tools:    bool    = True,
     expose_handoffs: bool    = True,

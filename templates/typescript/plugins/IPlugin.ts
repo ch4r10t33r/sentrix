@@ -24,7 +24,7 @@ export interface PluginConfig {
 
   // Network
   host?:     string;     // default: 'localhost'
-  port?:     number;     // default: 8080
+  port?:     number;     // default: 6174
   protocol?: string;     // default: 'http'
   tls?:      boolean;
 
@@ -235,7 +235,7 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
       network: {
         protocol: (this.plugin.config.protocol ?? 'http') as any,
         host:     this.plugin.config.host     ?? 'localhost',
-        port:     this.plugin.config.port     ?? 8080,
+        port:     this.plugin.config.port     ?? 6174,
         tls:      this.plugin.config.tls      ?? false,
       },
       health: { status: 'healthy', lastHeartbeat: new Date().toISOString(), uptimeSeconds: 0 },
@@ -262,7 +262,7 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
       network: {
         protocol: (this.plugin.config.protocol ?? 'http') as any,
         host:     this.plugin.config.host     ?? 'localhost',
-        port:     this.plugin.config.port     ?? 8080,
+        port:     this.plugin.config.port     ?? 6174,
         tls:      this.plugin.config.tls      ?? false,
       },
       health: { status: 'healthy', lastHeartbeat: new Date().toISOString(), uptimeSeconds: 0 },
@@ -292,13 +292,13 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
    * cleanly on SIGINT / SIGTERM.
    *
    * @param options.host - Bind address. Default: '0.0.0.0'
-   * @param options.port - TCP port. Overridden by SENTRIX_PORT env var. Default: 8080
+   * @param options.port - TCP port. Overridden by SENTRIX_PORT env var. Default: 6174
    *
    * @example
    * ```ts
    * const plugin = new GoogleADKPlugin(config);
    * const agent  = plugin.wrap(myAgent);
-   * await agent.serve({ port: 8080 });
+   * await agent.serve({ port: 6174 });
    * ```
    */
   async serve(options: { host?: string; port?: number } = {}): Promise<void> {
@@ -321,7 +321,7 @@ function printStartupBanner(agent: WrappedAgent<unknown, unknown, unknown>): voi
   const DIM = '\x1b[2m';
   const line = `${DIM}${'─'.repeat(60)}${R}`;
 
-  const endpoint = `${cfg.tls ? 'https' : (cfg.protocol ?? 'http')}://${cfg.host ?? 'localhost'}:${cfg.port ?? 8080}`;
+  const endpoint = `${cfg.tls ? 'https' : (cfg.protocol ?? 'http')}://${cfg.host ?? 'localhost'}:${cfg.port ?? 6174}`;
 
   const lines: string[] = [
     '',

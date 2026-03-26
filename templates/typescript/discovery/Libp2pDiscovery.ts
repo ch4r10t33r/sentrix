@@ -192,6 +192,17 @@ export class Libp2pDiscovery implements IAgentDiscovery {
     return new Libp2pDiscovery(node, dht, privKey, pubKey);
   }
 
+  /**
+   * Return the local node's PeerId and first multiaddr, or null if not started.
+   * Used by ExampleAgent to populate the `multiaddr` field in ANR records.
+   */
+  getNodeInfo(): { peerId: string; multiaddr: string } | null {
+    const peerId = this.node.peerId.toString();
+    const addrs  = this.node.getMultiaddrs();
+    if (!peerId) return null;
+    return { peerId, multiaddr: addrs.length > 0 ? addrs[0].toString() : '' };
+  }
+
   /** Gracefully stop the libp2p node and clear all timers. */
   async stop(): Promise<void> {
     for (const timer of this.heartbeatTimers.values()) clearInterval(timer);

@@ -7,7 +7,7 @@
  *
  * @example
  * const registry = new GossipDiscovery('sentrix://agent/me');
- * await registry.addPeer('sentrix://agent/peer-a', 'http://peer-a:8080');
+ * await registry.addPeer('sentrix://agent/peer-a', 'http://peer-a:6174');
  * await registry.register(myEntry);  // auto-gossips to peers
  */
 

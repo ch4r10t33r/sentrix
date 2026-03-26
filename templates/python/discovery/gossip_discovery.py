@@ -12,7 +12,7 @@ Usage
     from discovery.gossip_discovery import GossipDiscovery
 
     registry = GossipDiscovery(agent_id="sentrix://agent/me")
-    await registry.add_peer("sentrix://agent/peer-a", "http://peer-a:8080")
+    await registry.add_peer("sentrix://agent/peer-a", "http://peer-a:6174")
     await registry.register(my_entry)   # auto-gossips to peers
 """
 
@@ -201,7 +201,7 @@ def _entry_from_dict(d: dict) -> Optional[DiscoveryEntry]:
             network=NetworkInfo(
                 protocol=net.get("protocol", "http"),
                 host=net.get("host", "localhost"),
-                port=net.get("port", 8080),
+                port=net.get("port", 6174),
                 tls=net.get("tls", False),
             ),
             health=HealthStatus(

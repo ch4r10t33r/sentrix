@@ -60,7 +60,7 @@ pub fn build(b: *std.Build) void {
     // function that an application's main.zig calls.  Expose it as a module so
     // any executable in this build (or downstream builds via `b.dependency`)
     // can do:  const server = @import("server");
-    //          try server.serve(MyAgent, &agent, 8080, allocator);
+    //          try server.serve(MyAgent, &agent, 6174, allocator);
 
     const server_mod = b.addModule("server", .{
         .root_source_file = b.path("src/server.zig"),

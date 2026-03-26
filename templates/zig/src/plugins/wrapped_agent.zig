@@ -56,7 +56,7 @@ pub fn WrappedAgent(comptime TAgent: type, comptime TPlugin: type) type {
             /// The host this agent will be reachable on (reported in ANR).
             network_host: []const u8 = "localhost",
             /// The port this agent will be reachable on (reported in ANR).
-            network_port: u16 = 8080,
+            network_port: u16 = 6174,
         };
 
         // ── init ──────────────────────────────────────────────────────────────

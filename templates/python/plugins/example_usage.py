@@ -160,7 +160,7 @@ async def example_multi_framework():
             name=name,
             owner="0xWallet",
             capabilities=caps,
-            network=NetworkInfo(protocol="http", host="localhost", port=8080),
+            network=NetworkInfo(protocol="http", host="localhost", port=6174),
             health=HealthStatus(status="healthy", last_heartbeat=datetime.now(timezone.utc).isoformat()),
             registered_at=datetime.now(timezone.utc).isoformat(),
         ))

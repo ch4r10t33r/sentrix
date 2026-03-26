@@ -45,7 +45,7 @@ class PluginConfig:
     #
     #   from identity.provider import LocalKeystoreIdentity
     #   identity = LocalKeystoreIdentity("my-agent")
-    #   config   = PluginConfig(**identity.to_plugin_config_fields(), port=8080)
+    #   config   = PluginConfig(**identity.to_plugin_config_fields(), port=6174)
 
     agent_id:     str          = "sentrix://agent/unnamed"
     owner:        str          = "anonymous"  # wallet address or any identifier
@@ -65,7 +65,7 @@ class PluginConfig:
 
     # ── Network (where this agent listens) ────────────────────────────────────
     host:         str  = "localhost"
-    port:         int  = 8080
+    port:         int  = 6174
     protocol:     str  = "http"
     tls:          bool = False
 
@@ -419,7 +419,7 @@ class WrappedAgent(IAgent, Generic[TAgent]):
         except Exception:
             return None
 
-    async def serve(self, host: str = "0.0.0.0", port: int = 8080) -> None:
+    async def serve(self, host: str = "0.0.0.0", port: int = 6174) -> None:
         """
         Start the built-in HTTP server for this agent and block until shutdown.
 
@@ -438,7 +438,7 @@ class WrappedAgent(IAgent, Generic[TAgent]):
 
             plugin = GoogleADKPlugin(config)
             agent  = plugin.wrap(my_adk_agent)
-            asyncio.run(agent.serve(port=8080))
+            asyncio.run(agent.serve(port=6174))
         """
         from server import serve as _serve
         await _serve(self, host=host, port=port)

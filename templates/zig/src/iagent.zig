@@ -63,7 +63,7 @@ pub fn IAgent(comptime T: type) type {
                 .network      = types.NetworkInfo{
                     .protocol = .http,
                     .host     = "localhost",
-                    .port     = 8080,
+                    .port     = 6174,
                     .tls      = false,
                 },
                 .health       = .healthy,

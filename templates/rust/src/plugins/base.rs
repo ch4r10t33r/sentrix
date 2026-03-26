@@ -30,7 +30,7 @@ pub struct PluginConfig {
     pub metadata_uri: Option<String>,
     /// Hostname where this agent will be reachable. Defaults to `"localhost"`.
     pub network_host: String,
-    /// Port where this agent will be reachable. Defaults to `8080`.
+    /// Port where this agent will be reachable. Defaults to `6174`.
     pub network_port: u16,
 }
 
@@ -42,7 +42,7 @@ impl Default for PluginConfig {
             capabilities: None,
             metadata_uri: None,
             network_host: "localhost".to_string(),
-            network_port: 8080,
+            network_port: 6174,
         }
     }
 }

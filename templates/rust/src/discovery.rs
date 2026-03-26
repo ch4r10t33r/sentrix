@@ -5,10 +5,12 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkInfo {
-    pub protocol: String, // "http" | "websocket" | "grpc" | "tcp"
+    pub protocol: String, // "http" | "websocket" | "grpc" | "tcp" | "libp2p"
     pub host: String,
     pub port: u16,
     pub tls: bool,
+    pub peer_id:   String,
+    pub multiaddr: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

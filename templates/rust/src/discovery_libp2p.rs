@@ -85,6 +85,8 @@ struct StoredEntry {
     host:          String,
     port:          u16,
     tls:           bool,
+    peer_id:       String,
+    multiaddr:     String,
     status:        String,
     last_heartbeat: String,
     uptime_seconds: u64,
@@ -103,6 +105,8 @@ impl From<&DiscoveryEntry> for StoredEntry {
             host:           e.network.host.clone(),
             port:           e.network.port,
             tls:            e.network.tls,
+            peer_id:        e.network.peer_id.clone(),
+            multiaddr:      e.network.multiaddr.clone(),
             status:         e.health.status.clone(),
             last_heartbeat: e.health.last_heartbeat.clone(),
             uptime_seconds: e.health.uptime_seconds,
@@ -122,10 +126,12 @@ impl From<StoredEntry> for DiscoveryEntry {
             owner:        s.owner,
             capabilities: s.capabilities,
             network: NetworkInfo {
-                protocol: s.protocol,
-                host:     s.host,
-                port:     s.port,
-                tls:      s.tls,
+                protocol:  s.protocol,
+                host:      s.host,
+                port:      s.port,
+                tls:       s.tls,
+                peer_id:   s.peer_id,
+                multiaddr: s.multiaddr,
             },
             health: HealthStatus {
                 status,
@@ -218,7 +224,7 @@ enum SwarmCommand {
 pub struct Libp2pDiscoveryConfig {
     /// 32-byte secp256k1 private key (same key used to sign ANR records).
     pub private_key_bytes: [u8; 32],
-    /// UDP port to listen on (0 = OS-assigned). Default: 0.
+    /// UDP port to listen on (0 = OS-assigned). Default: 6174.
     pub listen_port: u16,
     /// Bootstrap peer multiaddrs.
     pub bootstrap_peers: Vec<(PeerId, Multiaddr)>,
@@ -234,7 +240,7 @@ impl Default for Libp2pDiscoveryConfig {
     fn default() -> Self {
         Self {
             private_key_bytes: [0u8; 32], // caller must set a real key
-            listen_port:        0,
+            listen_port:        6174,
             bootstrap_peers:    vec![],
             heartbeat_secs:     30,
             enable_mdns:        true,

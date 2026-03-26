@@ -19,10 +19,10 @@
  *
  *   const plugin = new LangGraphPlugin(config);
  *   const agent  = plugin.wrap(myGraph);
- *   await serve(agent, { port: 8080 });
+ *   await serve(agent, { port: 6174 });
  *
  *   // or via sentrix-cli:
- *   //   sentrix run MyAgent --port 8080
+ *   //   sentrix run MyAgent --port 6174
  */
 
 import http            from 'http';
@@ -35,7 +35,7 @@ import type { AgentRequest }  from './interfaces/IAgentRequest';
 export interface ServeOptions {
   /** Bind address. Default: '0.0.0.0' (all interfaces). */
   host?: string;
-  /** TCP port. Overridden by SENTRIX_PORT env var if set. Default: 8080. */
+  /** TCP port. Overridden by SENTRIX_PORT env var if set. Default: 6174. */
   port?: number;
   /** Suppress the startup banner log. Default: false. */
   silent?: boolean;
@@ -64,7 +64,7 @@ export async function serve(
   options: ServeOptions = {},
 ): Promise<void> {
   const host = options.host ?? '0.0.0.0';
-  const port = parseInt(process.env.SENTRIX_PORT ?? String(options.port ?? 8080), 10);
+  const port = parseInt(process.env.SENTRIX_PORT ?? String(options.port ?? 6174), 10);
 
   const app = express();
   app.use(express.json({ limit: '4mb' }));

@@ -66,7 +66,7 @@ pub trait IAgent: Send + Sync {
             network: crate::discovery::NetworkInfo {
                 protocol: "http".to_string(),
                 host:     "localhost".to_string(),
-                port:     8080,
+                port:     6174,
                 tls:      false,
             },
             health: crate::discovery::HealthStatus {

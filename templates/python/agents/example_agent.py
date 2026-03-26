@@ -4,7 +4,6 @@ Replace the capability implementations with your own logic.
 """
 
 from interfaces import IAgent, AgentRequest, AgentResponse
-from discovery.local_discovery import LocalDiscovery
 from interfaces.iagent_discovery import DiscoveryEntry, NetworkInfo, HealthStatus
 from datetime import datetime, timezone
 
@@ -20,6 +19,9 @@ class ExampleAgent(IAgent):
         "description": "A starter Sentrix agent",
         "tags":        ["example", "starter"],
     }
+
+    _registry  = None
+    _p2p_info  = None
 
     # ── Capabilities ──────────────────────────────────────────────────────
     def get_capabilities(self):
@@ -40,23 +42,60 @@ class ExampleAgent(IAgent):
 
     # ── Discovery ─────────────────────────────────────────────────────────
     async def register_discovery(self) -> None:
-        registry = LocalDiscovery.get_instance()
-        await registry.register(DiscoveryEntry(
+        import os
+        from discovery.http_discovery import DiscoveryFactory
+
+        discovery_type = os.environ.get('SENTRIX_DISCOVERY_TYPE', 'local')
+        registry = await DiscoveryFactory.create(discovery_type)
+        self._registry = registry
+        self._p2p_info = None
+
+        # Capture libp2p node info (peerId + multiaddr) if in P2P mode
+        if hasattr(registry, 'get_node_info'):
+            self._p2p_info = await registry.get_node_info()
+
+        await registry.register(self._build_entry())
+        print("[ExampleAgent] registered with discovery layer")
+
+    async def unregister_discovery(self) -> None:
+        registry = getattr(self, '_registry', None)
+        if registry:
+            await registry.unregister(self.agent_id)
+        else:
+            from discovery.local_discovery import LocalDiscovery
+            await LocalDiscovery.get_instance().unregister(self.agent_id)
+
+    def _build_entry(self) -> 'DiscoveryEntry':
+        import os
+        from datetime import datetime, timezone
+        host = os.environ.get('SENTRIX_HOST', 'localhost')
+        port = int(os.environ.get('SENTRIX_PORT', '6174'))
+        tls  = os.environ.get('SENTRIX_TLS', 'false').lower() == 'true'
+
+        p2p  = getattr(self, '_p2p_info', None)
+        peer_id  = p2p.get('peer_id')  if p2p else None
+        maddr    = p2p.get('multiaddr') if p2p else None
+
+        if peer_id and not maddr:
+            maddr = f"/ip4/{host}/tcp/{port}/p2p/{peer_id}"
+
+        net = NetworkInfo(
+            protocol='libp2p' if peer_id else 'http',
+            host=host,
+            port=port,
+            tls=tls,
+            peer_id=peer_id or '',
+            multiaddr=maddr or '',
+        )
+        return DiscoveryEntry(
             agent_id=self.agent_id,
             name="ExampleAgent",
             owner=self.owner,
             capabilities=self.get_capabilities(),
-            network=NetworkInfo(protocol="http", host="localhost", port=8080),
-            health=HealthStatus(
-                status="healthy",
-                last_heartbeat=datetime.now(timezone.utc).isoformat()
-            ),
+            network=net,
+            health=HealthStatus(status="healthy", last_heartbeat=datetime.now(timezone.utc).isoformat()),
             registered_at=datetime.now(timezone.utc).isoformat(),
-        ))
-        print("[ExampleAgent] registered with discovery layer")
-
-    async def unregister_discovery(self) -> None:
-        await LocalDiscovery.get_instance().unregister(self.agent_id)
+        )
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -66,14 +105,14 @@ class ExampleAgent(IAgent):
 #   SENTRIX_PORT=9090 python agents/example_agent.py
 #
 # Or via sentrix-cli:
-#   sentrix run ExampleAgent --port 8080
+#   sentrix run ExampleAgent --port 6174
 #
 if __name__ == "__main__":
     import asyncio
     import os
     from server import serve
 
-    port = int(os.environ.get("SENTRIX_PORT", "8080"))
+    port = int(os.environ.get("SENTRIX_PORT", "6174"))
 
     agent = ExampleAgent()
     asyncio.run(serve(agent, port=port))

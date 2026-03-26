@@ -8,7 +8,7 @@
 //!   GET  /capabilities  — return {"capabilities":["cap1","cap2",...]}
 //!
 //! Usage:
-//!   try server.serve(MyAgent, &my_agent, 8080, allocator);
+//!   try server.serve(MyAgent, &my_agent, 6174, allocator);
 //!
 //! The server runs a single-threaded accept loop (one connection at a time).
 //! x402 payment gating: if T declares `requiresPayment()` and it returns true,

@@ -314,7 +314,7 @@ if __name__ == '__main__':
         .capabilities(['getWeather', 'getForecast'])
         .tags(['weather', 'data'])
         .proto('http')
-        .agent_port(8080)
+        .agent_port(6174)
         .tls(False)
         .meta_uri('ipfs://QmWeatherMeta')
         .ipv4(bytes([127, 0, 0, 1]))

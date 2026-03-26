@@ -15,24 +15,33 @@ impl ExampleAgent {
     }
 
     fn anr(&self) -> DiscoveryEntry {
-        let now = chrono::Utc::now().to_rfc3339();
+        let host = std::env::var("SENTRIX_HOST").unwrap_or_else(|_| "localhost".into());
+        let port = std::env::var("SENTRIX_PORT")
+            .ok().and_then(|p| p.parse().ok()).unwrap_or(6174u16);
+        let peer_id = self.get_peer_id();
+        let multiaddr = peer_id.as_ref().map(|pid|
+            format!("/ip4/{}/tcp/{}/p2p/{}", host, port, pid)
+        ).unwrap_or_default();
+
         DiscoveryEntry {
             agent_id:      self.agent_id().into(),
             name:          "ExampleAgent".into(),
             owner:         self.owner().into(),
             capabilities:  self.get_capabilities(),
             network:       NetworkInfo {
-                protocol: "http".into(),
-                host:     "localhost".into(),
-                port:     8080,
+                protocol: if peer_id.is_some() { "libp2p".into() } else { "http".into() },
+                host,
+                port,
                 tls:      false,
+                peer_id:   peer_id.unwrap_or_default(),
+                multiaddr,
             },
             health:        HealthStatus {
                 status:         "healthy".into(),
-                last_heartbeat: now.clone(),
+                last_heartbeat: chrono::Utc::now().to_rfc3339(),
                 uptime_seconds: 0,
             },
-            registered_at: now,
+            registered_at: chrono::Utc::now().to_rfc3339(),
             metadata_uri:  Some("ipfs://QmYourMetadataHashHere".into()),
         }
     }

@@ -20,10 +20,10 @@ Usage
 
   plugin = GoogleADKPlugin(config)
   agent  = plugin.wrap(my_adk_agent)
-  asyncio.run(serve(agent, host="0.0.0.0", port=8080))
+  asyncio.run(serve(agent, host="0.0.0.0", port=6174))
 
   # or via sentrix-cli:
-  #   sentrix run MyAgent --port 8080
+  #   sentrix run MyAgent --port 6174
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ _CORS = {
 async def serve(
     agent:  "WrappedAgent",
     host:   str = "0.0.0.0",
-    port:   int = 8080,
+    port:   int = 6174,
 ) -> None:
     """
     Start the HTTP transport for *agent* and block until shutdown.

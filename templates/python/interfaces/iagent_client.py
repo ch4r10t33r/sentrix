@@ -551,7 +551,7 @@ class AgentClient(IAgentClient):
                                 network=NetworkInfo(
                                     protocol=net.get("protocol", "http"),
                                     host=net.get("host", "localhost"),
-                                    port=net.get("port", 8080),
+                                    port=net.get("port", 6174),
                                     tls=net.get("tls", False),
                                 ),
                                 health=HealthStatus(

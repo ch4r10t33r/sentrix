@@ -59,7 +59,7 @@ pub const ExampleAgent = struct {
             .network       = .{
                 .protocol = .http,
                 .host     = "localhost",
-                .port     = 8080,
+                .port     = 6174,
                 .tls      = false,
             },
             .health        = .healthy,
@@ -122,7 +122,27 @@ pub fn main() !void {
     std.log.info("Endpoint    : {s}://{}:{}", .{ @tagName(anr.network.protocol), anr.network.host, anr.network.port });
     std.log.info("Capabilities: {s}", .{anr.capabilities});
     if (anr.metadata_uri) |uri| std.log.info("Metadata    : {s}", .{uri});
-    if (agent.getPeerId()) |pid| std.log.info("Peer ID     : {s}", .{pid});
+    if (agent.getPeerId()) |pid| {
+        // Build multiaddr from host + port + peerId (libp2p mode):
+        // "/ip4/<host>/tcp/<port>/p2p/<peerId>"
+        const multiaddr = try std.fmt.allocPrint(
+            allocator,
+            "/ip4/{s}/tcp/{}/p2p/{s}",
+            .{ anr.network.host, anr.network.port, pid },
+        );
+        defer allocator.free(multiaddr);
+        std.log.info("Peer ID     : {s}", .{pid});
+        std.log.info("Multiaddr   : {s}", .{multiaddr});
+    } else {
+        // Build multiaddr for HTTP mode: "/ip4/<host>/tcp/<port>"
+        const multiaddr = try std.fmt.allocPrint(
+            allocator,
+            "/ip4/{s}/tcp/{}",
+            .{ anr.network.host, anr.network.port },
+        );
+        defer allocator.free(multiaddr);
+        std.log.info("Multiaddr   : {s}", .{multiaddr});
+    }
 
     // ── 3. Local in-process call ──────────────────────────────────────────
 
@@ -177,7 +197,7 @@ pub fn main() !void {
         std.log.warn("[client] find(ping) → no agent registered", .{});
     }
 
-    // callCapability() — will attempt HTTP POST to localhost:8080/invoke
+    // callCapability() — will attempt HTTP POST to localhost:6174/invoke
     const client_resp = ag_client.callCapability("ping", "{}") catch |err| blk: {
         std.log.warn("[client] callCapability(ping) failed (no HTTP server in dev mode): {}", .{err});
         break :blk types.AgentResponse.err("n/a", "no server");

@@ -22,6 +22,7 @@ export class ExampleAgent implements IAgent {
 
   // ─── Internal state ───────────────────────────────────────────────────────
   private _registry: IAgentDiscovery | null = null;
+  private _p2pInfo: { peerId: string; multiaddr: string } | null = null;
 
   // ─── Capabilities ─────────────────────────────────────────────────────────
   getCapabilities(): string[] {
@@ -70,10 +71,19 @@ export class ExampleAgent implements IAgent {
 
     // Honour SENTRIX_DISCOVERY_TYPE for libp2p / onchain backends; the factory
     // already handles SENTRIX_DISCOVERY_URL → http and defaults to local.
-    const typeEnv = process.env['SENTRIX_DISCOVERY_TYPE'] as
-      'local' | 'http' | 'libp2p' | 'onchain' | undefined;
+    const discoveryType = process.env['SENTRIX_DISCOVERY_TYPE'];
+    this._registry = await DiscoveryFactory.create(
+      discoveryType === 'libp2p'  ? { type: 'libp2p' }  :
+      discoveryType === 'onchain' ? { type: 'onchain' } :
+      {}
+    );
 
-    this._registry = await DiscoveryFactory.create(typeEnv ? { type: typeEnv } : {});
+    // Capture libp2p node info so getAnr() can populate peerId + multiaddr
+    if ('getNodeInfo' in this._registry && typeof (this._registry as any).getNodeInfo === 'function') {
+      const info = (this._registry as any).getNodeInfo() as { peerId: string; multiaddr: string } | null;
+      if (info?.peerId) this._p2pInfo = info;
+    }
+
     await this._registry.register(this.getAnr());
     console.log(`[ExampleAgent] registered with discovery layer`);
   }
@@ -85,15 +95,22 @@ export class ExampleAgent implements IAgent {
   // ─── ANR / Identity exposure ──────────────────────────────────────────────
   getAnr(): DiscoveryEntry {
     const host     = process.env['SENTRIX_HOST'] ?? 'localhost';
-    const port     = parseInt(process.env['SENTRIX_PORT'] ?? '8080', 10);
+    const port     = parseInt(process.env['SENTRIX_PORT'] ?? '6174', 10);
     const tls      = (process.env['SENTRIX_TLS'] ?? 'false').toLowerCase() === 'true';
+
+    // Build multiaddr when peerId is known (libp2p mode)
+    const peerId    = this._p2pInfo?.peerId ?? null;
+    const multiaddr = this._p2pInfo?.multiaddr ??
+      (peerId ? `/${tls ? 'dns4' : 'ip4'}/${host}/tcp/${port}/p2p/${peerId}` : undefined);
+
+    const protocol = peerId ? 'libp2p' : (tls ? 'https' : 'http') as any;
 
     return {
       agentId:      this.agentId,
       name:         this.metadata.name,
       owner:        this.owner,
       capabilities: this.getCapabilities(),
-      network:      { protocol: 'http', host, port, tls },
+      network:      { protocol, host, port, tls, ...(peerId && { peerId }), ...(multiaddr && { multiaddr }) },
       health:       { status: 'healthy', lastHeartbeat: new Date().toISOString(), uptimeSeconds: 0 },
       registeredAt: new Date().toISOString(),
       metadataUri:  this.metadataUri,
@@ -101,8 +118,7 @@ export class ExampleAgent implements IAgent {
   }
 
   async getPeerId(): Promise<string | null> {
-    // ExampleAgent has no signing key — swap for LocalKeystoreIdentity to get a real PeerId.
-    return null;
+    return this._p2pInfo?.peerId ?? null;
   }
 
   // ─── Permissions ──────────────────────────────────────────────────────────
@@ -201,12 +217,12 @@ function parsePermittedCallers(raw: string): Map<string, Set<string>> {
 //   SENTRIX_PORT=9090 npx ts-node agents/ExampleAgent.ts
 //
 // Or via sentrix-cli:
-//   sentrix run ExampleAgent --port 8080
+//   sentrix run ExampleAgent --port 6174
 //
 if (require.main === module) {
   (async () => {
     const { serve } = await import('../server');
-    const port = parseInt(process.env.SENTRIX_PORT ?? '8080', 10);
+    const port = parseInt(process.env.SENTRIX_PORT ?? '6174', 10);
     const agent = new ExampleAgent();
     await serve(agent, { port });
   })();

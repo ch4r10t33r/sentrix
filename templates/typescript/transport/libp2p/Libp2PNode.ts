@@ -12,7 +12,7 @@ import { identify } from '@libp2p/identify';
 import { gossipsub } from '@chainsafe/libp2p-gossipsub';
 
 export interface Libp2PNodeOptions {
-  /** TCP listen address. Default: /ip4/0.0.0.0/tcp/0 (random port) */
+  /** TCP listen address. Default: /ip4/0.0.0.0/tcp/6174 */
   listenAddrs?: string[];
   /** Enable GossipSub. Default: true */
   gossip?: boolean;
@@ -41,7 +41,7 @@ export class Libp2PNode {
 
     this.node = await createLibp2p({
       addresses: {
-        listen: this.opts.listenAddrs ?? ['/ip4/0.0.0.0/tcp/0'],
+        listen: this.opts.listenAddrs ?? ['/ip4/0.0.0.0/tcp/6174'],
       },
       transports:  [tcp()],
       streamMuxers: [yamux()],
