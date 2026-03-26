@@ -4,6 +4,14 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0](https://github.com/ch4r10t33r/sentrix/compare/v1.9.0...v1.10.0) (2026-03-26)
+
+### Features
+
+* add HTTP server and plugin system for Rust and Zig templates ([b8a435e](https://github.com/ch4r10t33r/sentrix/commit/b8a435e8d68f118fe870c181803e79ad30e5c678))
+* add sentrix test/inspect CLI commands and complete TypeScript plugin stubs ([88f9221](https://github.com/ch4r10t33r/sentrix/commit/88f92218dd8dd4f0f7573222bcf42006f9421289))
+* implement OnChainDiscovery + fix libp2p DHT signing and peer_id gap ([13a550a](https://github.com/ch4r10t33r/sentrix/commit/13a550a93ca8ce2740d27eca48385d73996671c9))
+
 ## [1.9.0](https://github.com/ch4r10t33r/sentrix/compare/v1.8.0...v1.9.0) (2026-03-26)
 
 ### Features
