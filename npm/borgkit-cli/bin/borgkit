@@ -2,13 +2,13 @@
 'use strict';
 
 // ---------------------------------------------------------------------------
-// sentrix — JS shim for the Rust binary
+// borgkit — JS shim for the Rust binary
 //
 // Resolves the correct platform binary from the matching optional dependency
-// (@ch4r10teer41/sentrix-cli-<os>-<arch>) and exec-spawns it, forwarding
+// (@ch4r10teer41/borgkit-cli-<os>-<arch>) and exec-spawns it, forwarding
 // all argv and stdio unchanged.
 //
-// Fallback: if SENTRIX_CLI_TS=1 is set, falls back to the legacy TypeScript
+// Fallback: if BORGKIT_CLI_TS=1 is set, falls back to the legacy TypeScript
 // implementation (requires dist/ to be present — development use only).
 // ---------------------------------------------------------------------------
 
@@ -17,13 +17,13 @@ const path  = require('path');
 const fs    = require('fs');
 
 // ── TypeScript fallback (dev / rollback) ────────────────────────────────────
-if (process.env.SENTRIX_CLI_TS === '1') {
+if (process.env.BORGKIT_CLI_TS === '1') {
   const legacy = path.join(__dirname, '..', '..', '..', 'dist', 'cli.js');
   if (fs.existsSync(legacy)) {
     require(legacy);
     return;
   }
-  console.error('[sentrix] SENTRIX_CLI_TS=1 set but dist/cli.js not found. Run: npm run build');
+  console.error('[borgkit] BORGKIT_CLI_TS=1 set but dist/cli.js not found. Run: npm run build');
   process.exit(1);
 }
 
@@ -38,14 +38,14 @@ const suffix = (PLATFORMS[process.platform] || {})[process.arch];
 
 if (!suffix) {
   console.error(
-    `\n  sentrix: unsupported platform: ${process.platform}/${process.arch}\n` +
-    `  Please open an issue: https://github.com/ch4r10t33r/sentrix/issues\n`
+    `\n  borgkit: unsupported platform: ${process.platform}/${process.arch}\n` +
+    `  Please open an issue: https://github.com/ch4r10t33r/borgkit/issues\n`
   );
   process.exit(1);
 }
 
-const pkgName = `@ch4r10teer41/sentrix-cli-${suffix}`;
-const binName = process.platform === 'win32' ? 'sentrix.exe' : 'sentrix';
+const pkgName = `@ch4r10teer41/borgkit-cli-${suffix}`;
+const binName = process.platform === 'win32' ? 'borgkit.exe' : 'borgkit';
 
 // ── Locate binary ─────────────────────────────────────────────────────────────
 let binPath;
@@ -54,10 +54,10 @@ try {
   binPath = path.join(path.dirname(pkgJsonPath), 'bin', binName);
 } catch {
   console.error(
-    `\n  sentrix: native binary not found for ${process.platform}/${process.arch}.\n` +
+    `\n  borgkit: native binary not found for ${process.platform}/${process.arch}.\n` +
     `  The optional package "${pkgName}" was not installed.\n\n` +
     `  Fix with:\n` +
-    `    npm install -g @ch4r10teer41/sentrix-cli\n\n` +
+    `    npm install -g @ch4r10teer41/borgkit-cli\n\n` +
     `  Or install the platform package directly:\n` +
     `    npm install -g ${pkgName}\n`
   );
@@ -65,7 +65,7 @@ try {
 }
 
 if (!fs.existsSync(binPath)) {
-  console.error(`\n  sentrix: binary not found at expected path:\n    ${binPath}\n`);
+  console.error(`\n  borgkit: binary not found at expected path:\n    ${binPath}\n`);
   process.exit(1);
 }
 

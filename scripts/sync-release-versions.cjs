@@ -28,9 +28,9 @@ function writeCargoToml() {
 function writeCargoLock() {
   const p = path.join(root, "Cargo.lock");
   let s = fs.readFileSync(p, "utf8");
-  const re = /(\[\[package\]\]\nname = "sentrix-cli"\nversion = )"[^"]*"/;
+  const re = /(\[\[package\]\]\nname = "borgkit-cli"\nversion = )"[^"]*"/;
   if (!re.test(s)) {
-    console.error('Could not find [[package]] name = "sentrix-cli" in Cargo.lock');
+    console.error('Could not find [[package]] name = "borgkit-cli" in Cargo.lock');
     process.exit(1);
   }
   fs.writeFileSync(p, s.replace(re, `$1"${version}"`));
@@ -43,7 +43,7 @@ function writeJson(rel, mutator) {
   fs.writeFileSync(p, `${JSON.stringify(j, null, 2)}\n`);
 }
 
-writeJson("npm/sentrix-cli/package.json", (j) => {
+writeJson("npm/borgkit-cli/package.json", (j) => {
   j.version = version;
   if (j.optionalDependencies) {
     for (const k of Object.keys(j.optionalDependencies)) {
@@ -53,11 +53,11 @@ writeJson("npm/sentrix-cli/package.json", (j) => {
 });
 
 for (const pkg of [
-  "npm/sentrix-cli-linux-x64/package.json",
-  "npm/sentrix-cli-linux-arm64/package.json",
-  "npm/sentrix-cli-darwin-x64/package.json",
-  "npm/sentrix-cli-darwin-arm64/package.json",
-  "npm/sentrix-cli-win32-x64/package.json",
+  "npm/borgkit-cli-linux-x64/package.json",
+  "npm/borgkit-cli-linux-arm64/package.json",
+  "npm/borgkit-cli-darwin-x64/package.json",
+  "npm/borgkit-cli-darwin-arm64/package.json",
+  "npm/borgkit-cli-win32-x64/package.json",
 ]) {
   writeJson(pkg, (j) => {
     j.version = version;

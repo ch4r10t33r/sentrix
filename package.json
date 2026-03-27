@@ -1,9 +1,9 @@
 {
-  "name": "@ch4r10teer41/sentrix-cli",
-  "version": "1.22.0",
+  "name": "@ch4r10teer41/borgkit-cli",
+  "version": "0.1.0",
   "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
-    "sentrix": "bin/sentrix.js"
+    "borgkit": "bin/borgkit.js"
   },
   "main": "./dist/cli.js",
   "files": [
@@ -45,7 +45,7 @@
     "node": ">=18.0.0"
   },
   "keywords": [
-    "sentrix",
+    "borgkit",
     "agent",
     "agent-mesh",
     "interoperability",
@@ -61,12 +61,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ch4r10t33r/sentrix.git"
+    "url": "git+https://github.com/ch4r10t33r/borgkit.git"
   },
   "bugs": {
-    "url": "https://github.com/ch4r10t33r/sentrix/issues"
+    "url": "https://github.com/ch4r10t33r/borgkit/issues"
   },
-  "homepage": "https://github.com/ch4r10t33r/sentrix#readme",
+  "homepage": "https://github.com/ch4r10t33r/borgkit#readme",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"

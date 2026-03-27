@@ -3,12 +3,12 @@ members  = ["cli", "transport/rust"]
 resolver = "2"
 
 [workspace.package]
-version     = "1.22.0"
+version     = "0.1.0"
 edition     = "2021"
 authors     = ["ch4r10t33r <ch4r10t33r@users.noreply.github.com>"]
 license     = "Apache-2.0"
-repository  = "https://github.com/ch4r10t33r/sentrix"
-homepage    = "https://github.com/ch4r10t33r/sentrix"
+repository  = "https://github.com/ch4r10t33r/borgkit"
+homepage    = "https://github.com/ch4r10t33r/borgkit"
 description = "Scaffold P2P-discoverable, DID-native AI agents across any framework"
 
 [workspace.dependencies]

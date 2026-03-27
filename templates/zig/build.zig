@@ -117,8 +117,8 @@ pub fn build(b: *std.Build) void {
 
     // ── MCP bridge modules ────────────────────────────────────────────────────
     //
-    // mcp_plugin.zig  — inbound bridge: wraps an MCP server as a Sentrix agent
-    // mcp_server.zig  — outbound bridge: exposes a Sentrix agent as an MCP server
+    // mcp_plugin.zig  — inbound bridge: wraps an MCP server as a Borgkit agent
+    // mcp_server.zig  — outbound bridge: exposes a Borgkit agent as an MCP server
 
     const mcp_plugin_mod = b.addModule("mcp_plugin", .{
         .root_source_file = b.path("src/mcp_plugin.zig"),
@@ -138,7 +138,7 @@ pub fn build(b: *std.Build) void {
     // ── main executable ───────────────────────────────────────────────────────
 
     const exe = b.addExecutable(.{
-        .name             = "sentrix-agent",
+        .name             = "borgkit-agent",
         .root_source_file = b.path("src/example_agent.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -164,7 +164,7 @@ pub fn build(b: *std.Build) void {
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
-    const run_step = b.step("run", "Run the Sentrix agent");
+    const run_step = b.step("run", "Run the Borgkit agent");
     run_step.dependOn(&run_cmd.step);
 
     // ── zig build server ──────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ pub fn build(b: *std.Build) void {
     // static library so the build system exercises every code path.
 
     const server_lib = b.addStaticLibrary(.{
-        .name             = "sentrix-server",
+        .name             = "borgkit-server",
         .root_source_file = b.path("src/server.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -182,7 +182,7 @@ pub fn build(b: *std.Build) void {
     server_lib.root_module.addImport("types",  types_mod);
     server_lib.root_module.addImport("iagent", iagent_mod);
 
-    const server_step = b.step("server", "Compile the Sentrix HTTP server module");
+    const server_step = b.step("server", "Compile the Borgkit HTTP server module");
     server_step.dependOn(&b.addInstallArtifact(server_lib, .{}).step);
 
     // ── zig build plugins ─────────────────────────────────────────────────────
@@ -191,7 +191,7 @@ pub fn build(b: *std.Build) void {
     // so `zig build plugins` validates them independently.
 
     const plugins_lib = b.addStaticLibrary(.{
-        .name             = "sentrix-plugins",
+        .name             = "borgkit-plugins",
         .root_source_file = b.path("src/plugins/iPlugin.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -200,7 +200,7 @@ pub fn build(b: *std.Build) void {
     plugins_lib.root_module.addImport("iagent",  iagent_mod);
     plugins_lib.root_module.addImport("iPlugin", iplugin_mod);
 
-    const plugins_step = b.step("plugins", "Compile the Sentrix plugins modules");
+    const plugins_step = b.step("plugins", "Compile the Borgkit plugins modules");
     plugins_step.dependOn(&b.addInstallArtifact(plugins_lib, .{}).step);
 
     // ── zig build mcp ─────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ pub fn build(b: *std.Build) void {
     // validates them independently of the main executable.
 
     const mcp_plugin_lib = b.addStaticLibrary(.{
-        .name             = "sentrix-mcp-plugin",
+        .name             = "borgkit-mcp-plugin",
         .root_source_file = b.path("src/mcp_plugin.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -217,7 +217,7 @@ pub fn build(b: *std.Build) void {
     mcp_plugin_lib.root_module.addImport("types", types_mod);
 
     const mcp_server_lib = b.addStaticLibrary(.{
-        .name             = "sentrix-mcp-server",
+        .name             = "borgkit-mcp-server",
         .root_source_file = b.path("src/mcp_server.zig"),
         .target           = target,
         .optimize         = optimize,

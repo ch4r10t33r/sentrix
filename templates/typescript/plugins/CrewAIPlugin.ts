@@ -1,7 +1,7 @@
 /**
- * CrewAI → Sentrix Plugin (TypeScript) — HTTP Bridge
+ * CrewAI → Borgkit Plugin (TypeScript) — HTTP Bridge
  * ─────────────────────────────────────────────────────────────────────────────
- * Bridges a running CrewAI HTTP service into the Sentrix mesh.
+ * Bridges a running CrewAI HTTP service into the Borgkit mesh.
  *
  * CrewAI is Python-native; this plugin calls it over HTTP so TypeScript agents
  * can invoke CrewAI crews without shipping Python bindings.
@@ -36,17 +36,17 @@
  *
  *   # uvicorn serve_crew:app --port 8000
  *
- * Option B — sentrix-crewai Python adapter (auto-generates endpoints):
+ * Option B — borgkit-crewai Python adapter (auto-generates endpoints):
  *
- *   pip install sentrix-crewai
- *   sentrix-crewai serve --crew my_package:my_crew --port 8000
+ *   pip install borgkit-crewai
+ *   borgkit-crewai serve --crew my_package:my_crew --port 8000
  *
  * ── Usage ─────────────────────────────────────────────────────────────────────
  *
  *   import { CrewAIPlugin } from './plugins/CrewAIPlugin';
  *
  *   const plugin = new CrewAIPlugin({
- *     agentId:    'sentrix://agent/researcher',
+ *     agentId:    'borgkit://agent/researcher',
  *     name:       'ResearchAgent',
  *     version:    '1.0.0',
  *     owner:      '0xYourWallet',
@@ -63,7 +63,7 @@
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -127,7 +127,7 @@ interface RemoteCapability {
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
-export class CrewAIPlugin extends SentrixPlugin<CrewAIService, CrewAIInput, CrewAIOutput> {
+export class CrewAIPlugin extends BorgkitPlugin<CrewAIService, CrewAIInput, CrewAIOutput> {
   private readonly crewConfig: {
     serviceUrl:       string;
     apiKey?:          string;
@@ -311,7 +311,7 @@ export class CrewAIPlugin extends SentrixPlugin<CrewAIService, CrewAIInput, Crew
  * @example
  * ```ts
  * const agent = await wrapCrewAI({
- *   agentId:    'sentrix://agent/writer',
+ *   agentId:    'borgkit://agent/writer',
  *   name:       'WriterCrew',
  *   version:    '1.0.0',
  *   owner:      '0xYourWallet',

@@ -1,5 +1,5 @@
 """
-IAgentClient — standard interface for discovering and calling other Sentrix agents.
+IAgentClient — standard interface for discovering and calling other Borgkit agents.
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod
@@ -21,7 +21,7 @@ from .iagent_discovery import DiscoveryEntry, IAgentDiscovery
 
 class IAgentClient(ABC):
     """
-    Standard interface for discovering and calling Sentrix agents.
+    Standard interface for discovering and calling Borgkit agents.
 
     Combines lookup (find by capability / agent ID) with invocation
     (send AgentRequest, receive AgentResponse) in a single coherent API.
@@ -41,7 +41,7 @@ class IAgentClient(ABC):
     resp = await client.call_capability("weather_forecast", {"city": "NYC"})
 
     # Or call a specific agent:
-    resp = await client.call("sentrix://agent/0xABC", "weather_forecast", {"city": "NYC"})
+    resp = await client.call("borgkit://agent/0xABC", "weather_forecast", {"city": "NYC"})
 
     # With x402 auto-payment:
     from addons.x402.client import MockWalletProvider
@@ -93,7 +93,7 @@ class IAgentClient(ABC):
         builds an AgentRequest, and dispatches it over the transport.
 
         Args:
-            agent_id:    The target agent's Sentrix ID (e.g. sentrix://agent/0xABC…)
+            agent_id:    The target agent's Borgkit ID (e.g. borgkit://agent/0xABC…)
             capability:  The capability to invoke on the target agent.
             payload:     JSON-serialisable dict passed as the request payload.
             caller_id:   Identity of the calling agent (default: "anonymous").
@@ -236,7 +236,7 @@ class IAgentClient(ABC):
         by a single ``StreamEnd`` frame.
 
         Args:
-            agent_id:   The target agent's Sentrix ID.
+            agent_id:   The target agent's Borgkit ID.
             capability: The capability to invoke.
             payload:    JSON-serialisable dict passed as the request payload.
             caller_id:  Identity of the calling agent (default: "anonymous").

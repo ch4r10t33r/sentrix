@@ -36,13 +36,13 @@ import { DiscoveryEntry,
  */
 export class ExampleAgent implements IAgent {
   // ─── ERC-8004 Identity ────────────────────────────────────────────────────
-  readonly agentId     = 'sentrix://agent/example';
+  readonly agentId     = 'borgkit://agent/example';
   readonly owner       = '0xYourWalletAddress';
   readonly metadataUri = 'ipfs://QmYourMetadataHashHere';
   readonly metadata: AgentMetadata = {
     name:        'ExampleAgent',
     version:     '0.1.0',
-    description: 'A starter Sentrix agent',
+    description: 'A starter Borgkit agent',
     tags:        ['example', 'starter'],
   };
 
@@ -95,9 +95,9 @@ export class ExampleAgent implements IAgent {
   async registerDiscovery(): Promise<void> {
     const { DiscoveryFactory } = await import('../discovery/DiscoveryFactory');
 
-    // Honour SENTRIX_DISCOVERY_TYPE for libp2p / onchain backends; the factory
-    // already handles SENTRIX_DISCOVERY_URL → http and defaults to local.
-    const discoveryType = process.env['SENTRIX_DISCOVERY_TYPE'];
+    // Honour BORGKIT_DISCOVERY_TYPE for libp2p / onchain backends; the factory
+    // already handles BORGKIT_DISCOVERY_URL → http and defaults to local.
+    const discoveryType = process.env['BORGKIT_DISCOVERY_TYPE'];
     this._registry = await DiscoveryFactory.create(
       discoveryType === 'libp2p'  ? { type: 'libp2p' }  :
       discoveryType === 'onchain' ? { type: 'onchain' } :
@@ -120,9 +120,9 @@ export class ExampleAgent implements IAgent {
 
   // ─── ANR / Identity exposure ──────────────────────────────────────────────
   getAnr(): DiscoveryEntry {
-    const host     = process.env['SENTRIX_HOST'] ?? 'localhost';
-    const port     = parseInt(process.env['SENTRIX_PORT'] ?? '6174', 10);
-    const tls      = (process.env['SENTRIX_TLS'] ?? 'false').toLowerCase() === 'true';
+    const host     = process.env['BORGKIT_HOST'] ?? 'localhost';
+    const port     = parseInt(process.env['BORGKIT_PORT'] ?? '6174', 10);
+    const tls      = (process.env['BORGKIT_TLS'] ?? 'false').toLowerCase() === 'true';
 
     // Build multiaddr when peerId is known (libp2p mode)
     const peerId    = this._p2pInfo?.peerId ?? null;
@@ -152,9 +152,9 @@ export class ExampleAgent implements IAgent {
     // 1. Owner is always allowed
     if (caller === this.owner || caller === this.agentId) return true;
 
-    // 2. Capability-specific allow-list (opt-in via SENTRIX_PERMITTED_CALLERS env var)
+    // 2. Capability-specific allow-list (opt-in via BORGKIT_PERMITTED_CALLERS env var)
     //    Format: "cap1:caller1,caller2;cap2:caller3"
-    const permittedRaw = process.env['SENTRIX_PERMITTED_CALLERS'];
+    const permittedRaw = process.env['BORGKIT_PERMITTED_CALLERS'];
     if (permittedRaw) {
       const capMap = parsePermittedCallers(permittedRaw);
       const allowed = capMap.get(capability) ?? capMap.get('*') ?? null;
@@ -162,8 +162,8 @@ export class ExampleAgent implements IAgent {
     }
 
     // 3. Optional ERC-8004 on-chain delegation check
-    //    Activated by SENTRIX_REGISTRY_ADDRESS env var
-    const registryAddress = process.env['SENTRIX_REGISTRY_ADDRESS'];
+    //    Activated by BORGKIT_REGISTRY_ADDRESS env var
+    const registryAddress = process.env['BORGKIT_REGISTRY_ADDRESS'];
     if (registryAddress) {
       return this._checkOnChainDelegation(caller, capability, registryAddress);
     }
@@ -174,9 +174,9 @@ export class ExampleAgent implements IAgent {
 
   // ─── Signing ──────────────────────────────────────────────────────────────
   async signMessage(message: string): Promise<string> {
-    const privKeyHex = process.env['SENTRIX_AGENT_KEY'];
+    const privKeyHex = process.env['BORGKIT_AGENT_KEY'];
     if (!privKeyHex) {
-      throw new Error('signMessage: no signing key — set SENTRIX_AGENT_KEY=<hex-private-key>');
+      throw new Error('signMessage: no signing key — set BORGKIT_AGENT_KEY=<hex-private-key>');
     }
     const { ethers } = await import('ethers');
     const wallet = new ethers.Wallet(
@@ -197,7 +197,7 @@ export class ExampleAgent implements IAgent {
     if (!ethersModule) return true; // ethers not installed — permissive fallback
 
     const { ethers } = ethersModule;
-    const rpcUrl = process.env['SENTRIX_RPC_URL'];
+    const rpcUrl = process.env['BORGKIT_RPC_URL'];
     if (!rpcUrl) return true; // no RPC configured — permissive fallback
 
     try {
@@ -217,7 +217,7 @@ export class ExampleAgent implements IAgent {
 // ─── Module-level helpers ─────────────────────────────────────────────────────
 
 /**
- * Parse a SENTRIX_PERMITTED_CALLERS string into a capability → caller-set map.
+ * Parse a BORGKIT_PERMITTED_CALLERS string into a capability → caller-set map.
  *
  * Format:  "cap1:caller1,caller2;cap2:caller3"
  * Special: capability segment "*" matches all capabilities.
@@ -240,15 +240,15 @@ function parsePermittedCallers(raw: string): Map<string, Set<string>> {
 //
 // Run directly:
 //   npx ts-node agents/ExampleAgent.ts
-//   SENTRIX_PORT=9090 npx ts-node agents/ExampleAgent.ts
+//   BORGKIT_PORT=9090 npx ts-node agents/ExampleAgent.ts
 //
-// Or via sentrix-cli:
-//   sentrix run ExampleAgent --port 6174
+// Or via borgkit-cli:
+//   borgkit run ExampleAgent --port 6174
 //
 if (require.main === module) {
   (async () => {
     const { serve } = await import('../server');
-    const port = parseInt(process.env.SENTRIX_PORT ?? '6174', 10);
+    const port = parseInt(process.env.BORGKIT_PORT ?? '6174', 10);
     const agent = new ExampleAgent();
     await serve(agent, { port });
   })();

@@ -2,7 +2,7 @@
 Cross-framework A2A example
 ────────────────────────────────────────────────────────────────────────────────
 Two agents built with different frameworks discover and call each other via the
-Sentrix mesh:
+Borgkit mesh:
 
   ResearchAgent  (Google ADK / Gemini)   — capability: research_topic
   WriterAgent    (CrewAI    / GPT-4o)    — capability: write_article
@@ -46,7 +46,7 @@ def banner():
     mode_crew = f"{Y}DEMO{R}"  if CREW_DEMO else f"{G}LIVE (GPT-4o){R}"
     print(f"""
 {LINE}
-  {B}{C}Sentrix Cross-Framework Example{R}
+  {B}{C}Borgkit Cross-Framework Example{R}
 {LINE}
   {B}ResearchAgent{R}  Google ADK   [{mode_adk}]
   {B}WriterAgent{R}    CrewAI       [{mode_crew}]
@@ -87,12 +87,12 @@ def print_response(label: str, resp):
 
 # ── In-process client ─────────────────────────────────────────────────────────
 #
-# Sentrix AgentClient normally dispatches over HTTP (POST /invoke).
+# Borgkit AgentClient normally dispatches over HTTP (POST /invoke).
 # For this single-process demo we route calls directly to the in-memory
 # agent instances — same API, no network required.
 #
 # In production: replace with  AgentClient(discovery)  and start each agent
-# as a separate HTTP server with  sentrix run --port <N>
+# as a separate HTTP server with  borgkit run --port <N>
 
 class InProcessClient:
     """

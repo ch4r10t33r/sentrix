@@ -189,7 +189,7 @@ pub fn run(args: InitArgs) -> Result<()> {
         created_files.push(rel_dest);
     }
 
-    // 6. Write sentrix.config.json
+    // 6. Write borgkit.config.json
     let now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
@@ -204,11 +204,11 @@ pub fn run(args: InitArgs) -> Result<()> {
         "createdAt": created_at
     });
 
-    let config_path = project_path.join("sentrix.config.json");
+    let config_path = project_path.join("borgkit.config.json");
     let config_file =
-        std::fs::File::create(&config_path).context("Failed to create sentrix.config.json")?;
+        std::fs::File::create(&config_path).context("Failed to create borgkit.config.json")?;
     serde_json::to_writer_pretty(config_file, &config)
-        .context("Failed to write sentrix.config.json")?;
+        .context("Failed to write borgkit.config.json")?;
 
     // 7. Print summary
     spinner.finish_and_clear();
@@ -223,10 +223,10 @@ pub fn run(args: InitArgs) -> Result<()> {
         };
         logger::tree(prefix_sym, name);
     }
-    logger::tree("└──", "sentrix.config.json");
+    logger::tree("└──", "borgkit.config.json");
 
     logger::title("Next steps:");
-    logger::dim(&format!("  cd {} && sentrix run {}", args.name, agent_name));
+    logger::dim(&format!("  cd {} && borgkit run {}", args.name, agent_name));
 
     Ok(())
 }

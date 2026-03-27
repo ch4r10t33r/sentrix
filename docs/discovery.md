@@ -1,6 +1,6 @@
 # Discovery Layer
 
-Sentrix's discovery layer is **pluggable** — you swap backends without changing a single line of agent code. This document describes each adapter, when to use it, and how the `DiscoveryFactory` selects between them.
+Borgkit's discovery layer is **pluggable** — you swap backends without changing a single line of agent code. This document describes each adapter, when to use it, and how the `DiscoveryFactory` selects between them.
 
 ---
 
@@ -43,7 +43,7 @@ No network calls. Zero latency. Perfect for running multiple agents in one proce
 
 ## HttpDiscovery (optional, centralised)
 
-**Backend:** any HTTP server that implements the Sentrix registry REST API
+**Backend:** any HTTP server that implements the Borgkit registry REST API
 **Use when:** managed staging, enterprise environments, bootstrapping a new P2P network
 
 ### Activating HttpDiscovery
@@ -52,8 +52,8 @@ Three ways to enable it:
 
 **1. Environment variable (no code change)**
 ```bash
-export SENTRIX_DISCOVERY_URL=https://registry.example.com
-export SENTRIX_DISCOVERY_KEY=my-api-key   # optional
+export BORGKIT_DISCOVERY_URL=https://registry.example.com
+export BORGKIT_DISCOVERY_KEY=my-api-key   # optional
 python -m agents.my_agent
 ```
 
@@ -103,7 +103,7 @@ HttpDiscovery(
 
 ```
 1. Explicit type in config / constructor argument
-2. SENTRIX_DISCOVERY_URL env var  →  HttpDiscovery
+2. BORGKIT_DISCOVERY_URL env var  →  HttpDiscovery
 3. (default)                      →  LocalDiscovery
 ```
 
@@ -164,7 +164,7 @@ Is this a local dev / test scenario?
   → LocalDiscovery  (default, no config needed)
 
 Do you have a managed registry or are running in an enterprise network?
-  → HttpDiscovery   (set SENTRIX_DISCOVERY_URL)
+  → HttpDiscovery   (set BORGKIT_DISCOVERY_URL)
 
 Are you running a production P2P mesh with untrusted peers?
   → GossipDiscovery (coming)

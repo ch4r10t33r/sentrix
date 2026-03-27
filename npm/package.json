@@ -1,7 +1,7 @@
 {
-  "name": "@ch4r10teer41/sentrix-cli-win32-x64",
+  "name": "@ch4r10teer41/borgkit-cli-win32-x64",
   "version": "1.12.0",
-  "description": "win32 x64 native binary for @ch4r10teer41/sentrix-cli",
+  "description": "win32 x64 native binary for @ch4r10teer41/borgkit-cli",
   "os": ["win32"],
   "cpu": ["x64"],
   "bin": {},
@@ -9,8 +9,8 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ch4r10t33r/sentrix.git",
-    "directory": "npm/sentrix-cli-win32-x64"
+    "url": "https://github.com/ch4r10t33r/borgkit.git",
+    "directory": "npm/borgkit-cli-win32-x64"
   },
   "publishConfig": {
     "access": "public"

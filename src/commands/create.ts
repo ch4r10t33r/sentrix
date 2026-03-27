@@ -64,7 +64,7 @@ import { AgentRequest }  from '../interfaces/IAgentRequest';
 import { AgentResponse } from '../interfaces/IAgentResponse';
 
 export class ${name} implements IAgent {
-  readonly agentId  = 'sentrix://agent/${name.toLowerCase()}';
+  readonly agentId  = 'borgkit://agent/${name.toLowerCase()}';
   readonly owner    = '0xYourWalletAddress';
   readonly metadata = { name: '${name}', version: '0.1.0', tags: [${caps.map(c => `'${c}'`).join(', ')}] };
 
@@ -93,7 +93,7 @@ from interfaces.agent_response import AgentResponse
 from typing import List
 
 class ${name}(IAgent):
-    agent_id = 'sentrix://agent/${toSnake(name)}'
+    agent_id = 'borgkit://agent/${toSnake(name)}'
     owner    = '0xYourWalletAddress'
     metadata = {'name': '${name}', 'version': '0.1.0', 'tags': [${caps.map(c => `'${c}'`).join(', ')}]}
 
@@ -123,7 +123,7 @@ pub struct ${name};
 
 #[async_trait]
 impl IAgent for ${name} {
-    fn agent_id(&self) -> &str { "sentrix://agent/${name.toLowerCase()}" }
+    fn agent_id(&self) -> &str { "borgkit://agent/${name.toLowerCase()}" }
     fn owner(&self)    -> &str { "0xYourWalletAddress" }
 
     fn get_capabilities(&self) -> Vec<String> {
@@ -143,7 +143,7 @@ ${caps.map(c => `            "${c}" => AgentResponse::success(req.request_id, js
 const types = @import("../interfaces/types.zig");
 
 pub const ${name} = struct {
-    agent_id: []const u8 = "sentrix://agent/${name.toLowerCase()}",
+    agent_id: []const u8 = "borgkit://agent/${name.toLowerCase()}",
     owner:    []const u8 = "0xYourWalletAddress",
 
     pub fn getCapabilities(_: *const ${name}) []const []const u8 {
@@ -166,10 +166,10 @@ pub const ${name} = struct {
 const GOOGLE_ADK_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — Google ADK agent, wrapped for the Sentrix mesh.
+${name} — Google ADK agent, wrapped for the Borgkit mesh.
 
-Each function below becomes one Sentrix capability.  The wrap_google_adk()
-call translates between Sentrix AgentRequest / AgentResponse and the ADK
+Each function below becomes one Borgkit capability.  The wrap_google_adk()
+call translates between Borgkit AgentRequest / AgentResponse and the ADK
 Runner transparently.
 """
 from google.adk.agents          import Agent
@@ -194,19 +194,19 @@ _adk_agent = Agent(
 )
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 # After this call, ${name} implements IAgent and is fully discoverable.
 ${name} = wrap_google_adk(
     agent    = _adk_agent,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "adk"],
 )
 `,
 
   typescript: (name, caps) => `/**
- * ${name} — Google ADK agent, wrapped for the Sentrix mesh.
+ * ${name} — Google ADK agent, wrapped for the Borgkit mesh.
  *
  * Install: npm install @google-labs/agent-development-kit @google/generative-ai
  */
@@ -230,10 +230,10 @@ const _adkAgent = new Agent({
   tools:       [${caps.map(c => `new FunctionTool(${c})`).join(', ')}],
 });
 
-// ── Sentrix-compliant wrapper ─────────────────────────────────────────────────
+// ── Borgkit-compliant wrapper ─────────────────────────────────────────────────
 // Adapts the ADK agent to the IAgent interface for full mesh interoperability.
 export const ${name}: IAgent = {
-  agentId:  'sentrix://agent/${name.toLowerCase()}',
+  agentId:  'borgkit://agent/${name.toLowerCase()}',
   owner:    '0xYourWalletAddress',
   metadata: { name: '${name}', version: '0.1.0', tags: [${caps.map(c => `'${c}'`).join(', ')}, 'adk'] },
 
@@ -262,9 +262,9 @@ export const ${name}: IAgent = {
 const CREWAI_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — CrewAI agent, wrapped for the Sentrix mesh.
+${name} — CrewAI agent, wrapped for the Borgkit mesh.
 
-Each @tool-decorated function becomes one Sentrix capability.  The
+Each @tool-decorated function becomes one Borgkit capability.  The
 wrap_crewai() call handles AgentRequest / AgentResponse translation and
 runs tasks via a single-agent Crew.
 """
@@ -295,12 +295,12 @@ _crew_agent = CrewAgent(
 )
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 # After this call, ${name} implements IAgent and is fully discoverable.
 ${name} = wrap_crewai(
     agent    = _crew_agent,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "crewai"],
 )
@@ -312,9 +312,9 @@ ${name} = wrap_crewai(
 const LANGGRAPH_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — LangGraph ReAct agent, wrapped for the Sentrix mesh.
+${name} — LangGraph ReAct agent, wrapped for the Borgkit mesh.
 
-Each @tool-decorated function becomes one Sentrix capability.  The
+Each @tool-decorated function becomes one Borgkit capability.  The
 wrap_langgraph() call handles AgentRequest / AgentResponse translation
 and drives the graph via standard LangGraph invocation.
 """
@@ -338,12 +338,12 @@ _llm   = ChatOpenAI(model="gpt-4o-mini")
 _graph = create_react_agent(_llm, tools=[${caps.join(', ')}])
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 # After this call, ${name} implements IAgent and is fully discoverable.
 ${name} = wrap_langgraph(
     graph    = _graph,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "langgraph"],
     tools    = [${caps.join(', ')}],   # explicit list speeds up capability discovery
@@ -351,7 +351,7 @@ ${name} = wrap_langgraph(
 `,
 
   typescript: (name, caps) => `/**
- * ${name} — LangGraph ReAct agent, wrapped for the Sentrix mesh.
+ * ${name} — LangGraph ReAct agent, wrapped for the Borgkit mesh.
  *
  * Install: npm install @langchain/langgraph @langchain/openai @langchain/core zod
  */
@@ -382,11 +382,11 @@ const _llm   = new ChatOpenAI({ model: 'gpt-4o-mini' });
 const _graph = createReactAgent({ llm: _llm, tools: [${caps.map(c => `${c}Tool`).join(', ')}] });
 
 
-// ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+// ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 // After this call, ${name} implements IAgent and is fully discoverable.
 export const ${name} = wrapLangGraph(_graph, {
   name:           '${name}',
-  agentId:        'sentrix://agent/${name.toLowerCase()}',
+  agentId:        'borgkit://agent/${name.toLowerCase()}',
   owner:          '0xYourWalletAddress',
   tags:           [${caps.map(c => `'${c}'`).join(', ')}, 'langgraph'],
   stateInputKey:  'messages',
@@ -400,9 +400,9 @@ export const ${name} = wrapLangGraph(_graph, {
 const AGNO_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — Agno agent, wrapped for the Sentrix mesh.
+${name} — Agno agent, wrapped for the Borgkit mesh.
 
-Each tool function becomes one Sentrix capability.  wrap_agno() handles
+Each tool function becomes one Borgkit capability.  wrap_agno() handles
 AgentRequest / AgentResponse translation automatically.
 """
 from agno.agent              import Agent
@@ -427,11 +427,11 @@ _agno_agent = Agent(
 )
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 ${name} = wrap_agno(
     agent    = _agno_agent,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "agno"],
 )
@@ -443,9 +443,9 @@ ${name} = wrap_agno(
 const LLAMAINDEX_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — LlamaIndex ReAct agent, wrapped for the Sentrix mesh.
+${name} — LlamaIndex ReAct agent, wrapped for the Borgkit mesh.
 
-Each FunctionTool becomes one Sentrix capability.  wrap_llamaindex() handles
+Each FunctionTool becomes one Borgkit capability.  wrap_llamaindex() handles
 AgentRequest / AgentResponse translation automatically.
 """
 from llama_index.core.agent         import ReActAgent
@@ -473,11 +473,11 @@ _agent = ReActAgent.from_tools(
 )
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 ${name} = wrap_llamaindex(
     agent    = _agent,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "llamaindex"],
     tools    = [${caps.map(c => `_tool_${c}`).join(', ')}],
@@ -485,7 +485,7 @@ ${name} = wrap_llamaindex(
 `,
 
   typescript: (name, caps) => `/**
- * ${name} — LlamaIndex agent, wrapped for the Sentrix mesh.
+ * ${name} — LlamaIndex agent, wrapped for the Borgkit mesh.
  *
  * Install: npm install llamaindex @llamaindex/openai
  */
@@ -516,9 +516,9 @@ const _agent = new OpenAIAgent({
 });
 
 
-// ── Sentrix-compliant wrapper ─────────────────────────────────────────────────
+// ── Borgkit-compliant wrapper ─────────────────────────────────────────────────
 export const ${name}: IAgent = {
-  agentId:  'sentrix://agent/${name.toLowerCase()}',
+  agentId:  'borgkit://agent/${name.toLowerCase()}',
   owner:    '0xYourWalletAddress',
   metadata: { name: '${name}', version: '0.1.0', tags: [${caps.map(c => `'${c}'`).join(', ')}, 'llamaindex'] },
 
@@ -545,9 +545,9 @@ export const ${name}: IAgent = {
 const SMOLAGENTS_TEMPLATES: LangTemplates = {
 
   python: (name, caps) => `"""
-${name} — smolagents agent, wrapped for the Sentrix mesh.
+${name} — smolagents agent, wrapped for the Borgkit mesh.
 
-Each @tool-decorated function becomes one Sentrix capability.
+Each @tool-decorated function becomes one Borgkit capability.
 wrap_smolagents() handles AgentRequest / AgentResponse translation.
 
 Docs: https://huggingface.co/docs/smolagents
@@ -583,11 +583,11 @@ _agent = ToolCallingAgent(
 )
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 ${name} = wrap_smolagents(
     agent    = _agent,
     name     = "${name}",
-    agent_id = "sentrix://agent/${toSnake(name)}",
+    agent_id = "borgkit://agent/${toSnake(name)}",
     owner    = "0xYourWalletAddress",
     tags     = [${caps.map(c => `"${c}"`).join(', ')}, "smolagents"],
 )
@@ -620,7 +620,7 @@ export async function createCommand(
   // ── Validate project dir ───────────────────────────────────────────────────
   const agentsDir = path.join(projectDir, 'agents');
   if (!fs.existsSync(agentsDir)) {
-    logger.error('No "agents/" folder found. Are you inside a Sentrix project? Run sentrix init first.');
+    logger.error('No "agents/" folder found. Are you inside a Borgkit project? Run borgkit init first.');
     process.exit(1);
   }
 

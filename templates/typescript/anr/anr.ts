@@ -20,7 +20,7 @@
  *    udp        UDP port (uint16 big-endian)
  *
  *  Agent-specific  (prefix "a."):
- *    a.id       agent identifier string  e.g. "sentrix://agent/0xABC"
+ *    a.id       agent identifier string  e.g. "borgkit://agent/0xABC"
  *    a.name     human-readable name
  *    a.ver      semver string  e.g. "1.2.3"
  *    a.caps     RLP list of capability name strings

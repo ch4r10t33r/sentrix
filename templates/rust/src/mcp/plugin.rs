@@ -1,8 +1,8 @@
-//! MCP Inbound Bridge — wraps an MCP server as a Sentrix `IAgent`.
+//! MCP Inbound Bridge — wraps an MCP server as a Borgkit `IAgent`.
 //!
 //! `McpPlugin` connects to any MCP-compatible server (subprocess over stdio or
 //! an HTTP/SSE endpoint), performs the JSON-RPC 2.0 handshake, fetches the
-//! server's tool list, and exposes each tool as a Sentrix capability.
+//! server's tool list, and exposes each tool as a Borgkit capability.
 //!
 //! ── Transports ────────────────────────────────────────────────────────────────
 //!
@@ -15,26 +15,26 @@
 //!
 //! ── Usage (stdio) ─────────────────────────────────────────────────────────────
 //!
-//!   use sentrix::mcp::McpPlugin;
-//!   use sentrix::plugins::base::PluginConfig;
+//!   use borgkit::mcp::McpPlugin;
+//!   use borgkit::plugins::base::PluginConfig;
 //!
 //!   let agent = McpPlugin::from_command(
 //!       &["npx", "-y", "@modelcontextprotocol/server-github"],
 //!       PluginConfig {
-//!           agent_id: "sentrix://agent/github-mcp".to_string(),
+//!           agent_id: "borgkit://agent/github-mcp".to_string(),
 //!           owner:    "0xYourWallet".to_string(),
 //!           ..Default::default()
 //!       },
 //!       None,
 //!   ).await?;
 //!
-//!   sentrix::server::serve(agent, 6174).await?;
+//!   borgkit::server::serve(agent, 6174).await?;
 //!
 //! ── Usage (HTTP) ──────────────────────────────────────────────────────────────
 //!
 //!   let agent = McpPlugin::from_url(
 //!       "http://localhost:3001",
-//!       PluginConfig { agent_id: "sentrix://agent/fetch-mcp".to_string(), ..Default::default() },
+//!       PluginConfig { agent_id: "borgkit://agent/fetch-mcp".to_string(), ..Default::default() },
 //!       None,
 //!   ).await?;
 
@@ -83,7 +83,7 @@ pub enum McpTransport {
 
 // ── McpPlugin ─────────────────────────────────────────────────────────────────
 
-/// Inbound MCP bridge: wraps an MCP server as a Sentrix `IAgent`.
+/// Inbound MCP bridge: wraps an MCP server as a Borgkit `IAgent`.
 ///
 /// Use [`McpPlugin::from_command`] for stdio subprocesses or
 /// [`McpPlugin::from_url`] for HTTP endpoints.
@@ -212,7 +212,7 @@ impl McpPlugin {
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities":    {},
-                "clientInfo": { "name": "sentrix", "version": "1.0.0" }
+                "clientInfo": { "name": "borgkit", "version": "1.0.0" }
             }
         });
         let init_resp = stdio_request(&mut stdin, &mut stdout, &init_req).await?;
@@ -272,7 +272,7 @@ impl McpPlugin {
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities":    {},
-                "clientInfo": { "name": "sentrix", "version": "1.0.0" }
+                "clientInfo": { "name": "borgkit", "version": "1.0.0" }
             }
         });
         let init_resp = http_request(&client, &base_url, &headers, &init_req).await?;
@@ -333,7 +333,7 @@ impl McpPlugin {
     /// ```rust
     /// let agent = McpPlugin::from_command(&["npx", "-y", "@modelcontextprotocol/server-github"],
     ///     config, None).await?;
-    /// sentrix::server::serve(agent.wrap(), 6174).await?;
+    /// borgkit::server::serve(agent.wrap(), 6174).await?;
     /// ```
     pub fn wrap(self) -> Self {
         self
@@ -434,7 +434,7 @@ impl IAgent for McpPlugin {
         // 3. Send via transport.
         //
         // `IAgent::handle_request` takes `&self`, but writing to the transport
-        // requires `&mut self`.  The transport is accessed exclusively (Sentrix
+        // requires `&mut self`.  The transport is accessed exclusively (Borgkit
         // processes one request at a time per agent instance) so we use a raw
         // pointer cast to obtain a mutable reference.  Production code should
         // replace the transport field with `tokio::sync::Mutex<McpTransport>`.

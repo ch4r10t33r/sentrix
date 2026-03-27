@@ -116,7 +116,7 @@ Agents are not pre-wired; they are dynamically discoverable.
 SentriX is not a closed ecosystem. It is a **standard layer** that others can build on.
 
 ### 4. Lightweight & Developer-Friendly
-Designed for rapid agent creation (`sentrix init`) and minimal boilerplate.
+Designed for rapid agent creation (`borgkit init`) and minimal boilerplate.
 
 ### 5. Extensible by Design
 Supports:
@@ -152,7 +152,7 @@ SentriX is the **internet protocol layer** that connects them.
 
 ---
 
-## Sentrix vs. A2A (Agent2Agent Protocol)
+## Borgkit vs. A2A (Agent2Agent Protocol)
 
 ### What A2A is
 
@@ -165,7 +165,7 @@ SentriX is the **internet protocol layer** that connects them.
 
 ### Side-by-side
 
-| Dimension | A2A | Sentrix |
+| Dimension | A2A | Borgkit |
 |---|---|---|
 | **Transport** | HTTP(S) JSON-RPC — fixed URLs | libp2p P2P mesh — no fixed addresses |
 | **Discovery** | Agent Card at known URL (pull) | Gossip-based — agents announce, peers propagate |
@@ -173,18 +173,18 @@ SentriX is the **internet protocol layer** that connects them.
 | **Framework wrapping** | Implement A2A protocol directly in your agent | Plugin system — wrap any existing agent without rewriting |
 | **MCP interop** | No | Bidirectional MCP bridge |
 | **Task lifecycle** | Formal (submitted → working → complete) | Request/response + streaming, no formal task state machine |
-| **CLI scaffolding** | No | `sentrix init`, `sentrix create agent`, `sentrix run` |
+| **CLI scaffolding** | No | `borgkit init`, `borgkit create agent`, `borgkit run` |
 | **Language SDKs** | Python, Go, JS, Java, .NET | Python, TypeScript (Rust CLI in progress) |
 | **Governance** | Google / Linux Foundation | Independent |
 
-### Where Sentrix is structurally different
+### Where Borgkit is structurally different
 
 **1. P2P vs. client-server topology**
 
 A2A assumes agents have stable HTTP URLs. Agent A calling Agent B requires knowing B's URL ahead of
 time — fundamentally a microservices model for agents.
 
-Sentrix assumes agents may be ephemeral, mobile, or behind NAT. libp2p handles peer addressing, hole
+Borgkit assumes agents may be ephemeral, mobile, or behind NAT. libp2p handles peer addressing, hole
 punching, and routing. An agent can join and leave the mesh without a static URL.
 
 **2. Discovery model**
@@ -192,16 +192,16 @@ punching, and routing. An agent can join and leave the mesh without a static URL
 A2A discovery is pull-based at a known address — you have to know where to look (`.well-known/`
 endpoint convention).
 
-Sentrix uses gossip propagation — when an agent registers, its ANR (Agent Network Record) spreads to
+Borgkit uses gossip propagation — when an agent registers, its ANR (Agent Network Record) spreads to
 all peers automatically. Any agent can ask "who can do X?" without knowing URLs in advance.
 
 **3. Framework plugin architecture**
 
-A2A requires implementing their protocol in your agent. Sentrix uses a plugin adaptor pattern —
-`wrap_langchain()`, `wrap_openai()`, `wrap_mcp()` — your existing agent becomes Sentrix-native in
+A2A requires implementing their protocol in your agent. Borgkit uses a plugin adaptor pattern —
+`wrap_langchain()`, `wrap_openai()`, `wrap_mcp()` — your existing agent becomes Borgkit-native in
 one line, with capabilities extracted automatically from the framework's own metadata.
 
 **4. Payments as a first-class primitive**
 
-A2A has deferred payments to a future roadmap. Sentrix has **x402** gating for on-chain micropayments and, separately, **MPP (Machine Payments Protocol)** support via plugins in the TypeScript, Rust, and Zig templates — HTTP 402 challenge–credential–receipt flows with Tempo stablecoin, Stripe Secure Payment Tokens, or Lightning ([mpp.dev](https://mpp.dev)). Capabilities become billable services without inventing a custom payment protocol.
+A2A has deferred payments to a future roadmap. Borgkit has **x402** gating for on-chain micropayments and, separately, **MPP (Machine Payments Protocol)** support via plugins in the TypeScript, Rust, and Zig templates — HTTP 402 challenge–credential–receipt flows with Tempo stablecoin, Stripe Secure Payment Tokens, or Lightning ([mpp.dev](https://mpp.dev)). Capabilities become billable services without inventing a custom payment protocol.
 

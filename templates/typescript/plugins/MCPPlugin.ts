@@ -1,10 +1,10 @@
 /**
- * Sentrix ↔ MCP Bridge — TypeScript (inbound direction)
+ * Borgkit ↔ MCP Bridge — TypeScript (inbound direction)
  * ─────────────────────────────────────────────────────────────────────────────
- * Wraps any MCP-compatible server as a Sentrix agent.
+ * Wraps any MCP-compatible server as a Borgkit agent.
  *
- * Every MCP tool exposed by the server becomes a Sentrix capability.
- * The wrapped agent can be registered with discovery, called by other Sentrix
+ * Every MCP tool exposed by the server becomes a Borgkit capability.
+ * The wrapped agent can be registered with discovery, called by other Borgkit
  * agents, and served over HTTP — without changing the underlying MCP server.
  *
  * Supported transports
@@ -33,7 +33,7 @@
  * ```
  */
 
-import { SentrixPlugin, WrappedAgent, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, WrappedAgent, PluginConfig, CapabilityDescriptor } from './IPlugin';
 import { AgentRequest }  from '../interfaces/IAgentRequest';
 import { AgentResponse } from '../interfaces/IAgentResponse';
 
@@ -48,12 +48,12 @@ interface MCPTool {
 // ── MCPPlugin ─────────────────────────────────────────────────────────────────
 
 /**
- * Sentrix plugin that wraps any MCP server as a discoverable Sentrix agent.
+ * Borgkit plugin that wraps any MCP server as a discoverable Borgkit agent.
  *
  * Build instances with the static async factory methods — do not use `new`
  * directly (the MCP client session must be established asynchronously).
  */
-export class MCPPlugin extends SentrixPlugin<null, Record<string, unknown>, unknown> {
+export class MCPPlugin extends BorgkitPlugin<null, Record<string, unknown>, unknown> {
   private client:  unknown = null;   // @modelcontextprotocol/sdk Client
   private tools:   MCPTool[] = [];
   private cleanup: (() => Promise<void>) | null = null;
@@ -68,7 +68,7 @@ export class MCPPlugin extends SentrixPlugin<null, Record<string, unknown>, unkn
    * Launch `command` as a subprocess MCP server and connect to it.
    *
    * @param command  argv array, e.g. `['npx', '-y', '@modelcontextprotocol/server-github']`
-   * @param config   Sentrix PluginConfig for the resulting agent.
+   * @param config   Borgkit PluginConfig for the resulting agent.
    * @param env      Extra env vars forwarded to the subprocess.
    *
    * @example
@@ -110,7 +110,7 @@ export class MCPPlugin extends SentrixPlugin<null, Record<string, unknown>, unkn
    * Connect to an MCP server over SSE or Streamable HTTP.
    *
    * @param url      SSE endpoint (`http://host/sse`) or Streamable HTTP (`http://host/mcp`)
-   * @param config   Sentrix PluginConfig.
+   * @param config   Borgkit PluginConfig.
    * @param headers  Optional HTTP headers (e.g. `{ Authorization: 'Bearer sk-...' }`).
    *
    * @example
@@ -167,7 +167,7 @@ export class MCPPlugin extends SentrixPlugin<null, Record<string, unknown>, unkn
     }));
   }
 
-  // ── SentrixPlugin contract ───────────────────────────────────────────────────
+  // ── BorgkitPlugin contract ───────────────────────────────────────────────────
 
   extractCapabilities(_agent: null): CapabilityDescriptor[] {
     return this.tools.map(t => ({

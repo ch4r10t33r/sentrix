@@ -1,7 +1,7 @@
-//! OpenAI → Sentrix Plugin (Zig) — HTTP Bridge
+//! OpenAI → Borgkit Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps an OpenAI-compatible chat completions endpoint so it participates in
-//! the Sentrix mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
+//! the Borgkit mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
 //!
 //! ── OpenAI API contract ────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(openai.OpenAIService, openai.OpenAIPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/openai",
+//!       .agent_id = "borgkit://agent/openai",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

@@ -1,7 +1,7 @@
 /**
- * OpenAI Agents SDK → Sentrix Plugin (TypeScript)
+ * OpenAI Agents SDK → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
- * Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Sentrix
+ * Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Borgkit
  * IAgent on the mesh — discoverable, callable by other agents, and serveable
  * over HTTP via the built-in server.
  *
@@ -39,11 +39,11 @@
  * });
  *
  * // Verbose:
- * const plugin = new OpenAIPlugin({ agentId: 'sentrix://agent/weather', name: 'WeatherBot', ... });
+ * const plugin = new OpenAIPlugin({ agentId: 'borgkit://agent/weather', name: 'WeatherBot', ... });
  * const agent  = plugin.wrap(oaiAgent);
  *
  * // One-liner:
- * const agent = wrapOpenAI(oaiAgent, { agentId: 'sentrix://agent/weather', name: 'WeatherBot', ... });
+ * const agent = wrapOpenAI(oaiAgent, { agentId: 'borgkit://agent/weather', name: 'WeatherBot', ... });
  *
  * await agent.serve({ port: 8082 });
  * ```
@@ -51,12 +51,12 @@
 
 import { AgentRequest }  from '../interfaces/IAgentRequest';
 import { AgentResponse } from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
 
 // ── extended config ────────────────────────────────────────────────────────────
 
 export interface OpenAIPluginConfig extends PluginConfig {
-  /** Expose each tool as a separate Sentrix capability (default: true). */
+  /** Expose each tool as a separate Borgkit capability (default: true). */
   exposeToolsAsCapabilities?:    boolean;
   /** Expose handoff targets as capabilities (default: true). */
   exposeHandoffsAsCapabilities?: boolean;
@@ -77,7 +77,7 @@ interface OpenAINativeInput {
 
 const HANDOFF_PREFIX = '__handoff__:';
 
-export class OpenAIPlugin extends SentrixPlugin<unknown, OpenAINativeInput, unknown> {
+export class OpenAIPlugin extends BorgkitPlugin<unknown, OpenAINativeInput, unknown> {
   private readonly oaiConfig: Required<
     Pick<OpenAIPluginConfig,
       'exposeToolsAsCapabilities' |
@@ -104,8 +104,8 @@ export class OpenAIPlugin extends SentrixPlugin<unknown, OpenAINativeInput, unkn
 
     // 1. Explicit capabilityMap
     if (this.config.capabilityMap && Object.keys(this.config.capabilityMap).length > 0) {
-      return Object.entries(this.config.capabilityMap).map(([sentrixName, nativeName]) => ({
-        name:        sentrixName,
+      return Object.entries(this.config.capabilityMap).map(([borgkitName, nativeName]) => ({
+        name:        borgkitName,
         description: `Mapped capability → ${nativeName}`,
         nativeName,
       }));
@@ -319,7 +319,7 @@ function safeSerialize(obj: unknown): unknown {
 // ── one-liner convenience wrapper ─────────────────────────────────────────────
 
 /**
- * Wrap an OpenAI Agents SDK Agent for the Sentrix mesh in one line.
+ * Wrap an OpenAI Agents SDK Agent for the Borgkit mesh in one line.
  *
  * @example
  * ```ts
@@ -328,7 +328,7 @@ function safeSerialize(obj: unknown): unknown {
  *
  * const agent = wrapOpenAI(
  *   new Agent({ name: 'WeatherBot', tools: [weatherTool] }),
- *   { agentId: 'sentrix://agent/weather', name: 'WeatherBot', owner: '0x...' },
+ *   { agentId: 'borgkit://agent/weather', name: 'WeatherBot', owner: '0x...' },
  * );
  * await agent.serve({ port: 8082 });
  * ```

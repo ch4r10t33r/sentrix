@@ -1,5 +1,5 @@
 """
-WriterAgent — CrewAI, wrapped for the Sentrix mesh.
+WriterAgent — CrewAI, wrapped for the Borgkit mesh.
 ──────────────────────────────────────────────────────────
 Capabilities:
   write_article(topic, research, style)  → polished article
@@ -123,11 +123,11 @@ else:
     _crew_agent = None
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 
 def build_writer_agent():
     """
-    Build and return a Sentrix-wrapped WriterAgent.
+    Build and return a Borgkit-wrapped WriterAgent.
 
     Returns a WrappedAgent (implements IAgent) ready for:
         await agent.register_discovery()
@@ -147,7 +147,7 @@ def build_writer_agent():
         from datetime import datetime, timezone
 
         class WriterAgentDemo(IAgent):
-            agent_id = "sentrix://agent/writer"
+            agent_id = "borgkit://agent/writer"
             owner    = "0xWriterOwner"
 
             def get_capabilities(self):
@@ -190,7 +190,7 @@ def build_writer_agent():
         return wrap_crewai(
             agent    = _crew_agent,
             name     = "WriterAgent",
-            agent_id = "sentrix://agent/writer",
+            agent_id = "borgkit://agent/writer",
             owner    = "0xWriterOwner",
             tags     = ["writing", "crewai", "gpt4"],
             port     = 8082,

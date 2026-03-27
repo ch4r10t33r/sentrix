@@ -166,7 +166,7 @@ fn gen_ts_package_json(name: &str) -> String {
     "start": "node dist/index.js"
   }},
   "dependencies": {{
-    "sentrix-sdk": "^0.1.0",
+    "borgkit-sdk": "^0.1.0",
     "express":     "^4.18.2",
     "dotenv":      "^16.4.5"
   }},
@@ -272,7 +272,7 @@ fn gen_ts_agent(
     lines.push(String::new());
     lines.push("  constructor() {".into());
     lines.push(format!(
-        "    this.agentId = `sentrix://agent/{name}/${{crypto.randomUUID()}}`;",
+        "    this.agentId = `borgkit://agent/{name}/${{crypto.randomUUID()}}`;",
         name = name
     ));
 
@@ -285,8 +285,8 @@ fn gen_ts_agent(
       name:          '{name}',
       version:       '0.1.0',
       discoveryType: '{disc_type}',
-      discoveryUrl:  process.env['SENTRIX_DISCOVERY_URL'],
-      discoveryKey:  process.env['SENTRIX_DISCOVERY_KEY'],
+      discoveryUrl:  process.env['BORGKIT_DISCOVERY_URL'],
+      discoveryKey:  process.env['BORGKIT_DISCOVERY_KEY'],
     }}));"#,
             class = class,
             name = name,
@@ -394,20 +394,20 @@ fn gen_ts_agent(
 
     // registerDiscovery
     let discovery_comment = if *discovery == Discovery::Libp2p {
-        "// Libp2p discovery — requires @sentrix/libp2p-discovery"
+        "// Libp2p discovery — requires @borgkit/libp2p-discovery"
     } else {
         "// HTTP discovery registry"
     };
     lines.push("  private async registerDiscovery(): Promise<void> {".into());
     lines.push(format!("    {}", discovery_comment));
-    lines.push("    const url = process.env['SENTRIX_DISCOVERY_URL'];".into());
-    lines.push("    if (!url) { console.warn('[discovery] SENTRIX_DISCOVERY_URL not set — skipping registration'); return; }".into());
+    lines.push("    const url = process.env['BORGKIT_DISCOVERY_URL'];".into());
+    lines.push("    if (!url) { console.warn('[discovery] BORGKIT_DISCOVERY_URL not set — skipping registration'); return; }".into());
     lines.push("    try {".into());
     lines.push("      const resp = await fetch(`${url}/agents`, {".into());
     lines.push("        method:  'POST',".into());
-    lines.push("        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env['SENTRIX_DISCOVERY_KEY'] ?? ''}` },".into());
+    lines.push("        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env['BORGKIT_DISCOVERY_KEY'] ?? ''}` },".into());
     lines.push(format!(
-        "        body: JSON.stringify({{ agentId: this.agentId, name: '{name}', capabilities: ['{cap}'], network: {{ protocol: '{proto}', host: process.env['SENTRIX_HOST'] ?? 'localhost', port: parseInt(process.env['PORT'] ?? '6174', 10) }} }}),",
+        "        body: JSON.stringify({{ agentId: this.agentId, name: '{name}', capabilities: ['{cap}'], network: {{ protocol: '{proto}', host: process.env['BORGKIT_HOST'] ?? 'localhost', port: parseInt(process.env['PORT'] ?? '6174', 10) }} }}),",
         name = name,
         cap  = name,
         proto = if *discovery == Discovery::Libp2p { "libp2p" } else { "http" },
@@ -485,9 +485,9 @@ export class {class} {{
 
 fn gen_ts_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_url = if *discovery == Discovery::Libp2p {
-        "# SENTRIX_DISCOVERY_URL=  # not used in libp2p mode"
+        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
     } else {
-        "SENTRIX_DISCOVERY_URL=http://localhost:8080"
+        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
     };
     format!(
         r#"# {name} — environment variables
@@ -495,19 +495,19 @@ fn gen_ts_env_example(name: &str, discovery: &Discovery) -> String {
 
 # Discovery
 {disc_url}
-SENTRIX_DISCOVERY_KEY=your-api-key-here
+BORGKIT_DISCOVERY_KEY=your-api-key-here
 
 # Agent identity
-SENTRIX_HOST=localhost
+BORGKIT_HOST=localhost
 PORT=6174
-SENTRIX_TLS=false
+BORGKIT_TLS=false
 
 # Optional: ERC-8004 on-chain registry
-# SENTRIX_REGISTRY_ADDRESS=0xYourContractAddress
-# SENTRIX_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
+# BORGKIT_REGISTRY_ADDRESS=0xYourContractAddress
+# BORGKIT_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
 
 # Optional: agent signing key (32-byte hex, no 0x prefix)
-# SENTRIX_AGENT_KEY=deadbeef...
+# BORGKIT_AGENT_KEY=deadbeef...
 "#,
         name = name,
         disc_url = disc_url,
@@ -538,7 +538,7 @@ fn gen_ts_readme(name: &str, discovery: &Discovery, did: bool, stream: bool, x40
     format!(
         r#"# {name}
 
-A Sentrix P2P-discoverable agent scaffolded with `sentrix scaffold`.
+A Borgkit P2P-discoverable agent scaffolded with `borgkit scaffold`.
 
 {disc_note}
 {extras_section}
@@ -551,7 +551,7 @@ A Sentrix P2P-discoverable agent scaffolded with `sentrix scaffold`.
 
 ```bash
 cp .env.example .env
-# Edit .env and set SENTRIX_DISCOVERY_URL, SENTRIX_DISCOVERY_KEY, etc.
+# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
 
 npm install
 npm run dev
@@ -701,7 +701,7 @@ fn gen_rust_agent(
     lines.push("        Self {".into());
     lines.push("            info: AgentInfo {".into());
     lines.push(format!(
-        "                agent_id: format!(\"sentrix://agent/{name}/{{uuid}}\", uuid = uuid_v4()),",
+        "                agent_id: format!(\"borgkit://agent/{name}/{{uuid}}\", uuid = uuid_v4()),",
         name = name
     ));
     lines.push(format!(
@@ -735,20 +735,20 @@ fn gen_rust_agent(
         "        let disc_type = \"{disc_type}\";",
         disc_type = disc_type
     ));
-    lines.push("        let url = match std::env::var(\"SENTRIX_DISCOVERY_URL\") {".into());
+    lines.push("        let url = match std::env::var(\"BORGKIT_DISCOVERY_URL\") {".into());
     lines.push("            Ok(u) => u,".into());
     lines.push("            Err(_) => {".into());
     lines.push(
-        "                eprintln!(\"[discovery] SENTRIX_DISCOVERY_URL not set — skipping\");"
+        "                eprintln!(\"[discovery] BORGKIT_DISCOVERY_URL not set — skipping\");"
             .into(),
     );
     lines.push("                return;".into());
     lines.push("            }".into());
     lines.push("        };".into());
     lines.push(
-        "        let key  = std::env::var(\"SENTRIX_DISCOVERY_KEY\").unwrap_or_default();".into(),
+        "        let key  = std::env::var(\"BORGKIT_DISCOVERY_KEY\").unwrap_or_default();".into(),
     );
-    lines.push("        let host = std::env::var(\"SENTRIX_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
+    lines.push("        let host = std::env::var(\"BORGKIT_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
     lines.push("        let port: u16 = std::env::var(\"PORT\").ok().and_then(|p| p.parse().ok()).unwrap_or(6174);".into());
     lines.push("        let body = json!({".into());
     lines.push("            \"agentId\":      &self.info.agent_id,".into());
@@ -889,17 +889,17 @@ impl {plugin_upper}Plugin {{
 
 fn gen_rust_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_url = if *discovery == Discovery::Libp2p {
-        "# SENTRIX_DISCOVERY_URL=  # not used in libp2p mode"
+        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
     } else {
-        "SENTRIX_DISCOVERY_URL=http://localhost:8080"
+        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
     };
     format!(
         r#"# {name} — environment variables
 # Copy to .env and fill in your values.
 
 {disc_url}
-SENTRIX_DISCOVERY_KEY=your-api-key-here
-SENTRIX_HOST=localhost
+BORGKIT_DISCOVERY_KEY=your-api-key-here
+BORGKIT_HOST=localhost
 PORT=6174
 "#,
         name = name,
@@ -912,7 +912,7 @@ fn gen_rust_readme(name: &str) -> String {
     format!(
         r#"# {name}
 
-A Sentrix P2P-discoverable agent written in Rust, scaffolded with `sentrix scaffold`.
+A Borgkit P2P-discoverable agent written in Rust, scaffolded with `borgkit scaffold`.
 
 ## Prerequisites
 
@@ -923,7 +923,7 @@ A Sentrix P2P-discoverable agent written in Rust, scaffolded with `sentrix scaff
 
 ```bash
 cp .env.example .env
-# Edit .env and set SENTRIX_DISCOVERY_URL, SENTRIX_DISCOVERY_KEY, etc.
+# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
 
 cargo run
 ```
@@ -1057,7 +1057,7 @@ fn gen_zig_agent(
         agent_struct = agent_struct
     ));
     lines.push(format!(
-        "        _ = std.fmt.bufPrint(&self.agent_id, \"sentrix://agent/{name}/{{d}}\", .{{std.time.milliTimestamp()}}) catch {{}};",
+        "        _ = std.fmt.bufPrint(&self.agent_id, \"borgkit://agent/{name}/{{d}}\", .{{std.time.milliTimestamp()}}) catch {{}};",
         name = name
     ));
     lines.push("        return self;".into());
@@ -1094,9 +1094,9 @@ fn gen_zig_agent(
         disc_type = disc_type
     ));
     lines.push("        _ = disc_type;".into());
-    lines.push("        const url = std.posix.getenv(\"SENTRIX_DISCOVERY_URL\") orelse {".into());
+    lines.push("        const url = std.posix.getenv(\"BORGKIT_DISCOVERY_URL\") orelse {".into());
     lines.push(
-        "            std.debug.print(\"[discovery] SENTRIX_DISCOVERY_URL not set\\n\", .{});"
+        "            std.debug.print(\"[discovery] BORGKIT_DISCOVERY_URL not set\\n\", .{});"
             .into(),
     );
     lines.push("            return;".into());
@@ -1230,17 +1230,17 @@ pub const {class}Plugin = struct {{
 
 fn gen_zig_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_url = if *discovery == Discovery::Libp2p {
-        "# SENTRIX_DISCOVERY_URL=  # not used in libp2p mode"
+        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
     } else {
-        "SENTRIX_DISCOVERY_URL=http://localhost:8080"
+        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
     };
     format!(
         r#"# {name} — environment variables
 # Copy to .env and fill in your values.
 
 {disc_url}
-SENTRIX_DISCOVERY_KEY=your-api-key-here
-SENTRIX_HOST=localhost
+BORGKIT_DISCOVERY_KEY=your-api-key-here
+BORGKIT_HOST=localhost
 PORT=6174
 "#,
         name = name,
@@ -1252,7 +1252,7 @@ fn gen_zig_readme(name: &str) -> String {
     format!(
         r#"# {name}
 
-A Sentrix P2P-discoverable agent written in Zig, scaffolded with `sentrix scaffold`.
+A Borgkit P2P-discoverable agent written in Zig, scaffolded with `borgkit scaffold`.
 
 ## Prerequisites
 
@@ -1262,7 +1262,7 @@ A Sentrix P2P-discoverable agent written in Zig, scaffolded with `sentrix scaffo
 
 ```bash
 cp .env.example .env
-# Edit .env and set SENTRIX_DISCOVERY_URL, SENTRIX_DISCOVERY_KEY, etc.
+# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
 
 zig build run
 ```

@@ -1,26 +1,26 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/docs/logo.svg" alt="Sentrix" width="220"/>
+  <img src="https://raw.githubusercontent.com/ch4r10t33r/borgkit/main/docs/logo.svg" alt="Borgkit" width="220"/>
 </p>
 
-# Sentrix
+# Borgkit
 
 > **Autonomous Agentic Coordination Middleware** — scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework, with optional ERC-8004 on-chain compliance.
 
-Like TCP/IP connects heterogeneous computers, Sentrix connects heterogeneous agents.
+Like TCP/IP connects heterogeneous computers, Borgkit connects heterogeneous agents.
 
 ---
 
-## Why Sentrix?
+## Why Borgkit?
 
-Most AI frameworks help you **build** agents. Sentrix helps them **find and talk to each other** — across frameworks, runtimes, and clouds.
+Most AI frameworks help you **build** agents. Borgkit helps them **find and talk to each other** — across frameworks, runtimes, and clouds.
 
-| What exists today | The gap Sentrix fills |
+| What exists today | The gap Borgkit fills |
 |---|---|
 | Orchestration frameworks (CrewAI, AutoGen) | Agents locked inside one runtime, no external discovery |
 | Framework-bound agents (LangGraph, AutoGPT) | No standardised interface for cross-framework calls |
 | Closed ecosystems (Fetch.ai, SingularityNET) | Ecosystem lock-in, heavyweight infrastructure |
 
-Sentrix is **not a platform** — it is a protocol layer others build on.
+Borgkit is **not a platform** — it is a protocol layer others build on.
 
 ---
 
@@ -33,15 +33,15 @@ Sentrix is **not a platform** — it is a protocol layer others build on.
 | **L2** Discovery | Capability lookup | Local · HTTP · libp2p + Kademlia DHT · AMP-1 |
 | **L1** Identity | DID + trust | `did:key` W3C (default) · ERC-8004 on-chain (optional) |
 
-Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 framework execution.
+Borgkit operates primarily at **L2** and **L3**, bridging L1 identity to L4 framework execution.
 
 ---
 
 ## Features
 
 - **Framework-agnostic** — wrap LangGraph, Google ADK, CrewAI, Agno, LlamaIndex, smolagents, or OpenAI Agents with one function call
-- **Built-in HTTP server** — `sentrix run MyAgent --port 6174` starts a real HTTP server; no extra setup
-- **MCP bridge** — any MCP server becomes a Sentrix agent; any Sentrix agent becomes an MCP server (Claude Desktop, Cursor, Continue)
+- **Built-in HTTP server** — `borgkit run MyAgent --port 6174` starts a real HTTP server; no extra setup
+- **MCP bridge** — any MCP server becomes a Borgkit agent; any Borgkit agent becomes an MCP server (Claude Desktop, Cursor, Continue)
 - **Dynamic discovery** — agents register capabilities; callers query at runtime, no hardcoded URLs
 - **Mesh protocols** — heartbeat, capability exchange (as part of handshake), and gossip fan-out built in
 - **P2P mesh** — libp2p + QUIC + Kademlia DHT; mDNS for LAN; circuit relay for NAT traversal
@@ -61,7 +61,7 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 | **AgentRequest / AgentResponse** | ✅ | ✅ | ✅ | ✅ |
 | **ANR (Agent Network Record)** | ✅ | ✅ | ✅ | ✅ |
 | **DID identity (`did:key`)** | ✅ | ✅ | ✅ | ✅ |
-| **HTTP server (`sentrix run`)** | ✅ | ✅ | ✅ | ✅ |
+| **HTTP server (`borgkit run`)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — local (in-memory)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — HTTP** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — libp2p + Kademlia DHT** | ✅ | ✅ | ✅ | ✅ |
@@ -86,9 +86,9 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 
 **MPP:** HTTP 402 payment gating using the MPP challenge–credential–receipt model (`MppPlugin` / `mpp` modules). Python template support is on the roadmap; use x402 or bridge via a TS/Rust/Zig agent until then.
 
-**Rust / Zig — framework plugins:** LangGraph, Google ADK, and CrewAI are Python/JS frameworks with no native Rust or Zig SDKs. The Rust and Zig plugins are **HTTP bridge adapters** that call a running service endpoint (e.g. `adk web`, a LangServe app, or a FastAPI-wrapped CrewAI crew) so the agent participates in the Sentrix mesh without embedding a Python interpreter.
+**Rust / Zig — framework plugins:** LangGraph, Google ADK, and CrewAI are Python/JS frameworks with no native Rust or Zig SDKs. The Rust and Zig plugins are **HTTP bridge adapters** that call a running service endpoint (e.g. `adk web`, a LangServe app, or a FastAPI-wrapped CrewAI crew) so the agent participates in the Borgkit mesh without embedding a Python interpreter.
 
-**Zig — discovery:** `HttpDiscovery` (`discovery_http.zig`) is a REST client for the discovery service. `Libp2pDiscovery` (`discovery_libp2p.zig`) is a full Kademlia DHT implementation in pure Zig (UDP/JSON transport, 256-bucket XOR routing table, k=20). Key derivation matches the Rust implementation (`SHA-256("sentrix:cap:<cap>")` / `SHA-256("sentrix:anr:<agentId>")`). Note: uses a Sentrix-native JSON wire format rather than libp2p protobuf — interoperates with other Zig Sentrix nodes.
+**Zig — discovery:** `HttpDiscovery` (`discovery_http.zig`) is a REST client for the discovery service. `Libp2pDiscovery` (`discovery_libp2p.zig`) is a full Kademlia DHT implementation in pure Zig (UDP/JSON transport, 256-bucket XOR routing table, k=20). Key derivation matches the Rust implementation (`SHA-256("borgkit:cap:<cap>")` / `SHA-256("borgkit:anr:<agentId>")`). Note: uses a Borgkit-native JSON wire format rather than libp2p protobuf — interoperates with other Zig Borgkit nodes.
 
 ---
 
@@ -100,7 +100,7 @@ Works on macOS, Linux, and Windows. npm downloads the correct pre-built
 binary for your platform automatically.
 
 ```bash
-npm install -g @ch4r10teer41/sentrix-cli
+npm install -g @ch4r10teer41/borgkit-cli
 ```
 
 ### curl installer (macOS / Linux)
@@ -108,27 +108,27 @@ npm install -g @ch4r10teer41/sentrix-cli
 Auto-detects your OS and architecture, installs to `/usr/local/bin`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/borgkit/main/install.sh | sh
 ```
 
-To install to a custom directory set `SENTRIX_INSTALL_DIR` before piping:
+To install to a custom directory set `BORGKIT_INSTALL_DIR` before piping:
 
 ```bash
-SENTRIX_INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/sentrix/main/install.sh | sh
+BORGKIT_INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/borgkit/main/install.sh | sh
 ```
 
-> **Windows** — use npm above, or download `sentrix-win32-x64.exe` directly from the
-> [Releases page](https://github.com/ch4r10t33r/sentrix/releases/latest).
+> **Windows** — use npm above, or download `borgkit-win32-x64.exe` directly from the
+> [Releases page](https://github.com/ch4r10t33r/borgkit/releases/latest).
 
 ### Build from source
 
 Requires [Rust](https://rustup.rs) 1.75+.
 
 ```bash
-git clone https://github.com/ch4r10t33r/sentrix.git
-cd sentrix
-cargo build --release --package sentrix-cli
-# Binary is at ./target/release/sentrix
+git clone https://github.com/ch4r10t33r/borgkit.git
+cd borgkit
+cargo build --release --package borgkit-cli
+# Binary is at ./target/release/borgkit
 ```
 
 ---
@@ -137,23 +137,23 @@ cargo build --release --package sentrix-cli
 
 ```bash
 # Scaffold a new project (TypeScript default)
-sentrix init my-agent
+borgkit init my-agent
 cd my-agent && npm install
-sentrix run ExampleAgent --port 6174
+borgkit run ExampleAgent --port 6174
 
 # Python
-sentrix init my-agent --lang python
+borgkit init my-agent --lang python
 cd my-agent
-sentrix run ExampleAgent --port 6174
+borgkit run ExampleAgent --port 6174
 
 # Rust
-sentrix init my-agent --lang rust
+borgkit init my-agent --lang rust
 cd my-agent
 cargo run --example did_key_identity        # optional: did:key from secp256k1 secret
 cargo run --example gossip_fanout_discovery # optional: in-memory gossip fan-out demo
 
 # Zig
-sentrix init my-agent --lang zig
+borgkit init my-agent --lang zig
 cd my-agent
 zig build examples   # optional: builds did:key + gossip fan-out demo binaries
 ```
@@ -162,10 +162,10 @@ Once running, the agent prints its full startup banner:
 
 ```
 ────────────────────────────────────────────────────────────
-  Sentrix Agent Online  v0.1.0
+  Borgkit Agent Online  v0.1.0
 ────────────────────────────────────────────────────────────
   Name         ExampleAgent
-  Agent ID     sentrix://agent/example
+  Agent ID     borgkit://agent/example
   Endpoint     http://0.0.0.0:6174
   Multiaddr    /ip4/0.0.0.0/tcp/6174/p2p/12D3Koo...  (libp2p mode)
   Discovery    local
@@ -175,7 +175,7 @@ Once running, the agent prints its full startup banner:
 ────────────────────────────────────────────────────────────
 ```
 
-> **Default port: 6174** ([Kaprekar's constant](https://en.wikipedia.org/wiki/6174)). Override with `SENTRIX_PORT=<n>` or `--port <n>`.
+> **Default port: 6174** ([Kaprekar's constant](https://en.wikipedia.org/wiki/6174)). Override with `BORGKIT_PORT=<n>` or `--port <n>`.
 
 ---
 
@@ -183,14 +183,14 @@ Once running, the agent prints its full startup banner:
 
 | Command | Description |
 |---|---|
-| `sentrix scaffold <name> [OPTIONS]` | Generate a minimal, targeted agent project (see below) |
-| `sentrix init <name> [--lang ts\|python\|rust\|zig]` | Copy the full template library into a new project (see below) |
-| `sentrix create agent <name> [-c cap1,cap2] [--framework X]` | Add an agent to an existing project |
-| `sentrix run <AgentName> [--port 6174]` | Start an agent's HTTP server |
-| `sentrix discover [-c capability] [--host h] [--port p]` | Query the discovery layer |
-| `sentrix version` | Show CLI version and build info |
+| `borgkit scaffold <name> [OPTIONS]` | Generate a minimal, targeted agent project (see below) |
+| `borgkit init <name> [--lang ts\|python\|rust\|zig]` | Copy the full template library into a new project (see below) |
+| `borgkit create agent <name> [-c cap1,cap2] [--framework X]` | Add an agent to an existing project |
+| `borgkit run <AgentName> [--port 6174]` | Start an agent's HTTP server |
+| `borgkit discover [-c capability] [--host h] [--port p]` | Query the discovery layer |
+| `borgkit version` | Show CLI version and build info |
 
-### `sentrix scaffold` vs `sentrix init`
+### `borgkit scaffold` vs `borgkit init`
 
 Both create a new agent project, but they serve different workflows:
 
@@ -199,16 +199,16 @@ Both create a new agent project, but they serve different workflows:
 | **Approach** | Generates files programmatically from flags | Copies the full embedded template library |
 | **Output** | Minimal — only what you asked for | Full kitchen sink — all discovery adapters, example agents, every template file |
 | **Customisation** | `--plugins`, `--stream`, `--x402`, `--did`, `--discovery` flags wire things together for you | Raw templates with `{{AGENT_NAME}}` token substitution — you wire things yourself |
-| **Also generates** | `.env.example`, `README.md` | `sentrix.config.json` |
+| **Also generates** | `.env.example`, `README.md` | `borgkit.config.json` |
 | **Best for** | Starting a focused, production-ready agent quickly | Exploring the full template library or building something custom |
 | **Languages** | TypeScript, Rust, Zig | TypeScript, Python, Rust, Zig |
 
 > **Rule of thumb:** use `scaffold` when you know what you want; use `init` when you want to browse all available patterns and pick your own path.
 
-### `sentrix scaffold` — targeted project generator
+### `borgkit scaffold` — targeted project generator
 
 ```bash
-sentrix scaffold <name> [OPTIONS]
+borgkit scaffold <name> [OPTIONS]
 
 Options:
   -l, --lang <LANG>           typescript | rust | zig          [default: typescript]
@@ -226,14 +226,14 @@ Options:
 
 ```bash
 # TypeScript agent with LangGraph + OpenAI, SSE streaming, libp2p discovery
-sentrix scaffold my-agent --lang typescript --plugins langgraph,openai --stream --discovery libp2p
+borgkit scaffold my-agent --lang typescript --plugins langgraph,openai --stream --discovery libp2p
 
 # Rust agent with MCP bridge and x402 micropayments
-sentrix scaffold payments-agent --lang rust --plugins mcp --x402
+borgkit scaffold payments-agent --lang rust --plugins mcp --x402
 
 # Zig agent with DID examples — preview first, then generate
-sentrix scaffold did-agent --lang zig --did --dry-run
-sentrix scaffold did-agent --lang zig --did
+borgkit scaffold did-agent --lang zig --did --dry-run
+borgkit scaffold did-agent --lang zig --did
 ```
 
 Generated structure (TypeScript example):
@@ -250,10 +250,10 @@ my-agent/
 └── README.md
 ```
 
-### `sentrix init` — full template copy
+### `borgkit init` — full template copy
 
 ```bash
-sentrix init <name> [OPTIONS]
+borgkit init <name> [OPTIONS]
 
 Options:
   -l, --lang <LANG>     typescript | python | rust | zig   [default: typescript]
@@ -261,17 +261,17 @@ Options:
       --no-example      skip copying example agent files
 ```
 
-Copies the **entire template library** for the chosen language into `<name>/`, applies token substitution (`{{AGENT_NAME}}`, `{{PROJECT_NAME}}`, etc.), and writes a `sentrix.config.json`. The result is a fully-populated project containing every discovery adapter, all plugin stubs, and complete example agents — ready to explore and trim down.
+Copies the **entire template library** for the chosen language into `<name>/`, applies token substitution (`{{AGENT_NAME}}`, `{{PROJECT_NAME}}`, etc.), and writes a `borgkit.config.json`. The result is a fully-populated project containing every discovery adapter, all plugin stubs, and complete example agents — ready to explore and trim down.
 
 ```bash
 # Full TypeScript project with everything included
-sentrix init my-project --lang typescript
+borgkit init my-project --lang typescript
 
 # Rust project without the example agent files
-sentrix init my-project --lang rust --no-example
+borgkit init my-project --lang rust --no-example
 ```
 
-### `sentrix run` — HTTP endpoints
+### `borgkit run` — HTTP endpoints
 
 When you run an agent, these endpoints are live automatically:
 
@@ -293,11 +293,11 @@ When you run an agent, these endpoints are live automatically:
 ```python
 # Google ADK
 from plugins.google_adk_plugin import wrap_google_adk
-agent = wrap_google_adk(adk_agent, name="SupportBot", agent_id="sentrix://agent/support", owner="0x...")
+agent = wrap_google_adk(adk_agent, name="SupportBot", agent_id="borgkit://agent/support", owner="0x...")
 
 # CrewAI
 from plugins.crewai_plugin import wrap_crewai
-agent = wrap_crewai(crew_agent, name="ResearchBot", agent_id="sentrix://agent/research", owner="0x...")
+agent = wrap_crewai(crew_agent, name="ResearchBot", agent_id="borgkit://agent/research", owner="0x...")
 
 # LangGraph
 from plugins.langgraph_plugin import wrap_langgraph
@@ -305,7 +305,7 @@ agent = wrap_langgraph(compiled_graph, config)
 
 # OpenAI Agents SDK
 from plugins.openai_plugin import wrap_openai
-agent = wrap_openai(oai_agent, name="WeatherBot", agent_id="sentrix://agent/weather", owner="0x...")
+agent = wrap_openai(oai_agent, name="WeatherBot", agent_id="borgkit://agent/weather", owner="0x...")
 
 # Agno / LlamaIndex / smolagents
 from plugins.agno_plugin       import wrap_agno
@@ -322,16 +322,16 @@ asyncio.run(agent.serve(port=6174))
 ```typescript
 // LangGraph (in-process — wraps a compiled CompiledGraph)
 import { wrapLangGraph } from './plugins/LangGraphPlugin';
-const agent = wrapLangGraph(compiledGraph, { agentId: 'sentrix://agent/researcher', name: 'Researcher', ... });
+const agent = wrapLangGraph(compiledGraph, { agentId: 'borgkit://agent/researcher', name: 'Researcher', ... });
 
 // Google ADK (in-process — wraps a BaseAgent / LlmAgent)
 import { wrapGoogleADK } from './plugins/GoogleADKPlugin';
-const agent = wrapGoogleADK(adkAgent, { agentId: 'sentrix://agent/support', name: 'Support', ... });
+const agent = wrapGoogleADK(adkAgent, { agentId: 'borgkit://agent/support', name: 'Support', ... });
 
 // CrewAI (HTTP bridge — calls a running CrewAI service)
 import { wrapCrewAI } from './plugins/CrewAIPlugin';
 const agent = await wrapCrewAI({
-  agentId:    'sentrix://agent/writer',
+  agentId:    'borgkit://agent/writer',
   name:       'WriterCrew',
   version:    '1.0.0',
   owner:      '0xYourWallet',
@@ -344,12 +344,12 @@ import { AgnoPlugin }     from './plugins/AgnoPlugin';
 import { LlamaIndexPlugin } from './plugins/LlamaIndexPlugin';
 import { SmolagentsPlugin } from './plugins/SmolagentsPlugin';
 
-const agent = wrapOpenAI(oaiAgent, { agentId: 'sentrix://agent/weather', name: 'WeatherBot', ... });
+const agent = wrapOpenAI(oaiAgent, { agentId: 'borgkit://agent/weather', name: 'WeatherBot', ... });
 
 // Agno, LlamaIndex, smolagents — same one-liner pattern
-const agnoAgent     = new AgnoPlugin({ agentId: 'sentrix://agent/agno', ... }).wrap(myAgnoAgent);
-const llamaAgent    = new LlamaIndexPlugin({ agentId: 'sentrix://agent/llama', ... }).wrap(myIndex);
-const smolaAgent    = new SmolagentsPlugin({ agentId: 'sentrix://agent/smol', ... }).wrap(mySmolAgent);
+const agnoAgent     = new AgnoPlugin({ agentId: 'borgkit://agent/agno', ... }).wrap(myAgnoAgent);
+const llamaAgent    = new LlamaIndexPlugin({ agentId: 'borgkit://agent/llama', ... }).wrap(myIndex);
+const smolaAgent    = new SmolagentsPlugin({ agentId: 'borgkit://agent/smol', ... }).wrap(mySmolAgent);
 
 await agent.serve({ port: 6174 });
 ```
@@ -357,7 +357,7 @@ await agent.serve({ port: 6174 });
 ### Rust
 
 ```rust
-use sentrix::plugins::{
+use borgkit::plugins::{
     langgraph::{LangGraphPlugin, LangGraphService},
     google_adk::{GoogleADKPlugin, GoogleADKService},
     crewai::{CrewAIPlugin, CrewAIService},
@@ -371,7 +371,7 @@ use sentrix::plugins::{
 // LangGraph — HTTP bridge to a LangServe endpoint
 let service = LangGraphService { base_url: "http://localhost:8000".into(), ..Default::default() };
 let agent = LangGraphPlugin::new().wrap(service, PluginConfig {
-    agent_id: "sentrix://agent/researcher".into(), owner: "0xYourWallet".into(), ..Default::default()
+    agent_id: "borgkit://agent/researcher".into(), owner: "0xYourWallet".into(), ..Default::default()
 });
 
 // OpenAI-compatible API (OpenAI, vLLM, Ollama, …)
@@ -419,7 +419,7 @@ var lg_service = lg.LangGraphService{ .base_url = "http://localhost:8000" };
 var lg_plugin  = lg.LangGraphPlugin.init(allocator);
 defer lg_plugin.deinit();
 var agent = Wrapped(lg.LangGraphService, lg.LangGraphPlugin).init(
-    &lg_service, &lg_plugin, .{ .agent_id = "sentrix://agent/researcher", .owner = "0x..." }, allocator,
+    &lg_service, &lg_plugin, .{ .agent_id = "borgkit://agent/researcher", .owner = "0x..." }, allocator,
 );
 
 // OpenAI-compatible API
@@ -443,10 +443,10 @@ var sma_service = sma.SmolagentsService{ .base_url = "http://localhost:7860" };
 
 ## MCP Bridge
 
-Sentrix has a two-way bridge with the [Model Context Protocol](https://modelcontextprotocol.io):
+Borgkit has a two-way bridge with the [Model Context Protocol](https://modelcontextprotocol.io):
 
 ```python
-# Any MCP server → Sentrix agent (GitHub, filesystem, Slack, databases…)
+# Any MCP server → Borgkit agent (GitHub, filesystem, Slack, databases…)
 from plugins.mcp_plugin import MCPPlugin
 plugin = await MCPPlugin.from_command(
     ["npx", "-y", "@modelcontextprotocol/server-github"],
@@ -455,7 +455,7 @@ plugin = await MCPPlugin.from_command(
 agent = plugin.wrap()
 await agent.serve(port=8081)
 
-# Any Sentrix agent → MCP server (Claude Desktop, Cursor, Continue…)
+# Any Borgkit agent → MCP server (Claude Desktop, Cursor, Continue…)
 from adapters.mcp_server import serve_as_mcp
 await serve_as_mcp(my_agent)                           # stdio (Claude Desktop)
 await serve_as_mcp(my_agent, transport="sse", port=3000)  # SSE (remote)
@@ -475,18 +475,18 @@ await serveAsMcp(myAgent, { transport: 'sse', port: 3000 });
 
 ```rust
 // Rust — stdio subprocess or HTTP endpoint
-use sentrix::mcp::{McpPlugin, serve_as_mcp, ServeMcpOptions, Transport};
-use sentrix::plugins::base::PluginConfig;
+use borgkit::mcp::{McpPlugin, serve_as_mcp, ServeMcpOptions, Transport};
+use borgkit::plugins::base::PluginConfig;
 
-// Wrap an MCP server (subprocess) → Sentrix agent
+// Wrap an MCP server (subprocess) → Borgkit agent
 let agent = McpPlugin::from_command(
     &["npx", "-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
-    PluginConfig { agent_id: "sentrix://agent/fs".into(), .. },
+    PluginConfig { agent_id: "borgkit://agent/fs".into(), .. },
     None,
 ).await?;
-sentrix::server::serve(agent, 8081).await?;
+borgkit::server::serve(agent, 8081).await?;
 
-// Expose a Sentrix agent → MCP server (stdio for Claude Desktop)
+// Expose a Borgkit agent → MCP server (stdio for Claude Desktop)
 serve_as_mcp(my_agent, ServeMcpOptions::default()).await?;
 
 // Expose over SSE (remote clients)
@@ -500,12 +500,12 @@ serve_as_mcp(my_agent, ServeMcpOptions {
 const mcp_plugin = @import("mcp_plugin.zig");
 const mcp_server = @import("mcp_server.zig");
 
-// Wrap an MCP server (subprocess) → Sentrix agent
+// Wrap an MCP server (subprocess) → Borgkit agent
 var plugin = mcp_plugin.McpPlugin.initStdio(allocator);
 defer plugin.deinit();
 try plugin.fromCommand(&.{ "npx", "-y", "@modelcontextprotocol/server-filesystem", "/tmp" }, null);
 
-// Expose a Sentrix agent → MCP server (stdio for Claude Desktop)
+// Expose a Borgkit agent → MCP server (stdio for Claude Desktop)
 try mcp_server.serveAsMcp(MyAgent, &my_agent, .{}, allocator);
 
 // Expose over HTTP (POST /mcp)
@@ -546,7 +546,7 @@ resp = await client.call_capability("web_search", {"query": "latest AI news"})
 
 ## DIDComm v2 — Encrypted Agent Messaging
 
-Sentrix includes a full DIDComm v2 implementation for end-to-end encrypted, authenticated messages between agents. No external key infrastructure required — each agent's `did:key` is derived from its identity keypair.
+Borgkit includes a full DIDComm v2 implementation for end-to-end encrypted, authenticated messages between agents. No external key infrastructure required — each agent's `did:key` is derived from its identity keypair.
 
 **Crypto stack:** X25519 ECDH key agreement + ChaCha20-Poly1305 AEAD.
 **Wire format:** JWE JSON serialization with per-recipient key wrapping.
@@ -625,10 +625,10 @@ Source: [`templates/typescript/didcomm.ts`](templates/typescript/didcomm.ts) · 
 
 | Layer | Default address | Env override |
 |---|---|---|
-| HTTP server (`/invoke`, `/health`, …) | `0.0.0.0:6174` | `SENTRIX_PORT` |
-| libp2p TCP (GossipSub + request-response) | `/ip4/0.0.0.0/tcp/6174` | `SENTRIX_P2P_ADDR` |
-| libp2p QUIC (Rust/Zig DHT) | `/ip4/0.0.0.0/udp/6174/quic-v1` | `SENTRIX_P2P_PORT` |
-| Bootstrap peers | _(none — mDNS only on LAN)_ | `SENTRIX_BOOTSTRAP_PEERS` (comma-separated multiaddrs) |
+| HTTP server (`/invoke`, `/health`, …) | `0.0.0.0:6174` | `BORGKIT_PORT` |
+| libp2p TCP (GossipSub + request-response) | `/ip4/0.0.0.0/tcp/6174` | `BORGKIT_P2P_ADDR` |
+| libp2p QUIC (Rust/Zig DHT) | `/ip4/0.0.0.0/udp/6174/quic-v1` | `BORGKIT_P2P_PORT` |
+| Bootstrap peers | _(none — mDNS only on LAN)_ | `BORGKIT_BOOTSTRAP_PEERS` (comma-separated multiaddrs) |
 
 All discovery traffic — DHT announces, gossip fan-out, and capability queries — travels **over the libp2p transport on the same port**. There is no separate discovery port.
 
@@ -649,8 +649,8 @@ Every agent has a **DID** derived from its secp256k1 keypair — no wallet or ga
 
 | Mode | DID format | `agentId` |
 |---|---|---|
-| `local` (default) | `did:key:zQ3sh…` | `sentrix://agent/<eth-addr>` |
-| `env` | `did:key:zQ3sh…` | same, driven by `SENTRIX_AGENT_KEY` |
+| `local` (default) | `did:key:zQ3sh…` | `borgkit://agent/<eth-addr>` |
+| `env` | `did:key:zQ3sh…` | same, driven by `BORGKIT_AGENT_KEY` |
 | `erc8004` | `did:pkh:eip155:<chainId>:0x…` | on-chain verified owner |
 
 The DID is a multicodec-prefixed, base58btc-encoded secp256k1 compressed public key:
@@ -666,7 +666,7 @@ The ANR is the canonical self-description of an agent. It is returned by `GET /a
 
 ```typescript
 interface DiscoveryEntry {
-  agentId:      string;           // "sentrix://agent/0xABC…" or a DID
+  agentId:      string;           // "borgkit://agent/0xABC…" or a DID
   name:         string;           // human-readable label
   owner:        string;           // Ethereum address or DID of the keyholder
   capabilities: string[];         // ["echo", "web_search", "generate_image"]
@@ -761,7 +761,7 @@ interface AgentResponse {
 
 ```json
 // POST /invoke
-{ "requestId": "a1b2", "from": "sentrix://agent/caller", "capability": "web_search",
+{ "requestId": "a1b2", "from": "borgkit://agent/caller", "capability": "web_search",
   "payload": { "query": "latest AI news" }, "timestamp": 1711234567000 }
 
 // 200 OK
@@ -843,9 +843,9 @@ interface GossipMessage {
 
 ```json
 // POST /gossip
-{ "type": "announce", "senderId": "sentrix://agent/0xABC",
+{ "type": "announce", "senderId": "borgkit://agent/0xABC",
   "timestamp": 1711234567000, "ttl": 3, "seenBy": [],
-  "entry": { "agentId": "sentrix://agent/0xABC", "capabilities": ["web_search"], … } }
+  "entry": { "agentId": "borgkit://agent/0xABC", "capabilities": ["web_search"], … } }
 
 // 200 OK
 { "ok": true }
@@ -907,8 +907,8 @@ data: {"type":"end","requestId":"a1b2","finalResult":{"text":"The latest AI news
 
 | Mode | DID format | How |
 |------|-----------|-----|
-| `local` (default) | `did:key:z...` | Key auto-created in `~/.sentrix/keystore/` |
-| `env` | `did:key:z...` | `SENTRIX_AGENT_KEY=0x...` env var |
+| `local` (default) | `did:key:z...` | Key auto-created in `~/.borgkit/keystore/` |
+| `env` | `did:key:z...` | `BORGKIT_AGENT_KEY=0x...` env var |
 | `raw` | `did:key:z...` | Pass key directly (secret manager, HSM) |
 | `erc8004` (optional) | `did:pkh:eip155:<chainId>:0x...` | On-chain wallet — adds verifiable ownership |
 
@@ -949,7 +949,7 @@ The HTTP server gate is automatic — no code needed in the agent. Callers recei
 [`examples/cross-framework/`](examples/cross-framework/) is a working end-to-end demo you can run right now:
 
 ```bash
-git clone https://github.com/ch4r10t33r/sentrix
+git clone https://github.com/ch4r10t33r/borgkit
 python3 examples/cross-framework/run.py
 ```
 
@@ -994,16 +994,16 @@ python run_example.py
 | [docs/discovery.md](docs/discovery.md) | Discovery adapters |
 | [docs/libp2p.md](docs/libp2p.md) | P2P networking with libp2p + QUIC |
 | [docs/plugins.md](docs/plugins.md) | Framework adapters — LangGraph, Google ADK, CrewAI, OpenAI, Agno, LlamaIndex, smolagents, MCP |
-| [docs/differentiation.md](docs/differentiation.md) | How Sentrix differs from other frameworks |
-| [docs/vs-a2a.md](docs/vs-a2a.md) | Sentrix vs A2A — detailed technical comparison |
+| [docs/differentiation.md](docs/differentiation.md) | How Borgkit differs from other frameworks |
+| [docs/vs-a2a.md](docs/vs-a2a.md) | Borgkit vs A2A — detailed technical comparison |
 
 ---
 
-## Sentrix vs A2A
+## Borgkit vs A2A
 
-> **A2A defines *how* two agents talk. Sentrix defines *how agents find each other, prove who they are, and transact* — problems A2A explicitly leaves out of scope.**
+> **A2A defines *how* two agents talk. Borgkit defines *how agents find each other, prove who they are, and transact* — problems A2A explicitly leaves out of scope.**
 
-| | A2A | Sentrix |
+| | A2A | Borgkit |
 |---|---|---|
 | Discovery | You need the agent's URL; bring your own registry | Kademlia DHT — find any agent by capability, no URL needed |
 | Identity | Self-declared Agent Card, no cryptographic verification | `did:key` — keypair-derived, portable, verifiable |
@@ -1014,7 +1014,7 @@ python run_example.py
 | Task model | Rich state machine (8 states, artifacts, webhooks) | Simple `/invoke` + `/invoke/stream` |
 | Enterprise auth | OAuth2, OIDC, mTLS — first-class | Via HTTP layer |
 
-They are **complementary, not competing.** A2A handles the task conversation; Sentrix handles discovery, identity, encryption, and payment. A Sentrix agent can expose an A2A-compatible endpoint — discovered via Sentrix's DHT and invoked using A2A's task protocol.
+They are **complementary, not competing.** A2A handles the task conversation; Borgkit handles discovery, identity, encryption, and payment. A Borgkit agent can expose an A2A-compatible endpoint — discovered via Borgkit's DHT and invoked using A2A's task protocol.
 
 → Full analysis: **[docs/vs-a2a.md](docs/vs-a2a.md)**
 

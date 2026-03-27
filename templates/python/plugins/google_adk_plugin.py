@@ -1,8 +1,8 @@
 """
-Google ADK → Sentrix Plugin
+Google ADK → Borgkit Plugin
 ──────────────────────────────────────────────────────────────────────────────
 Wraps a Google Agent Development Kit `Agent` (or `BaseAgent` subclass) so it
-appears as a standard Sentrix IAgent on the mesh.
+appears as a standard Borgkit IAgent on the mesh.
 
 Capability extraction strategy
 ──────────────────────────────
@@ -21,7 +21,7 @@ Usage
   from plugins.google_adk_plugin import GoogleADKPlugin, GoogleADKPluginConfig
 
   config = GoogleADKPluginConfig(
-      agent_id = "sentrix://agent/support",
+      agent_id = "borgkit://agent/support",
       name     = "SupportAgent",
       version  = "1.0.0",
       tags     = ["support", "adk"],
@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from interfaces import AgentRequest, AgentResponse
-from plugins.base import SentrixPlugin, CapabilityDescriptor, PluginConfig
+from plugins.base import BorgkitPlugin, CapabilityDescriptor, PluginConfig
 
 
 # ── extended config ───────────────────────────────────────────────────────────
@@ -53,13 +53,13 @@ class GoogleADKPluginConfig(PluginConfig):
     """Google ADK-specific configuration (extends PluginConfig)."""
 
     # Session/user IDs used when creating an ADK Runner session
-    app_name:   str = "sentrix"
-    user_id:    str = "sentrix-user"
+    app_name:   str = "borgkit"
+    user_id:    str = "borgkit-user"
 
     # If True, sub-agents are exposed as capabilities too
     expose_sub_agents: bool = False
 
-    # If True, each tool is exposed as a separate Sentrix capability
+    # If True, each tool is exposed as a separate Borgkit capability
     expose_tools_as_capabilities: bool = True
 
     # Key in ADK content that holds the output text (default: first part)
@@ -71,9 +71,9 @@ class GoogleADKPluginConfig(PluginConfig):
 
 # ── plugin implementation ─────────────────────────────────────────────────────
 
-class GoogleADKPlugin(SentrixPlugin):
+class GoogleADKPlugin(BorgkitPlugin):
     """
-    Sentrix plugin for Google ADK agents.
+    Borgkit plugin for Google ADK agents.
     Wraps any `google.adk.agents.Agent` or `BaseAgent` subclass.
     """
 
@@ -165,7 +165,7 @@ class GoogleADKPlugin(SentrixPlugin):
 
     @staticmethod
     def _sanitize(name: str) -> str:
-        """Normalize tool names to valid Sentrix capability names."""
+        """Normalize tool names to valid Borgkit capability names."""
         return name.replace(' ', '_').replace('-', '_').lower()
 
     # ── request translation ───────────────────────────────────────────────────
@@ -176,7 +176,7 @@ class GoogleADKPlugin(SentrixPlugin):
         descriptor: CapabilityDescriptor,
     ) -> dict:
         """
-        Build the ADK-compatible invocation dict from a Sentrix AgentRequest.
+        Build the ADK-compatible invocation dict from a Borgkit AgentRequest.
         Returns a dict with:
           - message   : the text turn to send to the agent
           - tool_name : native tool name (if routing to a specific tool)
@@ -212,7 +212,7 @@ class GoogleADKPlugin(SentrixPlugin):
 
     def translate_response(self, native_result: Any, request_id: str) -> AgentResponse:
         """
-        Convert ADK's response into a Sentrix AgentResponse.
+        Convert ADK's response into a Borgkit AgentResponse.
         Handles ADK's Event / RunResult / string responses.
         """
         try:
@@ -356,13 +356,13 @@ def wrap_google_adk(
       from google.adk.agents import Agent
 
       adk_agent = Agent(name="support", model="gemini-2.0-flash", tools=[...])
-      sentrix_agent = wrap_google_adk(
+      borgkit_agent = wrap_google_adk(
           agent    = adk_agent,
           name     = "SupportAgent",
-          agent_id = "sentrix://agent/support",
+          agent_id = "borgkit://agent/support",
           tags     = ["support", "helpdesk"],
       )
-      await sentrix_agent.register_discovery()
+      await borgkit_agent.register_discovery()
     """
     config = GoogleADKPluginConfig(
         agent_id=agent_id, name=name, owner=owner,

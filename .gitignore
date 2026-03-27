@@ -41,5 +41,5 @@ docs/differentiation.md
 cli/target/
 
 # npm platform binary placeholders (populated by CI)
-npm/sentrix-cli-*/bin/sentrix
-npm/sentrix-cli-*/bin/sentrix.exe
+npm/borgkit-cli-*/bin/borgkit
+npm/borgkit-cli-*/bin/borgkit.exe

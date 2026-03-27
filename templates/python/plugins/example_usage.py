@@ -1,7 +1,7 @@
 """
 Plugin Usage Examples
 ──────────────────────────────────────────────────────────────────────────────
-Shows how to wrap LangGraph and Google ADK agents for Sentrix in <10 lines.
+Shows how to wrap LangGraph and Google ADK agents for Borgkit in <10 lines.
 
 These are runnable examples — swap in your real agents and run with:
   python -m plugins.example_usage
@@ -11,13 +11,13 @@ import asyncio
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Example 1: LangGraph ReAct agent → Sentrix
+# Example 1: LangGraph ReAct agent → Borgkit
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def example_langgraph():
     """
     Wraps a standard LangGraph ReAct agent with two tools.
-    Each tool becomes a separate Sentrix capability.
+    Each tool becomes a separate Borgkit capability.
     """
     try:
         from langchain_core.tools import tool
@@ -44,11 +44,11 @@ async def example_langgraph():
     llm   = ChatOpenAI(model="gpt-4o-mini")
     graph = create_react_agent(llm, tools=[get_weather, get_forecast])
 
-    # ── wrap for Sentrix (one function call) ───────────────────────────────────
+    # ── wrap for Borgkit (one function call) ───────────────────────────────────
     agent = wrap_langgraph(
         graph    = graph,
         name     = "WeatherAgent",
-        agent_id = "sentrix://agent/weather",
+        agent_id = "borgkit://agent/weather",
         owner    = "0xYourWalletAddress",
         tags     = ["weather", "langraph"],
         tools    = [get_weather, get_forecast],   # explicit — skips graph introspection
@@ -57,10 +57,10 @@ async def example_langgraph():
     print("Capabilities:", agent.get_capabilities())
     # → ['get_weather', 'get_forecast']
 
-    # ── register on the Sentrix mesh ───────────────────────────────────────────
+    # ── register on the Borgkit mesh ───────────────────────────────────────────
     await agent.register_discovery()
 
-    # ── handle a Sentrix request ───────────────────────────────────────────────
+    # ── handle a Borgkit request ───────────────────────────────────────────────
     from interfaces import AgentRequest
     req  = AgentRequest(
         request_id = "req-001",
@@ -73,13 +73,13 @@ async def example_langgraph():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Example 2: Google ADK agent → Sentrix
+# Example 2: Google ADK agent → Borgkit
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def example_google_adk():
     """
     Wraps a Google ADK agent with two FunctionTools.
-    Each tool becomes a separate Sentrix capability.
+    Each tool becomes a separate Borgkit capability.
     """
     try:
         from google.adk.agents import Agent
@@ -107,11 +107,11 @@ async def example_google_adk():
         tools       = [FunctionTool(search_docs), FunctionTool(create_ticket)],
     )
 
-    # ── wrap for Sentrix (one function call) ───────────────────────────────────
+    # ── wrap for Borgkit (one function call) ───────────────────────────────────
     agent = wrap_google_adk(
         agent    = adk_agent,
         name     = "SupportAgent",
-        agent_id = "sentrix://agent/support",
+        agent_id = "borgkit://agent/support",
         owner    = "0xYourWalletAddress",
         tags     = ["support", "helpdesk", "adk"],
     )
@@ -119,10 +119,10 @@ async def example_google_adk():
     print("Capabilities:", agent.get_capabilities())
     # → ['search_docs', 'create_ticket']
 
-    # ── register on the Sentrix mesh ───────────────────────────────────────────
+    # ── register on the Borgkit mesh ───────────────────────────────────────────
     await agent.register_discovery()
 
-    # ── handle a Sentrix request ───────────────────────────────────────────────
+    # ── handle a Borgkit request ───────────────────────────────────────────────
     from interfaces import AgentRequest
     req  = AgentRequest(
         request_id = "req-002",
@@ -140,8 +140,8 @@ async def example_google_adk():
 
 async def example_multi_framework():
     """
-    A LangGraph agent and a Google ADK agent coexist on the same Sentrix mesh.
-    Agents can discover and call each other using standard Sentrix requests,
+    A LangGraph agent and a Google ADK agent coexist on the same Borgkit mesh.
+    Agents can discover and call each other using standard Borgkit requests,
     regardless of their underlying framework.
     """
     from interfaces.iagent_discovery import DiscoveryEntry, NetworkInfo, HealthStatus
@@ -152,8 +152,8 @@ async def example_multi_framework():
 
     # Simulate both agents registering
     for agent_id, name, caps in [
-        ("sentrix://agent/weather", "WeatherAgent", ["get_weather", "get_forecast"]),
-        ("sentrix://agent/support", "SupportAgent", ["search_docs", "create_ticket"]),
+        ("borgkit://agent/weather", "WeatherAgent", ["get_weather", "get_forecast"]),
+        ("borgkit://agent/support", "SupportAgent", ["search_docs", "create_ticket"]),
     ]:
         await registry.register(DiscoveryEntry(
             agent_id=agent_id,
@@ -165,7 +165,7 @@ async def example_multi_framework():
             registered_at=datetime.now(timezone.utc).isoformat(),
         ))
 
-    # Any Sentrix agent can now discover the others
+    # Any Borgkit agent can now discover the others
     weather_agents = await registry.query("get_weather")
     support_agents = await registry.query("search_docs")
 

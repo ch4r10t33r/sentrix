@@ -11,10 +11,10 @@ pub const GossipMessage = struct {
 };
 
 pub const Libp2PGossipProtocol = struct {
-    node:      libp2p.SentrixNode,
+    node:      libp2p.BorgkitNode,
     allocator: std.mem.Allocator,
 
-    pub fn init(node: libp2p.SentrixNode, allocator: std.mem.Allocator) Libp2PGossipProtocol {
+    pub fn init(node: libp2p.BorgkitNode, allocator: std.mem.Allocator) Libp2PGossipProtocol {
         return .{ .node = node, .allocator = allocator };
     }
 

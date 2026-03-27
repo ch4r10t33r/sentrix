@@ -1,7 +1,7 @@
-//! Agno → Sentrix Plugin (Zig) — HTTP Bridge
+//! Agno → Borgkit Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps a deployed Agno FastAPI agent server so it participates in the
-//! Sentrix mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
+//! Borgkit mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
 //!
 //! ── Agno API contract ─────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(agno.AgnoService, agno.AgnoPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/agno",
+//!       .agent_id = "borgkit://agent/agno",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

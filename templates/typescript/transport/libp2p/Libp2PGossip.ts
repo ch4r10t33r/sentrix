@@ -1,13 +1,13 @@
 /**
  * Libp2PGossip — IGossipProtocol implementation using libp2p GossipSub.
  *
- * Publishes and subscribes to the /sentrix/gossip/1.0.0 topic.
+ * Publishes and subscribes to the /borgkit/gossip/1.0.0 topic.
  * Messages are LP-framed JSON GossipMessage objects.
  */
 import type { Libp2p }        from 'libp2p';
 import type { GossipMessage } from '../../interfaces/IAgentMesh';
 
-export const GOSSIP_TOPIC = '/sentrix/gossip/1.0.0';
+export const GOSSIP_TOPIC = '/borgkit/gossip/1.0.0';
 
 type GossipHandler = (msg: GossipMessage) => Promise<void>;
 

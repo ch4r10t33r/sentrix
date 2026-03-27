@@ -1,6 +1,6 @@
 # Cross-Framework A2A Example
 
-Two agents built with different frameworks discover and call each other via the Sentrix mesh.
+Two agents built with different frameworks discover and call each other via the Borgkit mesh.
 
 | Agent | Framework | Capabilities |
 |---|---|---|
@@ -18,7 +18,7 @@ cd examples/cross-framework
 python run.py
 ```
 
-Both agents run in **demo mode** by default — tool functions return realistic mock data, no LLM calls are made. The full Sentrix plumbing runs: capability extraction, discovery registration, `AgentClient` lookup, and A2A request/response.
+Both agents run in **demo mode** by default — tool functions return realistic mock data, no LLM calls are made. The full Borgkit plumbing runs: capability extraction, discovery registration, `AgentClient` lookup, and A2A request/response.
 
 Change the topic:
 ```bash
@@ -82,10 +82,10 @@ In live mode:
                      Final Article
 ```
 
-### Key Sentrix concepts shown
+### Key Borgkit concepts shown
 
 - **Plugin wrapping** — `wrap_google_adk()` and `wrap_crewai()` adapt framework agents to `IAgent` in one call
-- **Capability extraction** — tools (`FunctionTool`, `@crewai_tool`) automatically become Sentrix capabilities
+- **Capability extraction** — tools (`FunctionTool`, `@crewai_tool`) automatically become Borgkit capabilities
 - **Discovery** — both agents register with `LocalDiscovery`; swap for `HttpDiscovery` or `GossipDiscovery` in production
 - **AgentClient** — `find(capability)` → `call_capability(...)` works the same regardless of underlying framework
 - **AgentRequest / AgentResponse** — the universal message envelope crossing framework boundaries
@@ -96,8 +96,8 @@ In live mode:
 
 ```
 examples/cross-framework/
-├── research_agent.py   Google ADK agent definition + Sentrix wrapping
-├── writer_agent.py     CrewAI agent definition + Sentrix wrapping
+├── research_agent.py   Google ADK agent definition + Borgkit wrapping
+├── writer_agent.py     CrewAI agent definition + Borgkit wrapping
 ├── run.py              Orchestrator: registers agents, runs the pipeline
 ├── requirements.txt    Framework dependencies (commented out for demo mode)
 └── .env.example        API key template
@@ -109,8 +109,8 @@ examples/cross-framework/
 
 **Add a third agent** (e.g. a fact-checker using LangGraph):
 ```bash
-cd /path/to/your/sentrix-project
-sentrix create agent FactCheckerAgent -c fact_check,find_sources --framework langgraph
+cd /path/to/your/borgkit-project
+borgkit create agent FactCheckerAgent -c fact_check,find_sources --framework langgraph
 ```
 
 **Add x402 micropayment** to the writer agent:

@@ -12,8 +12,8 @@ import type {
 } from './IAgentMesh';
 
 /**
- * Sentrix agent interface.
- * Every Sentrix agent must implement this contract.
+ * Borgkit agent interface.
+ * Every Borgkit agent must implement this contract.
  *
  * Identity note
  * ─────────────
@@ -24,7 +24,7 @@ import type {
  */
 export interface IAgent {
   // ─── Identity ─────────────────────────────────────────────────────────────
-  /** Sentrix agent URI, e.g. "sentrix://agent/0xABC..." */
+  /** Borgkit agent URI, e.g. "borgkit://agent/0xABC..." */
   readonly agentId: string;
   /**
    * Owner identifier — Ethereum address when using ERC-8004 or key-derived

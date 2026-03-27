@@ -1,8 +1,8 @@
 /**
- * LlamaIndex → Sentrix Plugin (TypeScript)
+ * LlamaIndex → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a LlamaIndex agent (OpenAIAgent, ReActAgent, FunctionCallingAgent)
- * so its tools become Sentrix capabilities.
+ * so its tools become Borgkit capabilities.
  *
  * Usage:
  *   import { wrapLlamaIndex }           from './plugins/LlamaIndexPlugin';
@@ -11,20 +11,20 @@
  *   const tool  = FunctionTool.from(webSearch, { name: 'web_search', description: '...' });
  *   const agent = new OpenAIAgent({ tools: [tool] });
  *
- *   const sentrix = wrapLlamaIndex(agent, {
- *     agentId: 'sentrix://agent/researcher',
+ *   const borgkit = wrapLlamaIndex(agent, {
+ *     agentId: 'borgkit://agent/researcher',
  *     name:    'ResearchAgent',
  *     owner:   '0xYourWallet',
  *     tools:   [tool],
  *   });
- *   await sentrix.registerDiscovery();
+ *   await borgkit.registerDiscovery();
  *
  * Install: npm install llamaindex
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 export interface LlamaIndexPluginConfig extends PluginConfig {
   /** Explicit tool list for capability extraction (preferred over introspection) */
@@ -38,7 +38,7 @@ interface LlamaIndexNativeInput {
   payload: Record<string, unknown>;
 }
 
-export class LlamaIndexPlugin extends SentrixPlugin<unknown, LlamaIndexNativeInput, string> {
+export class LlamaIndexPlugin extends BorgkitPlugin<unknown, LlamaIndexNativeInput, string> {
   private readonly liConfig: Required<Pick<LlamaIndexPluginConfig, 'tools' | 'useChat'>>;
 
   constructor(config: LlamaIndexPluginConfig) {

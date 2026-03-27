@@ -1,4 +1,4 @@
-//! Sentrix HTTP server — serves an IAgent-compatible agent over HTTP.
+//! Borgkit HTTP server — serves an IAgent-compatible agent over HTTP.
 //!
 //! Endpoints:
 //!   POST /invoke        — dispatch an AgentRequest, return AgentResponse as JSON
@@ -48,7 +48,7 @@ pub fn serve(comptime T: type, agent: *T, port: u16, allocator: std.mem.Allocato
     var http_server = try addr.listen(.{ .reuse_address = true });
     defer http_server.deinit();
 
-    std.log.info("[server] Sentrix agent listening on 127.0.0.1:{d}", .{port});
+    std.log.info("[server] Borgkit agent listening on 127.0.0.1:{d}", .{port});
 
     // Accept loop — handle one connection at a time.
     while (true) {

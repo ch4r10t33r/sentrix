@@ -1,6 +1,6 @@
-# Sentrix — Overview
+# Borgkit — Overview
 
-Sentrix is a **decentralised agent networking framework** that lets you build, discover, and interconnect software agents without relying on any centralised service.
+Borgkit is a **decentralised agent networking framework** that lets you build, discover, and interconnect software agents without relying on any centralised service.
 
 Think of it as **HTTP + DNS for agents** — but peer-to-peer, cryptographically verifiable, and framework-agnostic.
 
@@ -10,7 +10,7 @@ Think of it as **HTTP + DNS for agents** — but peer-to-peer, cryptographically
 
 ### 1. Agents are first-class network citizens
 
-Every agent in Sentrix has a verifiable identity (backed by a secp256k1 key pair), a list of capabilities it exposes, and a signed network record — the **ANR** — that encodes all of this into a compact, portable string.
+Every agent in Borgkit has a verifiable identity (backed by a secp256k1 key pair), a list of capabilities it exposes, and a signed network record — the **ANR** — that encodes all of this into a compact, portable string.
 
 ```
 anr:enqFiWFtcC12MWlkYHNlcHAy...
@@ -29,14 +29,14 @@ Discovery is **pluggable** and defaults to fully local/P2P operation:
 | `GossipDiscovery` *(coming)* | Production P2P mesh |
 | `OnChainDiscovery` *(coming)* | ERC-8004 Ethereum-native registry |
 
-Switch between them with a single environment variable (`SENTRIX_DISCOVERY_URL`) or a one-line config change — **your agent code never changes**.
+Switch between them with a single environment variable (`BORGKIT_DISCOVERY_URL`) or a one-line config change — **your agent code never changes**.
 
 ### 3. Framework-agnostic by design
 
-Sentrix does not care how your agent is built. Bring your existing LangGraph graph, Google ADK agent, or custom logic and wrap it with a **SentrixPlugin** in one function call:
+Borgkit does not care how your agent is built. Bring your existing LangGraph graph, Google ADK agent, or custom logic and wrap it with a **BorgkitPlugin** in one function call:
 
 ```python
-agent = wrap_langgraph(graph, name="Researcher", agent_id="sentrix://agent/researcher")
+agent = wrap_langgraph(graph, name="Researcher", agent_id="borgkit://agent/researcher")
 await agent.register_discovery()
 ```
 
@@ -44,7 +44,7 @@ await agent.register_discovery()
 
 Agent identities are grounded in the **ERC-8004** standard:
 
-- Every agent has an `agentId` URI (`sentrix://agent/<address>`)
+- Every agent has an `agentId` URI (`borgkit://agent/<address>`)
 - Identity is backed by a secp256k1 key pair — the same cryptographic primitive used by Ethereum
 - Ownership, delegation, and permissions follow the ERC-8004 model
 - On-chain anchoring is optional but natively supported
@@ -54,7 +54,7 @@ Agent identities are grounded in the **ERC-8004** standard:
 ## Repository layout
 
 ```
-sentrix/
+borgkit/
 ├── src/                        # CLI source (TypeScript)
 │   ├── cli.ts                  # Entry point & command wiring
 │   ├── version.ts              # Single source of version truth
@@ -72,7 +72,7 @@ sentrix/
     ├── anr.md                  # Agent Network Record spec
     ├── interfaces.md           # IAgent · IAgentRequest · IAgentResponse · IAgentDiscovery
     ├── discovery.md            # Discovery layer & adapters
-    ├── plugins.md              # SentrixPlugin · LangGraph · Google ADK
+    ├── plugins.md              # BorgkitPlugin · LangGraph · Google ADK
     ├── version-management.md   # Versioning & changelog policy
     └── examples/
         ├── 01-hello-agent.md         # Defining your first agent
@@ -87,15 +87,15 @@ sentrix/
 ## Quick start
 
 ```bash
-npm install -g sentrix-cli
+npm install -g borgkit-cli
 
-sentrix init my-project --lang python
+borgkit init my-project --lang python
 cd my-project
 pip install -r requirements.txt
 python -m agents.example_agent
 ```
 
-For all options: `sentrix --help`
+For all options: `borgkit --help`
 
 ---
 

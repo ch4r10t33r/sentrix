@@ -10,7 +10,7 @@ const privateKey = secp256k1.utils.randomPrivateKey();
 // ── Build and sign an ANR ─────────────────────────────────────────────────────
 const record = new AnrBuilder()
   .setSeq(1n)
-  .setAgentId('sentrix://agent/0xABC123')
+  .setAgentId('borgkit://agent/0xABC123')
   .setName('WeatherAgent')
   .setVersion('1.0.0')
   .setCapabilities(['getWeather', 'getForecast'])

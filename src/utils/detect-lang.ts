@@ -2,11 +2,11 @@ import fs from 'fs-extra';
 import path from 'path';
 
 /**
- * Auto-detect the language used in an existing Sentrix project
- * by reading sentrix.config.json or sniffing file extensions.
+ * Auto-detect the language used in an existing Borgkit project
+ * by reading borgkit.config.json or sniffing file extensions.
  */
 export function detectLanguage(projectDir: string): string {
-  const configPath = path.join(projectDir, 'sentrix.config.json');
+  const configPath = path.join(projectDir, 'borgkit.config.json');
   if (fs.existsSync(configPath)) {
     const config = fs.readJsonSync(configPath);
     if (config.lang) return config.lang;

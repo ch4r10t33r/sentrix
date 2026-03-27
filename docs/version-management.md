@@ -2,7 +2,7 @@
 
 ## Current version: `0.1.0`
 
-Sentrix follows **Semantic Versioning 2.0.0** (`MAJOR.MINOR.PATCH`).
+Borgkit follows **Semantic Versioning 2.0.0** (`MAJOR.MINOR.PATCH`).
 
 | Segment | Increment when |
 |---|---|
@@ -26,7 +26,7 @@ Everything else reads from it:
 import { VERSION } from './version';
 
 program.version(VERSION);                  // CLI --version flag
-writeConfig({ version: VERSION, … });     // sentrix.config.json
+writeConfig({ version: VERSION, … });     // borgkit.config.json
 ```
 
 ---
@@ -47,10 +47,10 @@ isCompatible('0.2.0')   // false (running is older)
 ## CLI version commands
 
 ```bash
-sentrix --version       # short: prints "0.1.0"
-sentrix -v              # alias
+borgkit --version       # short: prints "0.1.0"
+borgkit -v              # alias
 
-sentrix version         # detailed build info:
+borgkit version         # detailed build info:
 #   Version    : 0.1.0
 #   Build date : 2026-03-24
 #   Node.js    : v20.11.0

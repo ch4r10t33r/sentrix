@@ -1,0 +1,23 @@
+{
+  "name": "@ch4r10teer41/borgkit-cli-darwin-arm64",
+  "version": "0.1.0",
+  "description": "Prebuilt borgkit CLI binary for macOS arm64",
+  "license": "Apache-2.0",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "bin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ch4r10t33r/borgkit.git",
+    "directory": "npm/borgkit-cli-darwin-arm64"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

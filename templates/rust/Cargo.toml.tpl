@@ -2,7 +2,7 @@
 name = "{{PROJECT_NAME}}"
 version = "0.1.0"
 edition = "2021"
-description = "Sentrix agent project — ERC-8004 compliant"
+description = "Borgkit agent project — ERC-8004 compliant"
 
 [[bin]]
 name = "{{PROJECT_NAME}}"

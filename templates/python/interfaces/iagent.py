@@ -1,6 +1,6 @@
 """
-Sentrix agent interface.
-Every Sentrix agent must implement this abstract base class.
+Borgkit agent interface.
+Every Borgkit agent must implement this abstract base class.
 
 Identity note
 ─────────────
@@ -48,7 +48,7 @@ class AgentMetadata:
 
 class IAgent(ABC):
     # ── Identity ───────────────────────────────────────────────────────────
-    agent_id: str                            # e.g. "sentrix://agent/0xABC..."
+    agent_id: str                            # e.g. "borgkit://agent/0xABC..."
     owner: str              = "anonymous"    # Wallet address or arbitrary identifier.
                                              # Required for ERC-8004; optional otherwise.
     metadata_uri: Optional[str]          = None
@@ -222,7 +222,7 @@ class IAgent(ABC):
 
         Uses (in priority order):
           1. self._identity.sign_bytes()  if an IdentityProvider is attached
-          2. SENTRIX_AGENT_KEY env var    (hex private key)
+          2. BORGKIT_AGENT_KEY env var    (hex private key)
 
         Raises RuntimeError if no signing key is configured.
         """
@@ -235,8 +235,8 @@ class IAgent(ABC):
             if sig is not None:
                 return sig
 
-        # 2. Fall back to SENTRIX_AGENT_KEY env var
-        raw_key = os.environ.get('SENTRIX_AGENT_KEY', '')
+        # 2. Fall back to BORGKIT_AGENT_KEY env var
+        raw_key = os.environ.get('BORGKIT_AGENT_KEY', '')
         if raw_key:
             key_hex = raw_key.lstrip('0x')
             key_bytes = bytes.fromhex(key_hex)
@@ -269,5 +269,5 @@ class IAgent(ABC):
         raise RuntimeError(
             "sign_message: no signing key configured. "
             "Attach an IdentityProvider via self._identity = provider, "
-            "or set SENTRIX_AGENT_KEY=<hex-private-key> env var."
+            "or set BORGKIT_AGENT_KEY=<hex-private-key> env var."
         )

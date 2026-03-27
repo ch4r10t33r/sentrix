@@ -1,7 +1,7 @@
-//! MCP Outbound Bridge — exposes any Sentrix `IAgent` as an MCP server.
+//! MCP Outbound Bridge — exposes any Borgkit `IAgent` as an MCP server.
 //!
 //! Receives MCP JSON-RPC 2.0 messages from an MCP client (e.g. Claude Desktop,
-//! Cursor, Cline) and dispatches them to the wrapped `IAgent`.  Each Sentrix
+//! Cursor, Cline) and dispatches them to the wrapped `IAgent`.  Each Borgkit
 //! capability is advertised as an MCP tool.
 //!
 //! ── Transports ────────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@
 //!
 //! ── Usage (stdio) ─────────────────────────────────────────────────────────────
 //!
-//!   use sentrix::mcp::{serve_as_mcp, ServeMcpOptions, Transport};
+//!   use borgkit::mcp::{serve_as_mcp, ServeMcpOptions, Transport};
 //!
 //!   serve_as_mcp(my_agent, ServeMcpOptions::default()).await?;
 //!
@@ -114,7 +114,7 @@ pub enum Transport {
 /// Options for [`serve_as_mcp`].
 pub struct ServeMcpOptions {
     /// Override the `serverInfo.name` field in the `initialize` response.
-    /// Defaults to `"sentrix-agent"`.
+    /// Defaults to `"borgkit-agent"`.
     pub name:      Option<String>,
     /// Wire transport to use (default: [`Transport::Stdio`]).
     pub transport: Transport,
@@ -146,7 +146,7 @@ fn build_tools_list<A: IAgent>(agent: &A) -> Value {
         .map(|cap| {
             json!({
                 "name":        cap,
-                "description": format!("Sentrix capability: {cap}"),
+                "description": format!("Borgkit capability: {cap}"),
                 "inputSchema": {
                     "type":       "object",
                     "properties": {
@@ -285,7 +285,7 @@ where
     let server_name = options
         .name
         .clone()
-        .unwrap_or_else(|| "sentrix-agent".to_string());
+        .unwrap_or_else(|| "borgkit-agent".to_string());
 
     match options.transport {
         Transport::Stdio => serve_stdio(agent, server_name).await,
@@ -454,8 +454,8 @@ where
 
     let addr = format!("{host}:{port}");
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    println!("[sentrix-mcp] SSE server listening on http://{addr}");
-    println!("[sentrix-mcp] Connect Claude Desktop to: http://{addr}/sse");
+    println!("[borgkit-mcp] SSE server listening on http://{addr}");
+    println!("[borgkit-mcp] Connect Claude Desktop to: http://{addr}/sse");
 
     axum::serve(listener, app).await?;
     Ok(())
@@ -507,8 +507,8 @@ where
 
     let addr = format!("{host}:{port}");
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    println!("[sentrix-mcp] HTTP server listening on http://{addr}");
-    println!("[sentrix-mcp] MCP streamable endpoint: http://{addr}/mcp");
+    println!("[borgkit-mcp] HTTP server listening on http://{addr}");
+    println!("[borgkit-mcp] MCP streamable endpoint: http://{addr}/mcp");
 
     axum::serve(listener, app).await?;
     Ok(())

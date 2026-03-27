@@ -308,7 +308,7 @@ if __name__ == '__main__':
     record = (
         AnrBuilder()
         .seq(1)
-        .agent_id('sentrix://agent/0xABC123')
+        .agent_id('borgkit://agent/0xABC123')
         .name('WeatherAgent')
         .version('1.0.0')
         .capabilities(['getWeather', 'getForecast'])

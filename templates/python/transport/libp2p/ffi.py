@@ -1,8 +1,8 @@
 """
-ffi.py — ctypes bindings to the sentrix-libp2p Rust shared library.
+ffi.py — ctypes bindings to the borgkit-libp2p Rust shared library.
 
 The library is loaded from (in order):
-  1. SENTRIX_LIBP2P_LIB env var
+  1. BORGKIT_LIBP2P_LIB env var
   2. The directory containing this file (for bundled deployments)
   3. System library paths
 """
@@ -19,26 +19,26 @@ from typing import Callable, Optional
 
 def _find_lib() -> str:
     # 1. Explicit env var override
-    env = os.environ.get("SENTRIX_LIBP2P_LIB")
+    env = os.environ.get("BORGKIT_LIBP2P_LIB")
     if env:
         return env
 
     # 2. Alongside this file (bundled)
     here    = Path(__file__).parent
     suffix  = {"darwin": ".dylib", "win32": ".dll"}.get(sys.platform, ".so")
-    bundled = here / f"libsentrix_libp2p{suffix}"
+    bundled = here / f"libborgkit_libp2p{suffix}"
     if bundled.exists():
         return str(bundled)
 
     # 3. System lookup
-    found = ctypes.util.find_library("sentrix_libp2p")
+    found = ctypes.util.find_library("borgkit_libp2p")
     if found:
         return found
 
     raise FileNotFoundError(
-        "sentrix-libp2p shared library not found. "
+        "borgkit-libp2p shared library not found. "
         "Build it with: cd transport/rust && cargo build --release\n"
-        "Then set SENTRIX_LIBP2P_LIB=/path/to/libsentrix_libp2p.so"
+        "Then set BORGKIT_LIBP2P_LIB=/path/to/libborgkit_libp2p.so"
     )
 
 
@@ -47,15 +47,15 @@ def _find_lib() -> str:
 RequestCallbackType = ctypes.CFUNCTYPE(ctypes.c_char_p, ctypes.c_char_p)
 
 
-# ── SentrixLibp2P ─────────────────────────────────────────────────────────────
+# ── BorgkitLibp2P ─────────────────────────────────────────────────────────────
 
-class SentrixLibp2P:
+class BorgkitLibp2P:
     """
-    Low-level ctypes wrapper around the sentrix-libp2p C FFI.
+    Low-level ctypes wrapper around the borgkit-libp2p C FFI.
 
     Usage
     -----
-    node = SentrixLibp2P()
+    node = BorgkitLibp2P()
     node.start("/ip4/0.0.0.0/tcp/0")
     print("peer_id:", node.peer_id())
     print("multiaddr:", node.multiaddr())
@@ -81,35 +81,35 @@ class SentrixLibp2P:
     def _setup_signatures(self) -> None:
         lib = self._lib
 
-        lib.sentrix_node_create.argtypes  = [ctypes.c_char_p, ctypes.c_void_p]
-        lib.sentrix_node_create.restype   = ctypes.c_void_p
+        lib.borgkit_node_create.argtypes  = [ctypes.c_char_p, ctypes.c_void_p]
+        lib.borgkit_node_create.restype   = ctypes.c_void_p
 
-        lib.sentrix_node_destroy.argtypes = [ctypes.c_void_p]
-        lib.sentrix_node_destroy.restype  = None
+        lib.borgkit_node_destroy.argtypes = [ctypes.c_void_p]
+        lib.borgkit_node_destroy.restype  = None
 
-        lib.sentrix_node_peer_id.argtypes  = [ctypes.c_void_p]
-        lib.sentrix_node_peer_id.restype   = ctypes.c_char_p
+        lib.borgkit_node_peer_id.argtypes  = [ctypes.c_void_p]
+        lib.borgkit_node_peer_id.restype   = ctypes.c_char_p
 
-        lib.sentrix_node_multiaddr.argtypes = [ctypes.c_void_p]
-        lib.sentrix_node_multiaddr.restype  = ctypes.c_char_p
+        lib.borgkit_node_multiaddr.argtypes = [ctypes.c_void_p]
+        lib.borgkit_node_multiaddr.restype  = ctypes.c_char_p
 
-        lib.sentrix_dial.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-        lib.sentrix_dial.restype  = ctypes.c_int
+        lib.borgkit_dial.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+        lib.borgkit_dial.restype  = ctypes.c_int
 
-        lib.sentrix_send.argtypes = [
+        lib.borgkit_send.argtypes = [
             ctypes.c_void_p,   # handle
             ctypes.c_char_p,   # peer_id
             ctypes.c_char_p,   # request_json
             ctypes.c_char_p,   # response_buf
             ctypes.c_size_t,   # response_cap
         ]
-        lib.sentrix_send.restype = ctypes.c_int
+        lib.borgkit_send.restype = ctypes.c_int
 
-        lib.sentrix_gossip_publish.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-        lib.sentrix_gossip_publish.restype  = ctypes.c_int
+        lib.borgkit_gossip_publish.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+        lib.borgkit_gossip_publish.restype  = ctypes.c_int
 
-        lib.sentrix_free_string.argtypes = [ctypes.c_char_p]
-        lib.sentrix_free_string.restype  = None
+        lib.borgkit_free_string.argtypes = [ctypes.c_char_p]
+        lib.borgkit_free_string.restype  = None
 
     def start(
         self,
@@ -131,39 +131,39 @@ class SentrixLibp2P:
             cb = RequestCallbackType(_wrapper)
             self._cb_ref = cb   # must keep reference alive
 
-        self._handle = self._lib.sentrix_node_create(
+        self._handle = self._lib.borgkit_node_create(
             listen_addr.encode(),
             cb,
         )
         if not self._handle:
-            raise RuntimeError("sentrix_node_create failed")
+            raise RuntimeError("borgkit_node_create failed")
 
     def stop(self) -> None:
         if self._handle:
-            self._lib.sentrix_node_destroy(self._handle)
+            self._lib.borgkit_node_destroy(self._handle)
             self._handle = None
             self._cb_ref = None
 
     def peer_id(self) -> str:
         self._require_started()
-        raw = self._lib.sentrix_node_peer_id(self._handle)
+        raw = self._lib.borgkit_node_peer_id(self._handle)
         return raw.decode() if raw else ""
 
     def multiaddr(self) -> str:
         self._require_started()
-        raw = self._lib.sentrix_node_multiaddr(self._handle)
+        raw = self._lib.borgkit_node_multiaddr(self._handle)
         return raw.decode() if raw else ""
 
     def dial(self, multiaddr: str) -> None:
         self._require_started()
-        rc = self._lib.sentrix_dial(self._handle, multiaddr.encode())
+        rc = self._lib.borgkit_dial(self._handle, multiaddr.encode())
         if rc != 0:
-            raise ConnectionError(f"sentrix_dial failed for {multiaddr}")
+            raise ConnectionError(f"borgkit_dial failed for {multiaddr}")
 
     def send(self, peer_id: str, request_json: str) -> str:
         self._require_started()
         buf = ctypes.create_string_buffer(self._RESPONSE_BUF_SIZE)
-        n = self._lib.sentrix_send(
+        n = self._lib.borgkit_send(
             self._handle,
             peer_id.encode(),
             request_json.encode(),
@@ -171,18 +171,18 @@ class SentrixLibp2P:
             self._RESPONSE_BUF_SIZE,
         )
         if n < 0:
-            raise RuntimeError(f"sentrix_send failed for peer {peer_id}")
+            raise RuntimeError(f"borgkit_send failed for peer {peer_id}")
         return buf.raw[:n].decode()
 
     def gossip_publish(self, message_json: str) -> None:
         self._require_started()
-        rc = self._lib.sentrix_gossip_publish(self._handle, message_json.encode())
+        rc = self._lib.borgkit_gossip_publish(self._handle, message_json.encode())
         if rc != 0:
-            raise RuntimeError("sentrix_gossip_publish failed")
+            raise RuntimeError("borgkit_gossip_publish failed")
 
     def _require_started(self) -> None:
         if not self._handle:
-            raise RuntimeError("SentrixLibp2P not started — call .start() first")
+            raise RuntimeError("BorgkitLibp2P not started — call .start() first")
 
     def __enter__(self):
         self.start()

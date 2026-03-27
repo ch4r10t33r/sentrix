@@ -26,14 +26,14 @@ pub fn run(args: InspectArgs) -> Result<()> {
         Some("anr") => {
             let text = args
                 .target
-                .ok_or_else(|| anyhow!("Usage: sentrix inspect anr <anr-text>"))?;
+                .ok_or_else(|| anyhow!("Usage: borgkit inspect anr <anr-text>"))?;
             inspect_anr(&text, args.raw)
         }
         Some("agents") => inspect_agents(&args.host, args.port, args.raw),
         Some("agent") => {
             let id = args
                 .target
-                .ok_or_else(|| anyhow!("Usage: sentrix inspect agent <agent-id>"))?;
+                .ok_or_else(|| anyhow!("Usage: borgkit inspect agent <agent-id>"))?;
             inspect_agent(&id, &args.host, args.port, args.raw)
         }
         Some("capabilities") => inspect_capabilities(&args.host, args.port, args.raw),
@@ -41,23 +41,23 @@ pub fn run(args: InspectArgs) -> Result<()> {
             "Unknown subcommand '{other}'. Try: anr | agents | agent | capabilities"
         )),
         None => {
-            println!("\n{}", "sentrix inspect — subcommands".bold());
+            println!("\n{}", "borgkit inspect — subcommands".bold());
             println!();
             println!(
                 "  {}  Decode an ANR record",
-                "sentrix inspect anr <anr-text>  ".cyan()
+                "borgkit inspect anr <anr-text>  ".cyan()
             );
             println!(
                 "  {}  List all mesh agents",
-                "sentrix inspect agents           ".cyan()
+                "borgkit inspect agents           ".cyan()
             );
             println!(
                 "  {}  Inspect one agent",
-                "sentrix inspect agent <agent-id> ".cyan()
+                "borgkit inspect agent <agent-id> ".cyan()
             );
             println!(
                 "  {}  All capabilities on the mesh",
-                "sentrix inspect capabilities     ".cyan()
+                "borgkit inspect capabilities     ".cyan()
             );
             println!();
             println!(
@@ -531,7 +531,7 @@ fn inspect_agent(id: &str, host: &str, port: u16, raw: bool) -> Result<()> {
             println!("  {}", "ANR:".bold());
             println!("    {}", anr_text.dimmed());
             println!();
-            println!("  Decode with: sentrix inspect anr \"{}\"", anr_text);
+            println!("  Decode with: borgkit inspect anr \"{}\"", anr_text);
         }
     }
     Ok(())

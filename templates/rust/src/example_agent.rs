@@ -15,8 +15,8 @@ impl ExampleAgent {
     }
 
     fn anr(&self) -> DiscoveryEntry {
-        let host = std::env::var("SENTRIX_HOST").unwrap_or_else(|_| "localhost".into());
-        let port = std::env::var("SENTRIX_PORT")
+        let host = std::env::var("BORGKIT_HOST").unwrap_or_else(|_| "localhost".into());
+        let port = std::env::var("BORGKIT_PORT")
             .ok().and_then(|p| p.parse().ok()).unwrap_or(6174u16);
         let peer_id = self.get_peer_id();
         let multiaddr = peer_id.as_ref().map(|pid|
@@ -49,7 +49,7 @@ impl ExampleAgent {
 
 #[async_trait]
 impl IAgent for ExampleAgent {
-    fn agent_id(&self) -> &str { "sentrix://agent/example" }
+    fn agent_id(&self) -> &str { "borgkit://agent/example" }
     fn owner(&self)    -> &str { "0xYourWalletAddress" }
 
     fn metadata_uri(&self) -> Option<&str> {

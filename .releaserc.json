@@ -38,7 +38,7 @@
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md",
-        "changelogTitle": "# Changelog\n\nAll notable changes to `sentrix-cli` are documented here.\nFormat follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).\nVersioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+        "changelogTitle": "# Changelog\n\nAll notable changes to `borgkit-cli` are documented here.\nFormat follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).\nVersioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
       }
     ],
     [
@@ -71,12 +71,12 @@
           "package-lock.json",
           "Cargo.toml",
           "Cargo.lock",
-          "npm/sentrix-cli/package.json",
-          "npm/sentrix-cli-linux-x64/package.json",
-          "npm/sentrix-cli-linux-arm64/package.json",
-          "npm/sentrix-cli-darwin-x64/package.json",
-          "npm/sentrix-cli-darwin-arm64/package.json",
-          "npm/sentrix-cli-win32-x64/package.json"
+          "npm/borgkit-cli/package.json",
+          "npm/borgkit-cli-linux-x64/package.json",
+          "npm/borgkit-cli-linux-arm64/package.json",
+          "npm/borgkit-cli-darwin-x64/package.json",
+          "npm/borgkit-cli-darwin-arm64/package.json",
+          "npm/borgkit-cli-win32-x64/package.json"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }

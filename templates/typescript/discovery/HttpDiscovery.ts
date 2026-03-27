@@ -1,7 +1,7 @@
 /**
  * HttpDiscovery — centralised discovery adapter (optional extension).
  *
- * Connects to any REST-based agent registry that implements the Sentrix
+ * Connects to any REST-based agent registry that implements the Borgkit
  * centralised discovery API. This is NOT the default; LocalDiscovery and
  * GossipDiscovery are preferred. Use this as an escape hatch when:
  *   - bootstrapping a new network
@@ -19,7 +19,7 @@
 import { IAgentDiscovery, DiscoveryEntry } from '../interfaces/IAgentDiscovery';
 
 export interface HttpDiscoveryOptions {
-  /** Base URL of the centralised registry, e.g. "https://registry.sentrix.io" */
+  /** Base URL of the centralised registry, e.g. "https://registry.borgkit.io" */
   baseUrl: string;
   /** Optional API key for authenticated registries */
   apiKey?: string;

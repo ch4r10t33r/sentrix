@@ -1,6 +1,6 @@
-# Sentrix Plugins — Framework Adapters
+# Borgkit Plugins — Framework Adapters
 
-Sentrix plugins let you bring **existing agents from any framework** into the mesh without rewriting them. A plugin is a thin translation layer that maps between a framework's native API and the Sentrix `IAgent` interface.
+Borgkit plugins let you bring **existing agents from any framework** into the mesh without rewriting them. A plugin is a thin translation layer that maps between a framework's native API and the Borgkit `IAgent` interface.
 
 ---
 
@@ -13,7 +13,7 @@ Sentrix plugins let you bring **existing agents from any framework** into the me
 └─────────────────┬────────────────┘
                   │  plugin.wrap(agent)
 ┌─────────────────▼────────────────┐
-│        SentrixPlugin              │
+│        BorgkitPlugin              │
 │  extractCapabilities()           │  ← inspects the native agent
 │  translateRequest()              │  ← AgentRequest → native input
 │  invokeNative()                  │  ← calls the native agent
@@ -21,17 +21,17 @@ Sentrix plugins let you bring **existing agents from any framework** into the me
 └─────────────────┬────────────────┘
                   │  returns IAgent
 ┌─────────────────▼────────────────┐
-│         Sentrix mesh              │
+│         Borgkit mesh              │
 │  ANR · Discovery · Wire format    │
 └──────────────────────────────────┘
 ```
 
 ---
 
-## SentrixPlugin base class
+## BorgkitPlugin base class
 
 ```python
-class SentrixPlugin(ABC, Generic[TAgent]):
+class BorgkitPlugin(ABC, Generic[TAgent]):
 
     @abstractmethod
     def extract_capabilities(self, agent: TAgent) -> list[CapabilityDescriptor]: ...
@@ -48,7 +48,7 @@ class SentrixPlugin(ABC, Generic[TAgent]):
     def wrap(self, agent: TAgent) -> WrappedAgent: ...   # ← call this
 ```
 
-Implement all four abstract methods and call `wrap()` to get back a fully Sentrix-compatible `IAgent`.
+Implement all four abstract methods and call `wrap()` to get back a fully Borgkit-compatible `IAgent`.
 
 ---
 
@@ -86,7 +86,7 @@ graph = create_react_agent(llm, tools=[get_weather])
 agent = wrap_langgraph(
     graph    = graph,
     name     = "WeatherAgent",
-    agent_id = "sentrix://agent/weather",
+    agent_id = "borgkit://agent/weather",
     tags     = ["weather"],
     tools    = [get_weather],   # explicit — fastest path
 )
@@ -141,7 +141,7 @@ adk_agent = Agent(
 agent = wrap_google_adk(
     agent    = adk_agent,
     name     = "SupportAgent",
-    agent_id = "sentrix://agent/support",
+    agent_id = "borgkit://agent/support",
     tags     = ["support", "helpdesk"],
 )
 
@@ -155,20 +155,20 @@ await agent.register_discovery()
 | `expose_tools_as_capabilities` | `True` | Each tool = one capability |
 | `expose_sub_agents` | `False` | Sub-agents as extra capabilities |
 | `async_mode` | `True` | Use `runner.run_async()` |
-| `app_name` | `"sentrix"` | ADK Runner app name |
-| `user_id` | `"sentrix-user"` | ADK session user ID |
+| `app_name` | `"borgkit"` | ADK Runner app name |
+| `user_id` | `"borgkit-user"` | ADK session user ID |
 
 ---
 
 ## Writing a custom plugin
 
-To integrate any other framework, subclass `SentrixPlugin` and implement the four methods:
+To integrate any other framework, subclass `BorgkitPlugin` and implement the four methods:
 
 ```python
-from plugins.base import SentrixPlugin, CapabilityDescriptor, PluginConfig
+from plugins.base import BorgkitPlugin, CapabilityDescriptor, PluginConfig
 from interfaces import AgentRequest, AgentResponse
 
-class MyFrameworkPlugin(SentrixPlugin):
+class MyFrameworkPlugin(BorgkitPlugin):
 
     def extract_capabilities(self, agent) -> list[CapabilityDescriptor]:
         # Inspect agent and return its capabilities
@@ -181,7 +181,7 @@ class MyFrameworkPlugin(SentrixPlugin):
         ]
 
     def translate_request(self, req: AgentRequest, cap: CapabilityDescriptor):
-        # Convert Sentrix AgentRequest → your framework's input format
+        # Convert Borgkit AgentRequest → your framework's input format
         return {"input": req.payload.get("query"), "config": {}}
 
     async def invoke_native(self, agent, cap: CapabilityDescriptor, native_input):
@@ -189,11 +189,11 @@ class MyFrameworkPlugin(SentrixPlugin):
         return await agent.run(native_input)
 
     def translate_response(self, result, request_id: str) -> AgentResponse:
-        # Convert your framework's output → Sentrix AgentResponse
+        # Convert your framework's output → Borgkit AgentResponse
         return AgentResponse.success(request_id, {"output": str(result)})
 
 # Usage
-config = PluginConfig(agent_id="sentrix://agent/my", name="MyAgent", owner="0xWallet")
+config = PluginConfig(agent_id="borgkit://agent/my", name="MyAgent", owner="0xWallet")
 plugin = MyFrameworkPlugin(config)
 agent  = plugin.wrap(my_framework_agent)
 await agent.register_discovery()
@@ -207,7 +207,7 @@ All plugins share a common `PluginConfig` base:
 
 | Field | Default | Description |
 |---|---|---|
-| `agent_id` | required | `"sentrix://agent/<name>"` |
+| `agent_id` | required | `"borgkit://agent/<name>"` |
 | `owner` | required | Wallet / contract address |
 | `name` | required | Human-readable agent name |
 | `version` | `"0.1.0"` | Semantic version |
@@ -220,4 +220,4 @@ All plugins share a common `PluginConfig` base:
 | `discovery_type` | `"local"` | `"local"` \| `"http"` \| `"gossip"` |
 | `discovery_url` | `None` | URL for HttpDiscovery |
 | `signing_key` | `None` | 32-byte hex secp256k1 key for ANR signing |
-| `capability_map` | `{}` | `{ "sentrixName": "nativeName" }` override |
+| `capability_map` | `{}` | `{ "borgkitName": "nativeName" }` override |

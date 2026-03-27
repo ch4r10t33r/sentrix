@@ -3,7 +3,7 @@
  *
  * Priority order (highest → lowest):
  *   1. Explicit `type` in config
- *   2. SENTRIX_DISCOVERY_URL env var    → HttpDiscovery
+ *   2. BORGKIT_DISCOVERY_URL env var    → HttpDiscovery
  *   3. default                          → LocalDiscovery
  *
  * Usage:
@@ -46,7 +46,7 @@ export interface DiscoveryConfig {
     listenAddresses?: string[];
     /**
      * Known bootstrap peer multiaddrs.
-     * Also read from SENTRIX_BOOTSTRAP_PEERS env var (comma-separated).
+     * Also read from BORGKIT_BOOTSTRAP_PEERS env var (comma-separated).
      */
     bootstrapPeers?: string[];
     /** DHT record re-publish interval in ms. Default: 30_000 */
@@ -68,15 +68,15 @@ export class DiscoveryFactory {
    */
   static async create(config: DiscoveryConfig = {}): Promise<IAgentDiscovery> {
     const type = config.type
-      ?? (process.env['SENTRIX_DISCOVERY_URL'] ? 'http' : 'local');
+      ?? (process.env['BORGKIT_DISCOVERY_URL'] ? 'http' : 'local');
 
     switch (type) {
       case 'http': {
-        const url = config.http?.baseUrl ?? process.env['SENTRIX_DISCOVERY_URL'];
-        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl or SENTRIX_DISCOVERY_URL');
+        const url = config.http?.baseUrl ?? process.env['BORGKIT_DISCOVERY_URL'];
+        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl or BORGKIT_DISCOVERY_URL');
         return new HttpDiscovery({
           baseUrl:              url,
-          apiKey:               config.http?.apiKey              ?? process.env['SENTRIX_DISCOVERY_KEY'],
+          apiKey:               config.http?.apiKey              ?? process.env['BORGKIT_DISCOVERY_KEY'],
           timeoutMs:            config.http?.timeoutMs,
           heartbeatIntervalMs:  config.http?.heartbeatIntervalMs,
         });

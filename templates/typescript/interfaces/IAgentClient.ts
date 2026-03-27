@@ -1,5 +1,5 @@
 /**
- * IAgentClient — standard interface for discovering and calling Sentrix agents.
+ * IAgentClient — standard interface for discovering and calling Borgkit agents.
  *
  * Combines lookup (find by capability / agent ID) with invocation
  * (send AgentRequest, receive AgentResponse) in a single coherent API.
@@ -148,7 +148,7 @@ export interface IAgentClient {
    *
    * @example
    * ```ts
-   * for await (const event of client.stream('sentrix://agent/llm', 'generate', { prompt })) {
+   * for await (const event of client.stream('borgkit://agent/llm', 'generate', { prompt })) {
    *   if (event.type === 'chunk') process.stdout.write(event.delta);
    *   else break;
    * }

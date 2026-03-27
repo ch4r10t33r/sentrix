@@ -1,4 +1,4 @@
-//! DIDComm v2 encrypted messaging for Sentrix agents.
+//! DIDComm v2 encrypted messaging for Borgkit agents.
 //!
 //! Implements authenticated encryption (authcrypt) and anonymous encryption
 //! (anoncrypt) between DID-identified agents using X25519 ECDH +
@@ -54,11 +54,11 @@ pub const TAG_SIZE   = ChaCha20Poly1305.tag_length;   // 16
 
 // ── Message type URIs ─────────────────────────────────────────────────────────
 
-pub const MSG_INVOKE   = "https://sentrix.dev/didcomm/1.0/invoke";
-pub const MSG_RESPONSE = "https://sentrix.dev/didcomm/1.0/response";
-pub const MSG_FORWARD  = "https://sentrix.dev/didcomm/1.0/forward";
-pub const MSG_PING     = "https://sentrix.dev/didcomm/1.0/ping";
-pub const MSG_PONG     = "https://sentrix.dev/didcomm/1.0/pong";
+pub const MSG_INVOKE   = "https://borgkit.dev/didcomm/1.0/invoke";
+pub const MSG_RESPONSE = "https://borgkit.dev/didcomm/1.0/response";
+pub const MSG_FORWARD  = "https://borgkit.dev/didcomm/1.0/forward";
+pub const MSG_PING     = "https://borgkit.dev/didcomm/1.0/ping";
+pub const MSG_PONG     = "https://borgkit.dev/didcomm/1.0/pong";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -764,7 +764,7 @@ test "authcrypt roundtrip" {
 
     const encrypted = try alice.invoke(
         allocator, bob.did, "echo",
-        \\{"msg":"hello sentrix"}
+        \\{"msg":"hello borgkit"}
     , false);
     defer allocator.free(encrypted);
 

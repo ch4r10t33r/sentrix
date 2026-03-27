@@ -1,19 +1,19 @@
-# Sentrix ↔ MCP Bridge
+# Borgkit ↔ MCP Bridge
 
-Sentrix has a two-way bridge with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io):
+Borgkit has a two-way bridge with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io):
 
 | Direction | What it means | How |
 |---|---|---|
-| **MCP → Sentrix** | Any MCP server becomes a Sentrix agent | `MCPPlugin` |
-| **Sentrix → MCP** | Any Sentrix agent becomes an MCP server | `serve_as_mcp()` / `serveAsMcp()` |
+| **MCP → Borgkit** | Any MCP server becomes a Borgkit agent | `MCPPlugin` |
+| **Borgkit → MCP** | Any Borgkit agent becomes an MCP server | `serve_as_mcp()` / `serveAsMcp()` |
 
-This makes Sentrix the interoperability hub between MCP's vast tool ecosystem (GitHub, filesystem, Slack, databases, web search…) and every agent framework Sentrix supports (Google ADK, CrewAI, LangGraph, Agno, smolagents, and more).
+This makes Borgkit the interoperability hub between MCP's vast tool ecosystem (GitHub, filesystem, Slack, databases, web search…) and every agent framework Borgkit supports (Google ADK, CrewAI, LangGraph, Agno, smolagents, and more).
 
 ---
 
-## Direction 1 — MCP server → Sentrix agent
+## Direction 1 — MCP server → Borgkit agent
 
-Wrap any MCP server so its tools appear as Sentrix capabilities. The resulting agent can be registered with discovery, called by other Sentrix agents, and served over HTTP.
+Wrap any MCP server so its tools appear as Borgkit capabilities. The resulting agent can be registered with discovery, called by other Borgkit agents, and served over HTTP.
 
 ### Python
 
@@ -23,7 +23,7 @@ from plugins.mcp_plugin import MCPPlugin
 from plugins.base import PluginConfig
 
 config = PluginConfig(
-    agent_id="sentrix://agent/github-mcp",
+    agent_id="borgkit://agent/github-mcp",
     name="GitHubMCP",
     owner="0xYourWallet",
     port=8081,
@@ -62,7 +62,7 @@ import { MCPPlugin }  from './plugins/MCPPlugin';
 import { PluginConfig } from './plugins/IPlugin';
 
 const config: PluginConfig = {
-  agentId: 'sentrix://agent/github-mcp',
+  agentId: 'borgkit://agent/github-mcp',
   name:    'GitHubMCP',
   owner:   '0xYourWallet',
   port:    8081,
@@ -95,9 +95,9 @@ await plugin.close();
 
 ---
 
-## Direction 2 — Sentrix agent → MCP server
+## Direction 2 — Borgkit agent → MCP server
 
-Expose any Sentrix agent so MCP clients (Claude Desktop, Cursor, Continue…) can call its capabilities as native MCP tools.
+Expose any Borgkit agent so MCP clients (Claude Desktop, Cursor, Continue…) can call its capabilities as native MCP tools.
 
 ### Python
 
@@ -137,7 +137,7 @@ Add to `~/.config/claude/claude_desktop_config.json` (macOS: `~/Library/Applicat
 ```json
 {
   "mcpServers": {
-    "my-sentrix-agent": {
+    "my-borgkit-agent": {
       "command": "python",
       "args": ["path/to/run_mcp.py"]
     }
@@ -166,7 +166,7 @@ asyncio.run(serve_as_mcp(MyAgent()))
 
 ## Using MCP tools in a multi-agent workflow
 
-The MCP bridge composes naturally with the rest of Sentrix. Here's a complete example: a research agent that uses GitHub + filesystem MCP tools, publishing its results via a Sentrix capability that another agent can call.
+The MCP bridge composes naturally with the rest of Borgkit. Here's a complete example: a research agent that uses GitHub + filesystem MCP tools, publishing its results via a Borgkit capability that another agent can call.
 
 ```python
 import asyncio
@@ -177,11 +177,11 @@ from interfaces.iagent_client import AgentClient
 from discovery.local_discovery import LocalDiscovery
 
 async def main():
-    # ── Wrap the GitHub MCP server as a Sentrix agent ─────────────────────────
+    # ── Wrap the GitHub MCP server as a Borgkit agent ─────────────────────────
     github_plugin = await MCPPlugin.from_command(
         ["npx", "-y", "@modelcontextprotocol/server-github"],
         PluginConfig(
-            agent_id="sentrix://agent/github",
+            agent_id="borgkit://agent/github",
             name="GitHub",
             owner="0xBot",
             port=8082,
@@ -199,7 +199,7 @@ async def main():
         resp = await client.call_entry(
             entry,
             capability="search_repositories",
-            payload={"query": "sentrix agent protocol"},
+            payload={"query": "borgkit agent protocol"},
         )
         print(resp.result)
 
@@ -212,7 +212,7 @@ asyncio.run(main())
 
 ## x402 payments on MCP capabilities
 
-If an MCP-wrapped capability has x402 pricing configured, the Sentrix HTTP server automatically gates it — the MCP client receives a clear payment-required error with the requirements.
+If an MCP-wrapped capability has x402 pricing configured, the Borgkit HTTP server automatically gates it — the MCP client receives a clear payment-required error with the requirements.
 
 ```python
 from addons.x402.types import CapabilityPricing

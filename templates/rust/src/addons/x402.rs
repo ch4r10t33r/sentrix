@@ -1,6 +1,6 @@
 //! # x402 Micropayment Addon
 //!
-//! This module implements the [x402 payment protocol](https://x402.org) for Sentrix agents.
+//! This module implements the [x402 payment protocol](https://x402.org) for Borgkit agents.
 //! x402 is an HTTP-native micropayment protocol built on top of EIP-3009
 //! (transferWithAuthorization) and EIP-712 typed structured signing. It is named
 //! after the HTTP 402 "Payment Required" status code.
@@ -21,7 +21,7 @@
 //!
 //! ```rust,no_run
 //! use std::collections::HashMap;
-//! use sentrix::addons::x402::{X402Server, usdc_base};
+//! use borgkit::addons::x402::{X402Server, usdc_base};
 //! // Assumes `MyAgent` implements `IAgent`.
 //! // use crate::example_agent::ExampleAgent;
 //!
@@ -32,13 +32,13 @@
 //! );
 //!
 //! // let agent = X402Server::new(MyAgent::default(), pricing);
-//! // sentrix::server::serve(agent, 6174).await?;
+//! // borgkit::server::serve(agent, 6174).await?;
 //! ```
 //!
 //! ## Client-side usage
 //!
 //! ```rust,no_run
-//! use sentrix::addons::x402::{X402Client, X402PaymentRequirements};
+//! use borgkit::addons::x402::{X402Client, X402PaymentRequirements};
 //!
 //! let client = X402Client::new("0xMyWalletAddress");
 //!
@@ -50,14 +50,14 @@
 //!
 //! ## Extending AgentRequest
 //!
-//! The Sentrix `AgentRequest` type (in `request.rs`) does not ship with an
+//! The Borgkit `AgentRequest` type (in `request.rs`) does not ship with an
 //! `x402` field by default to keep the core envelope framework-agnostic.
 //! Callers that need to carry an `X402Payment` proof should extend the request
 //! at the serde layer, e.g. by wrapping it:
 //!
 //! ```rust,no_run
-//! use sentrix::addons::x402::X402Payment;
-//! use sentrix::request::AgentRequest;
+//! use borgkit::addons::x402::X402Payment;
+//! use borgkit::request::AgentRequest;
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -189,7 +189,7 @@ pub struct CapabilityPricing {
 ///
 /// # Example
 /// ```rust,no_run
-/// use sentrix::addons::x402::usdc_base;
+/// use borgkit::addons::x402::usdc_base;
 /// let pricing = usdc_base(50, "0xMyWallet", Some("Image gen — $0.50"));
 /// // pricing.amount == "500000"  (50 cents × 10_000)
 /// ```
@@ -252,13 +252,13 @@ pub fn to_requirements(pricing: &CapabilityPricing, memo: &str) -> X402PaymentRe
 /// # Example
 /// ```rust,no_run
 /// use std::collections::HashMap;
-/// use sentrix::addons::x402::{X402Server, usdc_base};
+/// use borgkit::addons::x402::{X402Server, usdc_base};
 ///
 /// let mut pricing = HashMap::new();
 /// pricing.insert("generate_image".to_string(), usdc_base(50, "0xWallet", None));
 ///
 /// // let server = X402Server::new(my_agent, pricing);
-/// // Pass `server` to `sentrix::server::serve(server, 6174)`.
+/// // Pass `server` to `borgkit::server::serve(server, 6174)`.
 /// ```
 pub struct X402Server<A> {
     /// The wrapped agent that handles capabilities after payment is verified.
@@ -415,7 +415,7 @@ impl<A: IAgent + Clone + Send + Sync> IAgent for X402Server<A> {
 ///
 /// # Example
 /// ```rust,no_run
-/// use sentrix::addons::x402::{X402Client, X402PaymentRequirements};
+/// use borgkit::addons::x402::{X402Client, X402PaymentRequirements};
 ///
 /// let client = X402Client::new("0xDeadBeef");
 /// // After receiving 402:

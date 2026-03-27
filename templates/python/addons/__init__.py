@@ -1,5 +1,5 @@
 """
-Sentrix Add-ons
+Borgkit Add-ons
 ───────────────
 Optional extensions that augment core agent functionality.
 

@@ -1,11 +1,11 @@
 /**
- * sentrix inspect — inspect ANR records and mesh topology.
+ * borgkit inspect — inspect ANR records and mesh topology.
  *
  * Subcommands:
- *   sentrix inspect anr <anr-text>            Decode and display an ANR record
- *   sentrix inspect agents [--host] [--port]  List all agents in the mesh
- *   sentrix inspect agent <agent-id>          Inspect a specific agent
- *   sentrix inspect capabilities              List all capabilities in the mesh
+ *   borgkit inspect anr <anr-text>            Decode and display an ANR record
+ *   borgkit inspect agents [--host] [--port]  List all agents in the mesh
+ *   borgkit inspect agent <agent-id>          Inspect a specific agent
+ *   borgkit inspect capabilities              List all capabilities in the mesh
  */
 
 import http from 'http';
@@ -51,7 +51,7 @@ export async function inspectCommand(
   switch (subcommand) {
     case 'anr':
       if (!target) {
-        logger.error('Usage: sentrix inspect anr <anr-text>');
+        logger.error('Usage: borgkit inspect anr <anr-text>');
         process.exit(1);
       }
       return inspectAnr(target, options);
@@ -61,7 +61,7 @@ export async function inspectCommand(
 
     case 'agent':
       if (!target) {
-        logger.error('Usage: sentrix inspect agent <agent-id>');
+        logger.error('Usage: borgkit inspect agent <agent-id>');
         process.exit(1);
       }
       return inspectAgent(target, options);
@@ -70,12 +70,12 @@ export async function inspectCommand(
       return inspectCapabilities(options);
 
     default:
-      logger.title('sentrix inspect — available subcommands');
+      logger.title('borgkit inspect — available subcommands');
       console.log('');
-      console.log('  sentrix inspect anr <anr-text>           Decode an ANR record');
-      console.log('  sentrix inspect agents                   List all mesh agents');
-      console.log('  sentrix inspect agent <agent-id>         Inspect one agent');
-      console.log('  sentrix inspect capabilities             All mesh capabilities');
+      console.log('  borgkit inspect anr <anr-text>           Decode an ANR record');
+      console.log('  borgkit inspect agents                   List all mesh agents');
+      console.log('  borgkit inspect agent <agent-id>         Inspect one agent');
+      console.log('  borgkit inspect capabilities             All mesh capabilities');
       console.log('');
       console.log('Options:');
       console.log('  --host <host>   Discovery/agent host  (default: localhost)');
@@ -306,7 +306,7 @@ async function inspectAgent(agentId: string, options: InspectOptions): Promise<v
         console.log('  ANR text:');
         console.log(`    ${anr.anr}`);
         console.log('');
-        console.log(`  Decode with: sentrix inspect anr "${anr.anr}"`);
+        console.log(`  Decode with: borgkit inspect anr "${anr.anr}"`);
       }
     } catch { /* */ }
   }

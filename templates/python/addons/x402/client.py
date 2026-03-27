@@ -51,7 +51,7 @@ class WalletProvider(ABC):
     Abstract wallet interface for the x402 client.
 
     Implement this to connect any wallet (Coinbase, MetaMask, hardware, etc.)
-    to the Sentrix x402 client.
+    to the Borgkit x402 client.
     """
 
     @abstractmethod

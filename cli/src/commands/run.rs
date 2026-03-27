@@ -68,7 +68,7 @@ pub fn run(args: RunArgs) -> Result<()> {
     // 4. Spawn child process
     let status = std::process::Command::new(cmd)
         .args(&runner_args)
-        .env("SENTRIX_PORT", args.port.to_string())
+        .env("BORGKIT_PORT", args.port.to_string())
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())

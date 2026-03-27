@@ -1,8 +1,8 @@
 /**
- * LangGraph.js → Sentrix Plugin (TypeScript)
+ * LangGraph.js → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a compiled LangGraph `CompiledGraph` (or any object with `.invoke()`)
- * so it appears as a standard Sentrix IAgent on the mesh.
+ * so it appears as a standard Borgkit IAgent on the mesh.
  *
  * Capability extraction strategy (priority order):
  *   1. Explicit `capabilityMap` in config
@@ -14,7 +14,7 @@
  *   import { LangGraphPlugin } from './plugins/LangGraphPlugin';
  *
  *   const plugin = new LangGraphPlugin({
- *     agentId: 'sentrix://agent/researcher',
+ *     agentId: 'borgkit://agent/researcher',
  *     name:    'ResearchAgent',
  *     version: '1.0.0',
  *     tags:    ['research', 'web'],
@@ -29,7 +29,7 @@
 
 import { AgentRequest }         from '../interfaces/IAgentRequest';
 import { AgentResponse }        from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 // ── extended config ───────────────────────────────────────────────────────────
 
@@ -52,8 +52,8 @@ export interface LangGraphPluginConfig extends PluginConfig {
 
 interface LangGraphInput {
   [key: string]: unknown;
-  __sentrixRequestId__: string;
-  __sentrixCapability__: string;
+  __borgkitRequestId__: string;
+  __borgkitCapability__: string;
 }
 
 interface LangGraphOutput {
@@ -62,7 +62,7 @@ interface LangGraphOutput {
 
 // ── plugin ────────────────────────────────────────────────────────────────────
 
-export class LangGraphPlugin extends SentrixPlugin<unknown, LangGraphInput, LangGraphOutput> {
+export class LangGraphPlugin extends BorgkitPlugin<unknown, LangGraphInput, LangGraphOutput> {
   private readonly lgConfig: Required<LangGraphPluginConfig>;
   private readonly explicitTools: unknown[];
 
@@ -155,8 +155,8 @@ export class LangGraphPlugin extends SentrixPlugin<unknown, LangGraphInput, Lang
       const content = (req.payload['message'] ?? req.payload['input'] ?? JSON.stringify(req.payload)) as string;
       return {
         [this.lgConfig.inputKey]: [{ role: 'human', content }],
-        __sentrixRequestId__:    req.requestId,
-        __sentrixCapability__:   req.capability,
+        __borgkitRequestId__:    req.requestId,
+        __borgkitCapability__:   req.capability,
       };
     }
 
@@ -167,9 +167,9 @@ export class LangGraphPlugin extends SentrixPlugin<unknown, LangGraphInput, Lang
         role:    'human',
         content: `Call tool \`${native}\` with:\n${argsStr}`,
       }],
-      __sentrixRequestId__:  req.requestId,
-      __sentrixCapability__: req.capability,
-      __sentrixTool__:       native,
+      __borgkitRequestId__:  req.requestId,
+      __borgkitCapability__: req.capability,
+      __borgkitTool__:       native,
     };
   }
 

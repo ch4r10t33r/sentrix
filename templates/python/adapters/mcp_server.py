@@ -1,12 +1,12 @@
 """
-Sentrix ↔ MCP Bridge — Python (outbound direction)
+Borgkit ↔ MCP Bridge — Python (outbound direction)
 ──────────────────────────────────────────────────────────────────────────────
-Exposes any Sentrix agent (IAgent) as an MCP server.
+Exposes any Borgkit agent (IAgent) as an MCP server.
 
-Every Sentrix capability becomes an MCP tool.
+Every Borgkit capability becomes an MCP tool.
 Once running, clients like Claude Desktop, Cursor, and any other MCP host
 can connect to this agent and call its capabilities as if they were native
-MCP tools — with no knowledge of the Sentrix protocol required.
+MCP tools — with no knowledge of the Borgkit protocol required.
 
 Transports supported
 ────────────────────
@@ -19,7 +19,7 @@ Usage — stdio (Claude Desktop / Cursor)
   import asyncio
   from adapters.mcp_server import serve_as_mcp
 
-  asyncio.run(serve_as_mcp(my_sentrix_agent))
+  asyncio.run(serve_as_mcp(my_borgkit_agent))
 
 Add to Claude Desktop config  (~/.config/claude/claude_desktop_config.json):
   {
@@ -62,7 +62,7 @@ async def serve_as_mcp(
     Expose *agent* as an MCP server.
 
     Args:
-        agent:     Any Sentrix IAgent instance.
+        agent:     Any Borgkit IAgent instance.
         name:      MCP server name (defaults to agent.agent_id).
         transport: One of "stdio", "sse", "http".
                    Use "stdio" for Claude Desktop / Cursor integrations.
@@ -183,7 +183,7 @@ async def _run_sse(app, init_options, host: str, port: int, name: str) -> None:
     aio_app.router.add_get("/sse",       sse.handle_sse)
     aio_app.router.add_post("/messages/", sse.handle_post_message)
 
-    print(f"[Sentrix→MCP] SSE server '{name}' listening on http://{host}:{port}/sse")
+    print(f"[Borgkit→MCP] SSE server '{name}' listening on http://{host}:{port}/sse")
     await web._run_app(aio_app, host=host, port=port)
 
 
@@ -206,7 +206,7 @@ async def _run_http(app, init_options, host: str, port: int, name: str) -> None:
     aio_app = web.Application()
     aio_app.router.add_route("*", "/mcp", _handle)
 
-    print(f"[Sentrix→MCP] HTTP server '{name}' listening on http://{host}:{port}/mcp")
+    print(f"[Borgkit→MCP] HTTP server '{name}' listening on http://{host}:{port}/mcp")
     await web._run_app(aio_app, host=host, port=port)
 
 
@@ -232,10 +232,10 @@ def _cap_description(agent: "IAgent", cap: str) -> str:
         plugin = getattr(agent, "_plugin", None)
         caps   = getattr(agent, "_caps", {})
         if caps and cap in caps:
-            return caps[cap].description or f"Sentrix capability: {cap}"
+            return caps[cap].description or f"Borgkit capability: {cap}"
     except Exception:
         pass
-    return f"Sentrix capability: {cap}"
+    return f"Borgkit capability: {cap}"
 
 
 def _cap_schema(agent: "IAgent", cap: str) -> dict:

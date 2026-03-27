@@ -1,7 +1,7 @@
 """
 HttpDiscovery — centralised discovery adapter (optional extension).
 
-Connects to any REST-based agent registry that implements the Sentrix
+Connects to any REST-based agent registry that implements the Borgkit
 centralised discovery API. This is NOT the default; LocalDiscovery and
 GossipDiscovery are preferred. Use this as an escape hatch when:
   - bootstrapping a new network
@@ -111,8 +111,8 @@ class DiscoveryFactory:
 
     Priority:
       1. explicit type argument
-      2. SENTRIX_P2P=true env var          → Libp2pDiscovery
-      3. SENTRIX_DISCOVERY_URL env var     → HttpDiscovery
+      2. BORGKIT_P2P=true env var          → Libp2pDiscovery
+      3. BORGKIT_DISCOVERY_URL env var     → HttpDiscovery
       4. default                           → LocalDiscovery
     """
 
@@ -127,18 +127,18 @@ class DiscoveryFactory:
         from discovery.local_discovery import LocalDiscovery
 
         t = discovery_type or (
-            'libp2p' if os.environ.get('SENTRIX_P2P') == 'true' else
-            'http'   if os.environ.get('SENTRIX_DISCOVERY_URL') else
+            'libp2p' if os.environ.get('BORGKIT_P2P') == 'true' else
+            'http'   if os.environ.get('BORGKIT_DISCOVERY_URL') else
             'local'
         )
 
         if t == 'http':
-            url = http_base_url or os.environ.get('SENTRIX_DISCOVERY_URL')
+            url = http_base_url or os.environ.get('BORGKIT_DISCOVERY_URL')
             if not url:
                 raise ValueError('HttpDiscovery requires a base URL')
             return HttpDiscovery(
                 base_url=url,
-                api_key=api_key or os.environ.get('SENTRIX_DISCOVERY_KEY'),
+                api_key=api_key or os.environ.get('BORGKIT_DISCOVERY_KEY'),
             )
 
         if t == 'libp2p':
@@ -149,10 +149,10 @@ class DiscoveryFactory:
         if t == 'onchain':
             from discovery.onchain_discovery import OnChainDiscovery, OnChainDiscoveryConfig
             cfg = OnChainDiscoveryConfig(
-                rpc_url          = onchain_config.get('rpcUrl', '') if onchain_config else os.environ.get('SENTRIX_RPC_URL', ''),
-                contract_address = onchain_config.get('contractAddress', '') if onchain_config else os.environ.get('SENTRIX_CONTRACT_ADDRESS', ''),
-                private_key      = onchain_config.get('privateKey', '') if onchain_config else os.environ.get('SENTRIX_PRIVATE_KEY', ''),
-                chain_id         = onchain_config.get('chainId', 8453) if onchain_config else int(os.environ.get('SENTRIX_CHAIN_ID', '8453')),
+                rpc_url          = onchain_config.get('rpcUrl', '') if onchain_config else os.environ.get('BORGKIT_RPC_URL', ''),
+                contract_address = onchain_config.get('contractAddress', '') if onchain_config else os.environ.get('BORGKIT_CONTRACT_ADDRESS', ''),
+                private_key      = onchain_config.get('privateKey', '') if onchain_config else os.environ.get('BORGKIT_PRIVATE_KEY', ''),
+                chain_id         = onchain_config.get('chainId', 8453) if onchain_config else int(os.environ.get('BORGKIT_CHAIN_ID', '8453')),
             )
             return OnChainDiscovery(cfg)
 

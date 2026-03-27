@@ -1,6 +1,6 @@
-# Sentrix Interfaces
+# Borgkit Interfaces
 
-This document covers every interface a developer interacts with when building or consuming agents on the Sentrix mesh — from running your first agent to discovering and calling remote agents.
+This document covers every interface a developer interacts with when building or consuming agents on the Borgkit mesh — from running your first agent to discovering and calling remote agents.
 
 ---
 
@@ -18,12 +18,12 @@ This document covers every interface a developer interacts with when building or
 
 ## IAgent
 
-The root contract. Every Sentrix agent — whether built from scratch or wrapped from a framework like Google ADK, LangGraph, CrewAI, etc. — must satisfy this interface.
+The root contract. Every Borgkit agent — whether built from scratch or wrapped from a framework like Google ADK, LangGraph, CrewAI, etc. — must satisfy this interface.
 
 ```typescript
 interface IAgent {
   // Identity
-  readonly agentId:     string;         // "did:key:z..." or "sentrix://agent/<addr>"
+  readonly agentId:     string;         // "did:key:z..." or "borgkit://agent/<addr>"
   readonly owner?:      string;         // wallet address or "anonymous"
   readonly metadataUri?: string;        // IPFS / Arweave pointer
   readonly metadata?:   AgentMetadata;  // name, version, description, tags
@@ -54,11 +54,11 @@ interface IAgent {
 
 ### Startup banner
 
-When `registerDiscovery()` is called, Sentrix prints a startup banner to stdout:
+When `registerDiscovery()` is called, Borgkit prints a startup banner to stdout:
 
 ```
 ────────────────────────────────────────────────────────────
-  Sentrix Agent Online  v1.0.0
+  Borgkit Agent Online  v1.0.0
 ────────────────────────────────────────────────────────────
   Name         SupportAgent
   Agent ID     did:key:zQ3shvU8…
@@ -247,13 +247,13 @@ from discovery.http_discovery import DiscoveryFactory
 from interfaces.iagent_client import AgentClient
 
 discovery = DiscoveryFactory.create()
-client    = AgentClient(discovery, caller_id="sentrix://agent/me")
+client    = AgentClient(discovery, caller_id="borgkit://agent/me")
 
 # One-liner: discover best agent and call
 resp = await client.call_capability("weather_forecast", {"city": "NYC"})
 
 # Or call a specific agent
-resp = await client.call("sentrix://agent/0xABC", "weather_forecast", {"city": "NYC"})
+resp = await client.call("borgkit://agent/0xABC", "weather_forecast", {"city": "NYC"})
 ```
 
 ```typescript
@@ -261,7 +261,7 @@ import { AgentClient }     from './interfaces/IAgentClient';
 import { DiscoveryFactory } from './discovery/DiscoveryFactory';
 
 const discovery = DiscoveryFactory.create({ type: 'local' });
-const client    = new AgentClient(discovery, { callerId: 'sentrix://agent/me' });
+const client    = new AgentClient(discovery, { callerId: 'borgkit://agent/me' });
 
 const resp = await client.callCapability('weather_forecast', { city: 'NYC' });
 ```
@@ -360,7 +360,7 @@ await session.close();
 
 ```typescript
 // ping returns immediately — no session needed
-const hb = await client.ping('sentrix://agent/0xABC');
+const hb = await client.ping('borgkit://agent/0xABC');
 // hb.status:            'healthy' | 'degraded' | 'unhealthy'
 // hb.capabilitiesCount: 3
 // hb.version:           '1.0.0'
@@ -396,7 +396,7 @@ entries = await client.gossip_query("weather_forecast", ttl=3, timeout_ms=5_000)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Agent A (caller)          Sentrix Mesh          Agent B (callee)│
+│  Agent A (caller)          Borgkit Mesh          Agent B (callee)│
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  1. DISCOVER                                                     │
@@ -431,7 +431,7 @@ entries = await client.gossip_query("weather_forecast", ttl=3, timeout_ms=5_000)
 
 ## x402 payments
 
-Sentrix agents can require micropayment for individual capabilities using the [x402 protocol](https://x402.org). Payment is enforced at the `handleRequest` level — no execution happens until a valid proof is attached.
+Borgkit agents can require micropayment for individual capabilities using the [x402 protocol](https://x402.org). Payment is enforced at the `handleRequest` level — no execution happens until a valid proof is attached.
 
 ### How an agent signals payment is required
 

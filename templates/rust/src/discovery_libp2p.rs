@@ -1,8 +1,8 @@
-//! Libp2pDiscovery — fully P2P discovery backend for Sentrix.
+//! Libp2pDiscovery — fully P2P discovery backend for Borgkit.
 //!
 //! Architecture:
 //!   Transport   : QUIC (via quinn, rust-libp2p's quic feature)
-//!   Routing     : Kademlia DHT  (/sentrix/kad/1.0.0 — isolated from IPFS)
+//!   Routing     : Kademlia DHT  (/borgkit/kad/1.0.0 — isolated from IPFS)
 //!   Local LAN   : mDNS (optional, default on)
 //!   NAT         : DCUtR hole punching + circuit-relay-v2 fallback
 //!   Identity    : secp256k1 keypair from ANR — same key → same PeerId
@@ -43,23 +43,23 @@ use tokio::sync::{mpsc, oneshot, RwLock};
 
 // ── DHT key helpers ───────────────────────────────────────────────────────────
 
-/// Capability provider-record key: SHA-256("sentrix:cap:<capability>").
+/// Capability provider-record key: SHA-256("borgkit:cap:<capability>").
 fn capability_key(capability: &str) -> kad::RecordKey {
     let mut h = Sha256::new();
-    h.update(format!("sentrix:cap:{}", capability).as_bytes());
+    h.update(format!("borgkit:cap:{}", capability).as_bytes());
     kad::RecordKey::new(&h.finalize())
 }
 
-/// Value-record key for a full DiscoveryEntry: SHA-256("sentrix:anr:<agentId>").
+/// Value-record key for a full DiscoveryEntry: SHA-256("borgkit:anr:<agentId>").
 fn anr_dht_key(agent_id: &str) -> kad::RecordKey {
     let mut h = Sha256::new();
-    h.update(format!("sentrix:anr:{}", agent_id).as_bytes());
+    h.update(format!("borgkit:anr:{}", agent_id).as_bytes());
     kad::RecordKey::new(&h.finalize())
 }
 
 /// Reverse PeerId → agentId key.
 fn pid_dht_key(peer_id: &PeerId) -> kad::RecordKey {
-    let key = format!("/sentrix/pid/{}", peer_id);
+    let key = format!("/borgkit/pid/{}", peer_id);
     kad::RecordKey::new(key.as_bytes())
 }
 
@@ -199,7 +199,7 @@ fn decode_envelope(raw: &[u8]) -> Option<(DiscoveryEntry, u64)> {
 // ── NetworkBehaviour ──────────────────────────────────────────────────────────
 
 #[derive(NetworkBehaviour)]
-struct SentrixBehaviour {
+struct BorgkitBehaviour {
     kademlia: kad::Behaviour<MemoryStore>,
     identify: identify::Behaviour,
     mdns:     mdns::tokio::Behaviour,
@@ -299,7 +299,7 @@ impl Libp2pDiscovery {
 
                 // Kademlia with custom protocol (isolated from IPFS)
                 let mut kad_cfg = kad::Config::new(
-                    StreamProtocol::new("/sentrix/kad/1.0.0")
+                    StreamProtocol::new("/borgkit/kad/1.0.0")
                 );
                 if cfg.dht_client_mode {
                     kad_cfg.set_mode(Some(kad::Mode::Client));
@@ -311,7 +311,7 @@ impl Libp2pDiscovery {
                 );
 
                 let identify  = identify::Behaviour::new(
-                    identify::Config::new("/sentrix/identify/1.0.0".into(), key.public())
+                    identify::Config::new("/borgkit/identify/1.0.0".into(), key.public())
                 );
                 let mdns = if cfg.enable_mdns {
                     mdns::tokio::Behaviour::new(mdns::Config::default(), local_peer)?
@@ -322,7 +322,7 @@ impl Libp2pDiscovery {
                     )?
                 };
 
-                Ok(SentrixBehaviour { kademlia, identify, mdns })
+                Ok(BorgkitBehaviour { kademlia, identify, mdns })
             })?
             .build();
 
@@ -454,15 +454,15 @@ impl Libp2pDiscovery {
 
     /// Handle a single swarm event.
     async fn handle_swarm_event(
-        event: SwarmEvent<SentrixBehaviourEvent>,
+        event: SwarmEvent<BorgkitBehaviourEvent>,
         state: &Arc<RwLock<SharedState>>,
-        swarm: &mut Swarm<SentrixBehaviour>,
+        swarm: &mut Swarm<BorgkitBehaviour>,
     ) {
         match event {
-            SwarmEvent::Behaviour(SentrixBehaviourEvent::Kademlia(ke)) => {
+            SwarmEvent::Behaviour(BorgkitBehaviourEvent::Kademlia(ke)) => {
                 Self::handle_kad_event(ke, state, swarm).await;
             }
-            SwarmEvent::Behaviour(SentrixBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
+            SwarmEvent::Behaviour(BorgkitBehaviourEvent::Mdns(mdns::Event::Discovered(list))) => {
                 for (peer_id, addr) in list {
                     swarm.behaviour_mut().kademlia.add_address(&peer_id, addr);
                 }
@@ -477,7 +477,7 @@ impl Libp2pDiscovery {
     async fn handle_kad_event(
         event: kad::Event,
         state: &Arc<RwLock<SharedState>>,
-        swarm: &mut Swarm<SentrixBehaviour>,
+        swarm: &mut Swarm<BorgkitBehaviour>,
     ) {
         use kad::Event::*;
         match event {
@@ -496,7 +496,7 @@ impl Libp2pDiscovery {
                             state.write().await.query_results.entry(cap.clone()).or_default();
 
                             // For each provider, issue a DHT GET for their
-                            // per-peer record (/sentrix/pid/<peer_id>).
+                            // per-peer record (/borgkit/pid/<peer_id>).
                             for pid in providers {
                                 let key = pid_dht_key(&pid);
                                 let get_qid = swarm.behaviour_mut().kademlia.get_record(key);

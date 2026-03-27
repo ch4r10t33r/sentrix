@@ -1,6 +1,6 @@
 # Example 03 — Agent-to-Agent Calls
 
-This example shows how one Sentrix agent discovers and calls another, forming the basic building block of any multi-agent system.
+This example shows how one Borgkit agent discovers and calls another, forming the basic building block of any multi-agent system.
 
 ---
 
@@ -23,7 +23,7 @@ from interfaces import IAgent, AgentRequest, AgentResponse
 from discovery.local_discovery import LocalDiscovery
 
 class ReportAgent(IAgent):
-    agent_id = 'sentrix://agent/reporter'
+    agent_id = 'borgkit://agent/reporter'
     owner    = '0xYourWalletAddress'
     metadata = {'name': 'ReportAgent', 'version': '0.1.0'}
 
@@ -51,7 +51,7 @@ class ReportAgent(IAgent):
         peer = weather_peers[0]
         url  = f"http://{peer.network.host}:{peer.network.port}/invoke"
 
-        # 3. Build a Sentrix AgentRequest
+        # 3. Build a Borgkit AgentRequest
         req_payload = AgentRequest(
             request_id = str(uuid.uuid4()),
             from_id    = self.agent_id,
@@ -165,7 +165,7 @@ console.log(`Found: ${peer.name} @ ${peer.network.host}:${peer.network.port}`);
 // Call it
 const req: AgentRequest = {
   requestId:  uuidv4(),
-  from:       'sentrix://agent/caller',
+  from:       'borgkit://agent/caller',
   capability: 'getWeather',
   payload:    { city: 'London' },
 };
@@ -181,7 +181,7 @@ console.log(resp.result);  // { temp: 22, city: "London" }
 async def safe_call(peer_agent, capability: str, payload: dict) -> dict | None:
     req = AgentRequest(
         request_id = str(uuid.uuid4()),
-        from_id    = 'sentrix://agent/caller',
+        from_id    = 'borgkit://agent/caller',
         capability = capability,
         payload    = payload,
     )

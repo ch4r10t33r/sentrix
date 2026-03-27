@@ -1,9 +1,9 @@
 """
-Libp2pDiscovery — fully P2P discovery backend for Sentrix.
+Libp2pDiscovery — fully P2P discovery backend for Borgkit.
 
 Architecture:
-  Transport   : QUIC (via sentrix-libp2p-sidecar Rust binary)
-  Routing     : Kademlia DHT  (/sentrix/kad/1.0.0 — isolated from IPFS)
+  Transport   : QUIC (via borgkit-libp2p-sidecar Rust binary)
+  Routing     : Kademlia DHT  (/borgkit/kad/1.0.0 — isolated from IPFS)
   Local LAN   : mDNS (optional, default on)
   NAT         : DCUtR hole punching + circuit-relay-v2 fallback
   Identity    : secp256k1 keypair from ANR — same key → same PeerId
@@ -13,7 +13,7 @@ WHY A SIDECAR?
   grade Kademlia, mDNS, and DCUtR.  Rather than ship a broken pure-Python
   implementation, this module delegates to either:
 
-  1. A compiled `sentrix-libp2p-sidecar` binary (Rust, from templates/rust/)
+  1. A compiled `borgkit-libp2p-sidecar` binary (Rust, from templates/rust/)
      — launched as a subprocess, communicates over stdin/stdout JSON-RPC 2.0.
 
   2. A Node.js process running the TypeScript Libp2pDiscovery
@@ -21,13 +21,13 @@ WHY A SIDECAR?
 
   3. HttpDiscovery pointed at a local gateway (automatic fallback)
      — used if neither sidecar nor Node is available.
-     Set SENTRIX_LIBP2P_GATEWAY=http://localhost:7731 to enable.
+     Set BORGKIT_LIBP2P_GATEWAY=http://localhost:7731 to enable.
 
   Configure via environment variables or Libp2pDiscoveryConfig:
-    SENTRIX_LIBP2P_SIDECAR   path to the compiled sidecar binary
-    SENTRIX_LIBP2P_NODE      path to the TypeScript entry point (if using Node)
-    SENTRIX_BOOTSTRAP_PEERS  comma-separated multiaddrs of bootstrap peers
-    SENTRIX_P2P_PORT         UDP port for QUIC listener (default: 0 = OS-assigned)
+    BORGKIT_LIBP2P_SIDECAR   path to the compiled sidecar binary
+    BORGKIT_LIBP2P_NODE      path to the TypeScript entry point (if using Node)
+    BORGKIT_BOOTSTRAP_PEERS  comma-separated multiaddrs of bootstrap peers
+    BORGKIT_P2P_PORT         UDP port for QUIC listener (default: 0 = OS-assigned)
 
 Usage:
     cfg = Libp2pDiscoveryConfig(private_key_bytes=my_anr_key)
@@ -64,7 +64,7 @@ class Libp2pDiscoveryConfig:
     listen_port: int = 0
 
     # Bootstrap peer multiaddrs (format: /ip4/.../udp/.../quic-v1/p2p/...)
-    # Also read from SENTRIX_BOOTSTRAP_PEERS env var (comma-separated).
+    # Also read from BORGKIT_BOOTSTRAP_PEERS env var (comma-separated).
     bootstrap_peers: list[str] = dataclasses.field(default_factory=list)
 
     # How often to re-publish DHT records (seconds). Default: 30
@@ -73,12 +73,12 @@ class Libp2pDiscoveryConfig:
     # Enable mDNS for local network discovery. Default: True
     enable_mdns: bool = True
 
-    # Path to the compiled sentrix-libp2p-sidecar binary.
-    # Falls back to SENTRIX_LIBP2P_SIDECAR env var, then PATH lookup.
+    # Path to the compiled borgkit-libp2p-sidecar binary.
+    # Falls back to BORGKIT_LIBP2P_SIDECAR env var, then PATH lookup.
     sidecar_binary: Optional[str] = None
 
     # Path to the Node.js TypeScript entry point (fallback if no sidecar).
-    # Falls back to SENTRIX_LIBP2P_NODE env var.
+    # Falls back to BORGKIT_LIBP2P_NODE env var.
     node_entry: Optional[str] = None
 
 
@@ -100,7 +100,7 @@ def _parse_response(line: bytes) -> dict:
 # ── Sidecar process management ────────────────────────────────────────────────
 
 class _SidecarProcess:
-    """Manages a sentrix-libp2p-sidecar subprocess (Rust or Node.js)."""
+    """Manages a borgkit-libp2p-sidecar subprocess (Rust or Node.js)."""
 
     def __init__(self, proc: asyncio.subprocess.Process):
         self._proc = proc
@@ -111,15 +111,15 @@ class _SidecarProcess:
         binary = cls._resolve_binary(cfg)
         if binary is None:
             raise RuntimeError(
-                'sentrix-libp2p-sidecar not found.\n'
+                'borgkit-libp2p-sidecar not found.\n'
                 'Options:\n'
                 '  1. Compile the Rust sidecar: cd templates/rust && cargo build --release\n'
-                '  2. Set SENTRIX_LIBP2P_SIDECAR=/path/to/sentrix-libp2p-sidecar\n'
-                '  3. Set SENTRIX_LIBP2P_GATEWAY=http://localhost:7731 to use HTTP fallback\n'
-                '  4. Set SENTRIX_DISCOVERY_URL to use a centralised registry'
+                '  2. Set BORGKIT_LIBP2P_SIDECAR=/path/to/borgkit-libp2p-sidecar\n'
+                '  3. Set BORGKIT_LIBP2P_GATEWAY=http://localhost:7731 to use HTTP fallback\n'
+                '  4. Set BORGKIT_DISCOVERY_URL to use a centralised registry'
             )
 
-        env_peers = os.environ.get('SENTRIX_BOOTSTRAP_PEERS', '')
+        env_peers = os.environ.get('BORGKIT_BOOTSTRAP_PEERS', '')
         all_peers = cfg.bootstrap_peers + [p for p in env_peers.split(',') if p]
 
         args = [binary, 'run',
@@ -145,15 +145,15 @@ class _SidecarProcess:
         if cfg.sidecar_binary and os.path.isfile(cfg.sidecar_binary):
             return cfg.sidecar_binary
         # 2. Env var
-        env_path = os.environ.get('SENTRIX_LIBP2P_SIDECAR')
+        env_path = os.environ.get('BORGKIT_LIBP2P_SIDECAR')
         if env_path and os.path.isfile(env_path):
             return env_path
         # 3. PATH lookup
-        found = shutil.which('sentrix-libp2p-sidecar')
+        found = shutil.which('borgkit-libp2p-sidecar')
         if found:
             return found
         # 4. Node.js fallback
-        node_entry = cfg.node_entry or os.environ.get('SENTRIX_LIBP2P_NODE')
+        node_entry = cfg.node_entry or os.environ.get('BORGKIT_LIBP2P_NODE')
         if node_entry and shutil.which('node'):
             return f'node {node_entry}'  # handled specially in launch
         return None
@@ -185,7 +185,7 @@ class _HttpGatewayFallback(IAgentDiscovery):
     """
     Fallback when the libp2p sidecar is unavailable.
     Connects to a local or remote HTTP gateway that bridges HTTP ↔ libp2p DHT.
-    Set SENTRIX_LIBP2P_GATEWAY=http://localhost:7731 to activate.
+    Set BORGKIT_LIBP2P_GATEWAY=http://localhost:7731 to activate.
     """
 
     def __init__(self, base_url: str):
@@ -212,10 +212,10 @@ class _HttpGatewayFallback(IAgentDiscovery):
 
 class Libp2pDiscovery(IAgentDiscovery):
     """
-    P2P discovery backend backed by a sentrix-libp2p-sidecar subprocess.
+    P2P discovery backend backed by a borgkit-libp2p-sidecar subprocess.
 
     Falls back to _HttpGatewayFallback if the sidecar is unavailable and
-    SENTRIX_LIBP2P_GATEWAY is set.
+    BORGKIT_LIBP2P_GATEWAY is set.
     """
 
     def __init__(self, sidecar: '_SidecarProcess'):
@@ -229,12 +229,12 @@ class Libp2pDiscovery(IAgentDiscovery):
             sidecar = await _SidecarProcess.launch(cfg)
             return cls(sidecar)
         except RuntimeError as e:
-            gateway = os.environ.get('SENTRIX_LIBP2P_GATEWAY')
+            gateway = os.environ.get('BORGKIT_LIBP2P_GATEWAY')
             if gateway:
                 print(f'[Libp2pDiscovery] Sidecar unavailable — falling back to HTTP gateway: {gateway}')
                 return _HttpGatewayFallback(gateway)  # type: ignore[return-value]
             raise RuntimeError(
-                f'{e}\n\nAlternatively, set SENTRIX_LIBP2P_GATEWAY=<url> to use an HTTP-to-DHT bridge.'
+                f'{e}\n\nAlternatively, set BORGKIT_LIBP2P_GATEWAY=<url> to use an HTTP-to-DHT bridge.'
             ) from e
 
     async def stop(self) -> None:

@@ -8,5 +8,5 @@ fn main() {
         .with_config(cbindgen::Config::from_file("cbindgen.toml").unwrap_or_default())
         .generate()
         .expect("cbindgen failed")
-        .write_to_file(out_dir.join("sentrix_libp2p.h"));
+        .write_to_file(out_dir.join("borgkit_libp2p.h"));
 }

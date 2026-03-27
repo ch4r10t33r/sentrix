@@ -44,7 +44,7 @@ impl std::fmt::Display for Lang {
 }
 
 #[derive(Deserialize)]
-struct SentrixConfig {
+struct BorgkitConfig {
     language: Option<String>,
 }
 
@@ -52,7 +52,7 @@ struct SentrixConfig {
 ///
 /// Priority:
 ///   1. Explicit `--lang` flag (caller passes `Some`)
-///   2. `sentrix.config.json` → `language` field
+///   2. `borgkit.config.json` → `language` field
 ///   3. Sniff for `tsconfig.json` / `requirements.txt` / `Cargo.toml` / `build.zig`
 ///   4. Default: TypeScript
 pub fn detect(explicit: Option<&str>, dir: &Path) -> Result<Lang> {
@@ -65,11 +65,11 @@ pub fn detect(explicit: Option<&str>, dir: &Path) -> Result<Lang> {
         });
     }
 
-    // 2. sentrix.config.json
-    let config_path = dir.join("sentrix.config.json");
+    // 2. borgkit.config.json
+    let config_path = dir.join("borgkit.config.json");
     if config_path.exists() {
         let raw = std::fs::read_to_string(&config_path)?;
-        if let Ok(cfg) = serde_json::from_str::<SentrixConfig>(&raw) {
+        if let Ok(cfg) = serde_json::from_str::<BorgkitConfig>(&raw) {
             if let Some(lang_str) = cfg.language {
                 if let Some(lang) = Lang::from_str(&lang_str) {
                     return Ok(lang);
@@ -94,12 +94,12 @@ pub fn detect(explicit: Option<&str>, dir: &Path) -> Result<Lang> {
     Ok(Lang::TypeScript)
 }
 
-/// Find the project root by walking up from `start` looking for `sentrix.config.json`.
+/// Find the project root by walking up from `start` looking for `borgkit.config.json`.
 /// Falls back to `start` if not found.
 pub fn find_project_root(start: &Path) -> PathBuf {
     let mut dir = start.to_path_buf();
     loop {
-        if dir.join("sentrix.config.json").exists() {
+        if dir.join("borgkit.config.json").exists() {
             return dir;
         }
         if !dir.pop() {

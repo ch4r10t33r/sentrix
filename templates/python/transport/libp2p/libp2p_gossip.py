@@ -7,19 +7,19 @@ import json
 from typing import Awaitable, Callable, List
 
 from interfaces.iagent_mesh import GossipMessage, IGossipProtocol
-from .ffi import SentrixLibp2P
+from .ffi import BorgkitLibp2P
 
 GossipHandler = Callable[[GossipMessage], Awaitable[None]]
 
 
 class Libp2PGossipProtocol(IGossipProtocol):
     """
-    Publishes gossip messages via the Rust sentrix-libp2p GossipSub.
+    Publishes gossip messages via the Rust borgkit-libp2p GossipSub.
     Incoming messages arrive via the request handler registered on the FFI node
     (capability == "__gossip_pubsub") and are forwarded to registered handlers.
     """
 
-    def __init__(self, ffi: SentrixLibp2P) -> None:
+    def __init__(self, ffi: BorgkitLibp2P) -> None:
         self._ffi      = ffi
         self._handlers: List[GossipHandler] = []
         self._peers:    List[str] = []

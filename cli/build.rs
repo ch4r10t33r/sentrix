@@ -9,12 +9,12 @@ fn main() {
         // Fallback: use the version baked into Cargo.toml at workspace level.
         std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".into())
     });
-    println!("cargo:rustc-env=SENTRIX_VERSION={npm_version}");
+    println!("cargo:rustc-env=BORGKIT_VERSION={npm_version}");
     println!("cargo:rerun-if-changed=../package.json");
 
     // ── Build date ────────────────────────────────────────────────────────────
     let date = chrono::Utc::now().format("%Y-%m-%d").to_string();
-    println!("cargo:rustc-env=SENTRIX_BUILD_DATE={date}");
+    println!("cargo:rustc-env=BORGKIT_BUILD_DATE={date}");
 
     // ── Template files (debug-embed fast iteration) ───────────────────────────
     println!("cargo:rerun-if-changed=../templates");

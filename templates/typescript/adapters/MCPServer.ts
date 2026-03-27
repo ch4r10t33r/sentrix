@@ -1,11 +1,11 @@
 /**
- * Sentrix ↔ MCP Bridge — TypeScript (outbound direction)
+ * Borgkit ↔ MCP Bridge — TypeScript (outbound direction)
  * ─────────────────────────────────────────────────────────────────────────────
- * Exposes any Sentrix agent (IAgent) as an MCP server.
+ * Exposes any Borgkit agent (IAgent) as an MCP server.
  *
- * Every Sentrix capability becomes an MCP tool that any MCP-compatible
+ * Every Borgkit capability becomes an MCP tool that any MCP-compatible
  * client (Claude Desktop, Cursor, Continue, etc.) can call without knowing
- * anything about the Sentrix protocol.
+ * anything about the Borgkit protocol.
  *
  * Transports
  * ──────────
@@ -64,7 +64,7 @@ export interface ServeMcpOptions {
  * Blocks until the transport closes (stdio EOF) or SIGINT / SIGTERM
  * is received (network transports).
  *
- * @param agent    Any Sentrix IAgent instance.
+ * @param agent    Any Borgkit IAgent instance.
  * @param options  Transport and binding options.
  */
 export async function serveAsMcp(
@@ -191,7 +191,7 @@ async function runSse(
 
   await new Promise<void>((resolve, reject) => {
     app.listen(port, host, () => {
-      console.log(`[Sentrix→MCP] SSE server '${serverName}' on http://${host}:${port}/sse`);
+      console.log(`[Borgkit→MCP] SSE server '${serverName}' on http://${host}:${port}/sse`);
       resolve();
     }).once('error', reject);
   });
@@ -226,7 +226,7 @@ async function runHttp(
 
   await new Promise<void>((resolve, reject) => {
     app.listen(port, host, () => {
-      console.log(`[Sentrix→MCP] HTTP server '${serverName}' on http://${host}:${port}/mcp`);
+      console.log(`[Borgkit→MCP] HTTP server '${serverName}' on http://${host}:${port}/mcp`);
       resolve();
     }).once('error', reject);
   });
@@ -254,7 +254,7 @@ function capDescription(agent: IAgent, cap: string): string {
     const desc = caps?.get(cap)?.description;
     if (desc) return desc;
   } catch { /* no capMap */ }
-  return `Sentrix capability: ${cap}`;
+  return `Borgkit capability: ${cap}`;
 }
 
 function capSchema(agent: IAgent, cap: string): Record<string, unknown> {

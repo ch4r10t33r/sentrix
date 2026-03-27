@@ -1,10 +1,10 @@
 /**
- * Libp2PListener — registers libp2p stream handlers so a Sentrix IAgent
+ * Libp2PListener — registers libp2p stream handlers so a Borgkit IAgent
  * can receive AgentRequests over a raw P2P stream without an HTTP server.
  *
  * Protocols handled:
- *   /sentrix/invoke/1.0.0   — single request → single response (LP-framed JSON)
- *   /sentrix/gossip/1.0.0   — fire-and-forget gossip message (LP-framed JSON)
+ *   /borgkit/invoke/1.0.0   — single request → single response (LP-framed JSON)
+ *   /borgkit/gossip/1.0.0   — fire-and-forget gossip message (LP-framed JSON)
  *
  * LP framing: each message is prefixed with a 4-byte big-endian uint32 length.
  */
@@ -12,9 +12,9 @@ import type { Libp2p, Stream } from 'libp2p';
 import type { IAgent }         from '../../interfaces/IAgent';
 import { AgentRequest }        from '../../interfaces/IAgentRequest';
 
-export const INVOKE_PROTO  = '/sentrix/invoke/1.0.0';
-export const GOSSIP_PROTO  = '/sentrix/gossip/1.0.0';
-export const STREAM_PROTO  = '/sentrix/stream/1.0.0';
+export const INVOKE_PROTO  = '/borgkit/invoke/1.0.0';
+export const GOSSIP_PROTO  = '/borgkit/gossip/1.0.0';
+export const STREAM_PROTO  = '/borgkit/stream/1.0.0';
 
 export class Libp2PListener {
   constructor(
@@ -22,7 +22,7 @@ export class Libp2PListener {
     private readonly agent: IAgent,
   ) {}
 
-  /** Register all Sentrix protocol handlers on the node. */
+  /** Register all Borgkit protocol handlers on the node. */
   register(): void {
     this.node.handle(INVOKE_PROTO, ({ stream }) => this._handleInvoke(stream).catch(() => {}));
     this.node.handle(GOSSIP_PROTO, ({ stream }) => this._handleGossip(stream).catch(() => {}));

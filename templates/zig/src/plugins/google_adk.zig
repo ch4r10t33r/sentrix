@@ -1,14 +1,14 @@
-//! Google ADK → Sentrix Plugin (Zig) — HTTP Bridge
+//! Google ADK → Borgkit Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps a running Google ADK web server (`adk web`) so it is discoverable
-//! and callable on the Sentrix mesh as a standard IAgent.
+//! and callable on the Borgkit mesh as a standard IAgent.
 //!
 //! ── Google ADK HTTP API ────────────────────────────────────────────────────────
 //!
 //!   POST /run
 //!     Body: {
 //!       "app_name":    "my_app",
-//!       "user_id":     "sentrix-user",
+//!       "user_id":     "borgkit-user",
 //!       "session_id":  "<uuid>",
 //!       "new_message": { "role": "user", "parts": [{ "text": "..." }] }
 //!     }
@@ -30,7 +30,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(adk.GoogleADKService, adk.GoogleADKPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/gemini",
+//!       .agent_id = "borgkit://agent/gemini",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 
@@ -49,7 +49,7 @@ pub const GoogleADKService = struct {
     app_name: []const u8 = "agent",
 
     /// User ID passed to every ADK session.
-    user_id: []const u8 = "sentrix-user",
+    user_id: []const u8 = "borgkit-user",
 
     /// POST path for running the agent (default: "/run").
     run_route: []const u8 = "/run",
@@ -97,11 +97,11 @@ pub const GoogleADKPlugin = struct {
 
     /// Build the ADK `/run` request body.
     ///
-    /// Extracts `message`, `input`, or `query` from the Sentrix payload; falls
+    /// Extracts `message`, `input`, or `query` from the Borgkit payload; falls
     /// back to the raw JSON payload as the message text.
     ///
     /// A unique session ID is generated per call (sequential counter) so each
-    /// Sentrix request is independently stateless from ADK's perspective.
+    /// Borgkit request is independently stateless from ADK's perspective.
     pub fn translateRequest(
         self:      *GoogleADKPlugin,
         req:       types.AgentRequest,
@@ -139,7 +139,7 @@ pub const GoogleADKPlugin = struct {
 
         // Session ID: combine request_id prefix and seq for uniqueness
         const session_id = try std.fmt.allocPrint(
-            allocator, "sentrix-{s}-{d}", .{ req.request_id[0..@min(8, req.request_id.len)], seq },
+            allocator, "borgkit-{s}-{d}", .{ req.request_id[0..@min(8, req.request_id.len)], seq },
         );
         defer allocator.free(session_id);
 

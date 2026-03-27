@@ -1,27 +1,27 @@
 /**
- * smolagents → Sentrix Plugin (TypeScript)
+ * smolagents → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a smolagents agent (CodeAgent or ToolCallingAgent) so its
- * tools become Sentrix capabilities.
+ * tools become Borgkit capabilities.
  *
  * Usage:
  *   import { wrapSmolagents } from './plugins/SmolagentsPlugin';
  *
  *   // smolagents JS (or Python via a bridge)
  *   const agent = new ToolCallingAgent({ tools: [webSearch], model });
- *   const sentrix = wrapSmolagents(agent, {
- *     agentId: 'sentrix://agent/researcher',
+ *   const borgkit = wrapSmolagents(agent, {
+ *     agentId: 'borgkit://agent/researcher',
  *     name:    'ResearchAgent',
  *     owner:   '0xYourWallet',
  *   });
- *   await sentrix.registerDiscovery();
+ *   await borgkit.registerDiscovery();
  *
  * Install: npm install smolagents  (or the JS equivalent)
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 export interface SmolagentsPluginConfig extends PluginConfig {
   /** Additional kwargs forwarded to agent.run() */
@@ -35,7 +35,7 @@ interface SmolagentsNativeInput {
   payload: Record<string, unknown>;
 }
 
-export class SmolagentsPlugin extends SentrixPlugin<unknown, SmolagentsNativeInput, string> {
+export class SmolagentsPlugin extends BorgkitPlugin<unknown, SmolagentsNativeInput, string> {
   private readonly smaConfig: Required<Pick<SmolagentsPluginConfig, 'runKwargs' | 'maxSteps'>>;
 
   constructor(config: SmolagentsPluginConfig) {

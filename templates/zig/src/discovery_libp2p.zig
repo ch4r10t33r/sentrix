@@ -1,12 +1,12 @@
-//! Kademlia DHT discovery for Sentrix — pure Zig, UDP/JSON transport.
+//! Kademlia DHT discovery for Borgkit — pure Zig, UDP/JSON transport.
 //!
 //! This is NOT libp2p wire-compatible. It uses JSON messages over UDP rather
-//! than protobuf, and is designed to interoperate only with other Zig Sentrix
+//! than protobuf, and is designed to interoperate only with other Zig Borgkit
 //! nodes running this same implementation.
 //!
 //! Key derivation matches the Rust `Libp2pDiscovery`:
-//!   capability key : SHA-256("sentrix:cap:<capability>") → 64-hex chars
-//!   ANR value key  : SHA-256("sentrix:anr:<agentId>")   → 64-hex chars
+//!   capability key : SHA-256("borgkit:cap:<capability>") → 64-hex chars
+//!   ANR value key  : SHA-256("borgkit:anr:<agentId>")   → 64-hex chars
 //!
 //! Transport   : UDP datagrams, newline-terminated JSON, max 8 KiB
 //! Routing     : XOR metric, k = 20 per bucket, 256-bucket routing table
@@ -448,7 +448,7 @@ pub const Libp2pDiscovery = struct {
         out: *std.ArrayList(types.DiscoveryEntry),
     ) !void {
         // 1. Derive capability key.
-        const cap_prefix = try std.fmt.allocPrint(self.allocator, "sentrix:cap:{s}", .{capability});
+        const cap_prefix = try std.fmt.allocPrint(self.allocator, "borgkit:cap:{s}", .{capability});
         defer self.allocator.free(cap_prefix);
         const cap_key_hex = sha256Hex(cap_prefix);
 
@@ -588,7 +588,7 @@ pub const Libp2pDiscovery = struct {
         }
 
         // Derive ANR key and check local value store.
-        const anr_prefix = try std.fmt.allocPrint(self.allocator, "sentrix:anr:{s}", .{agent_id});
+        const anr_prefix = try std.fmt.allocPrint(self.allocator, "borgkit:anr:{s}", .{agent_id});
         defer self.allocator.free(anr_prefix);
         const key_hex = sha256Hex(anr_prefix);
 
@@ -1018,7 +1018,7 @@ pub const Libp2pDiscovery = struct {
 
         const value_b64 = try encodeDhtValue(entry, seq, arena.allocator());
 
-        const anr_prefix = try std.fmt.allocPrint(arena.allocator(), "sentrix:anr:{s}", .{entry.agent_id});
+        const anr_prefix = try std.fmt.allocPrint(arena.allocator(), "borgkit:anr:{s}", .{entry.agent_id});
         const anr_key_hex = sha256Hex(anr_prefix);
 
         // Also store locally so findById() works before any peer replies.
@@ -1044,7 +1044,7 @@ pub const Libp2pDiscovery = struct {
         const nodes = try self.routing.closest(self.local_id, ALPHA, arena.allocator());
 
         for (entry.capabilities) |cap| {
-            const cap_prefix = try std.fmt.allocPrint(arena.allocator(), "sentrix:cap:{s}", .{cap});
+            const cap_prefix = try std.fmt.allocPrint(arena.allocator(), "borgkit:cap:{s}", .{cap});
             const cap_key_hex = sha256Hex(cap_prefix);
 
             // Also register ourselves as a provider locally.

@@ -1,14 +1,14 @@
-//! Google ADK → Sentrix Plugin (Rust) — HTTP Bridge
+//! Google ADK → Borgkit Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps a running Google ADK web service (`adk web`) so it is discoverable
-//! and callable on the Sentrix mesh as a standard `IAgent`.
+//! and callable on the Borgkit mesh as a standard `IAgent`.
 //!
 //! ── Google ADK HTTP API ───────────────────────────────────────────────────────
 //!
 //!   POST /run
 //!     Body: {
 //!       "app_name":   "my_app",
-//!       "user_id":    "sentrix-user",
+//!       "user_id":    "borgkit-user",
 //!       "session_id": "<uuid>",
 //!       "new_message": {
 //!         "role":  "user",
@@ -25,8 +25,8 @@
 //!
 //! ── Usage ──────────────────────────────────────────────────────────────────────
 //!
-//!   use sentrix::plugins::google_adk::{GoogleADKPlugin, GoogleADKService};
-//!   use sentrix::plugins::base::PluginConfig;
+//!   use borgkit::plugins::google_adk::{GoogleADKPlugin, GoogleADKService};
+//!   use borgkit::plugins::base::PluginConfig;
 //!
 //!   let service = GoogleADKService {
 //!       base_url: "http://localhost:8080".to_string(),
@@ -37,7 +37,7 @@
 //!
 //!   let plugin = GoogleADKPlugin::new();
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "sentrix://agent/gemini-support".to_string(),
+//!       agent_id:     "borgkit://agent/gemini-support".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -48,7 +48,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use crate::plugins::base::{CapabilityDescriptor, SentrixPlugin};
+use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -62,7 +62,7 @@ pub struct GoogleADKService {
     /// ADK application name (must match the `agent.py` agent name).
     pub app_name: String,
 
-    /// User ID passed to every ADK session (default: `"sentrix-user"`).
+    /// User ID passed to every ADK session (default: `"borgkit-user"`).
     pub user_id: String,
 
     /// POST path for running the agent (default: `"/run"`).
@@ -79,7 +79,7 @@ impl Default for GoogleADKService {
         Self {
             base_url:     "http://localhost:8080".to_string(),
             app_name:     "agent".to_string(),
-            user_id:      "sentrix-user".to_string(),
+            user_id:      "borgkit-user".to_string(),
             run_route:    "/run".to_string(),
             capabilities: vec![],
         }
@@ -109,10 +109,10 @@ impl Default for GoogleADKPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── SentrixPlugin impl ────────────────────────────────────────────────────────
+// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl SentrixPlugin<GoogleADKService> for GoogleADKPlugin {
+impl BorgkitPlugin<GoogleADKService> for GoogleADKPlugin {
     fn extract_capabilities(&self, service: &GoogleADKService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -134,7 +134,7 @@ impl SentrixPlugin<GoogleADKService> for GoogleADKPlugin {
 
     /// Build the ADK `/run` request body from an `AgentRequest`.
     ///
-    /// A fresh session ID is generated per call so that each Sentrix request
+    /// A fresh session ID is generated per call so that each Borgkit request
     /// is independently stateless.
     fn translate_request(&self, request: &AgentRequest) -> Result<Value, String> {
         let message = request.payload.get("message")
@@ -157,8 +157,8 @@ impl SentrixPlugin<GoogleADKService> for GoogleADKPlugin {
                 "role":  "user",
                 "parts": [{ "text": message }]
             },
-            "__sentrix_request_id__": request.request_id,
-            "__sentrix_capability__": request.capability,
+            "__borgkit_request_id__": request.request_id,
+            "__borgkit_capability__": request.capability,
         }))
     }
 
@@ -183,10 +183,10 @@ impl SentrixPlugin<GoogleADKService> for GoogleADKPlugin {
         // Fill in the placeholders set by translate_request
         input["app_name"] = json!(service.app_name);
         input["user_id"]  = json!(service.user_id);
-        // Remove internal Sentrix tracking keys before sending
+        // Remove internal Borgkit tracking keys before sending
         let obj = input.as_object_mut().ok_or("invalid request body")?;
-        obj.remove("__sentrix_request_id__");
-        obj.remove("__sentrix_capability__");
+        obj.remove("__borgkit_request_id__");
+        obj.remove("__borgkit_capability__");
 
         let url = format!(
             "{}{}",

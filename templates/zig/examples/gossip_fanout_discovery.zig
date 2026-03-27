@@ -141,14 +141,14 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var a = try GossipNode.init(allocator, "sentrix://agent/a", 3);
+    var a = try GossipNode.init(allocator, "borgkit://agent/a", 3);
     defer a.deinit();
-    var b = try GossipNode.init(allocator, "sentrix://agent/b", 3);
+    var b = try GossipNode.init(allocator, "borgkit://agent/b", 3);
     defer b.deinit();
 
     try GossipNode.linkBidirectional(&a, &b);
 
-    try a.announce("sentrix://agent/service-1", "echo");
+    try a.announce("borgkit://agent/service-1", "echo");
 
     var hits = std.ArrayList([]const u8).init(allocator);
     defer hits.deinit();

@@ -1,14 +1,14 @@
 [package]
-name        = "sentrix-cli"
+name        = "borgkit-cli"
 version.workspace    = true
 edition.workspace    = true
 authors.workspace    = true
 license.workspace    = true
 repository.workspace = true
-description = "The Sentrix CLI — scaffold, run, discover and inspect P2P AI agents"
+description = "The Borgkit CLI — scaffold, run, discover and inspect P2P AI agents"
 
 [[bin]]
-name = "sentrix"
+name = "borgkit"
 path = "src/main.rs"
 
 [dependencies]

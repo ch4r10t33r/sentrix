@@ -1,7 +1,7 @@
-//! LangGraph → Sentrix Plugin (Zig) — HTTP Bridge
+//! LangGraph → Borgkit Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps a LangServe / LangGraph Platform endpoint so it participates in the
-//! Sentrix mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
+//! Borgkit mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
 //!
 //! ── LangServe API contract ─────────────────────────────────────────────────────
@@ -31,7 +31,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(lg.LangGraphService, lg.LangGraphPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/researcher",
+//!       .agent_id = "borgkit://agent/researcher",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

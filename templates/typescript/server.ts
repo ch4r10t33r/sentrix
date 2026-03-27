@@ -1,8 +1,8 @@
 /**
- * Sentrix HTTP Server (TypeScript)
+ * Borgkit HTTP Server (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Starts an Express HTTP server for a WrappedAgent, exposing the standard
- * Sentrix endpoints so agents can discover and call each other over the network.
+ * Borgkit endpoints so agents can discover and call each other over the network.
  *
  * Endpoints
  * ─────────
@@ -21,8 +21,8 @@
  *   const agent  = plugin.wrap(myGraph);
  *   await serve(agent, { port: 6174 });
  *
- *   // or via sentrix-cli:
- *   //   sentrix run MyAgent --port 6174
+ *   // or via borgkit-cli:
+ *   //   borgkit run MyAgent --port 6174
  */
 
 import http            from 'http';
@@ -35,7 +35,7 @@ import type { AgentRequest }  from './interfaces/IAgentRequest';
 export interface ServeOptions {
   /** Bind address. Default: '0.0.0.0' (all interfaces). */
   host?: string;
-  /** TCP port. Overridden by SENTRIX_PORT env var if set. Default: 6174. */
+  /** TCP port. Overridden by BORGKIT_PORT env var if set. Default: 6174. */
   port?: number;
   /** Suppress the startup banner log. Default: false. */
   silent?: boolean;
@@ -64,7 +64,7 @@ export async function serve(
   options: ServeOptions = {},
 ): Promise<void> {
   const host = options.host ?? '0.0.0.0';
-  const port = parseInt(process.env.SENTRIX_PORT ?? String(options.port ?? 6174), 10);
+  const port = parseInt(process.env.BORGKIT_PORT ?? String(options.port ?? 6174), 10);
 
   const app = express();
   app.use(express.json({ limit: '4mb' }));
@@ -244,7 +244,7 @@ export async function serve(
     // ── graceful shutdown ──────────────────────────────────────────────────────
     const shutdown = async (signal: string): Promise<void> => {
       if (!options.silent) {
-        process.stdout.write(`\n[Sentrix] ${signal} received — shutting down gracefully…\n`);
+        process.stdout.write(`\n[Borgkit] ${signal} received — shutting down gracefully…\n`);
       }
       server.close(async () => {
         try {

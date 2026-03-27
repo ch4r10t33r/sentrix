@@ -1,6 +1,6 @@
-//! LlamaIndex → Sentrix Plugin (Zig) — HTTP Bridge
+//! LlamaIndex → Borgkit Plugin (Zig) — HTTP Bridge
 //!
-//! Wraps a LlamaIndex chat/query server so it participates in the Sentrix mesh
+//! Wraps a LlamaIndex chat/query server so it participates in the Borgkit mesh
 //! as a standard IAgent.  Uses `std.http.Client` for all HTTP communication —
 //! no external dependencies required.
 //!
@@ -39,7 +39,7 @@
 //!   const Wrapped = wrapped_agent.WrappedAgent(
 //!       llamaindex.LlamaIndexService, llamaindex.LlamaIndexPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/llamaindex",
+//!       .agent_id = "borgkit://agent/llamaindex",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

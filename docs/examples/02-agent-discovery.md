@@ -16,7 +16,7 @@ from discovery.local_discovery import LocalDiscovery
 from datetime import datetime, timezone
 
 class WeatherAgent(IAgent):
-    agent_id = 'sentrix://agent/weather'
+    agent_id = 'borgkit://agent/weather'
     owner    = '0xYourWalletAddress'
     metadata = {'name': 'WeatherAgent', 'version': '0.1.0', 'tags': ['weather']}
 
@@ -109,7 +109,7 @@ private_key = bytes.fromhex(os.environ['AGENT_PRIVATE_KEY'])
 anr_text = (
     AnrBuilder()
     .seq(1)
-    .agent_id('sentrix://agent/weather')
+    .agent_id('borgkit://agent/weather')
     .name('WeatherAgent')
     .version('0.1.0')
     .capabilities(['get_weather', 'get_forecast'])
@@ -138,7 +138,7 @@ print(parsed.capabilities)  # ['get_weather', 'get_forecast']
 Change **one env var** — no code changes required:
 
 ```bash
-export SENTRIX_DISCOVERY_URL=https://registry.mycompany.com
+export BORGKIT_DISCOVERY_URL=https://registry.mycompany.com
 python -m agents.weather_agent
 ```
 
@@ -161,7 +161,7 @@ async def heartbeat_loop(agent_id: str, interval_s: int = 30):
         await registry.heartbeat(agent_id)
 
 # Start alongside your agent
-asyncio.create_task(heartbeat_loop('sentrix://agent/weather'))
+asyncio.create_task(heartbeat_loop('borgkit://agent/weather'))
 ```
 
 Agents that stop heartbeating are marked `unhealthy` and excluded from `query()` results.

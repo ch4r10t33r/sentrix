@@ -12,7 +12,7 @@ export async function discoverCommand(options: DiscoverOptions): Promise<void> {
   const query = capability ? `?capability=${encodeURIComponent(capability)}` : '';
   const url = `http://${host}:${port}/agents${query}`;
 
-  logger.title('Sentrix Discovery Query');
+  logger.title('Borgkit Discovery Query');
   logger.info(`Querying: ${url}`);
 
   try {

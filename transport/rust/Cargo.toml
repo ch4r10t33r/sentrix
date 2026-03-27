@@ -1,11 +1,11 @@
 [package]
-name    = "sentrix-libp2p"
+name    = "borgkit-libp2p"
 version = "0.1.0"
 edition = "2021"
-description = "libp2p transport for the Sentrix agent mesh — exposes C FFI for Python and Zig"
+description = "libp2p transport for the Borgkit agent mesh — exposes C FFI for Python and Zig"
 
 [lib]
-name      = "sentrix_libp2p"
+name      = "borgkit_libp2p"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

@@ -5,11 +5,11 @@ mod templates;
 
 use clap::{Parser, Subcommand};
 
-/// Sentrix — scaffold, run, and connect P2P AI agents.
+/// Borgkit — scaffold, run, and connect P2P AI agents.
 #[derive(Parser)]
 #[command(
-    name    = "sentrix",
-    version = env!("SENTRIX_VERSION"),
+    name    = "borgkit",
+    version = env!("BORGKIT_VERSION"),
     about   = "Scaffold P2P-discoverable, DID-native AI agents across any framework",
     long_about = None,
     propagate_version = true,
@@ -21,7 +21,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Scaffold a new Sentrix agent project
+    /// Scaffold a new Borgkit agent project
     Init(commands::init::InitArgs),
 
     /// Generate agent source files inside an existing project

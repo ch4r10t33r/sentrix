@@ -1,7 +1,7 @@
-//! OpenAI-compatible Chat Completions → Sentrix Plugin (Rust) — HTTP Bridge
+//! OpenAI-compatible Chat Completions → Borgkit Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps any OpenAI-compatible chat completions endpoint so it participates in
-//! the Sentrix mesh as a standard `IAgent`.  Works with the official OpenAI API,
+//! the Borgkit mesh as a standard `IAgent`.  Works with the official OpenAI API,
 //! vLLM, Ollama (`/v1/chat/completions`), LocalAI, LM Studio, and any server that
 //! implements the OpenAI chat completions contract.
 //!
@@ -24,8 +24,8 @@
 //!
 //! ── Usage ─────────────────────────────────────────────────────────────────────
 //!
-//!   use sentrix::plugins::openai::{OpenAIPlugin, OpenAIService};
-//!   use sentrix::plugins::base::PluginConfig;
+//!   use borgkit::plugins::openai::{OpenAIPlugin, OpenAIService};
+//!   use borgkit::plugins::base::PluginConfig;
 //!
 //!   let service = OpenAIService {
 //!       base_url:      "https://api.openai.com".to_string(),
@@ -38,7 +38,7 @@
 //!
 //!   let plugin = OpenAIPlugin::with_timeout(30);
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "sentrix://agent/gpt".to_string(),
+//!       agent_id:     "borgkit://agent/gpt".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -48,7 +48,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, SentrixPlugin};
+use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -125,10 +125,10 @@ impl Default for OpenAIPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── SentrixPlugin impl ────────────────────────────────────────────────────────
+// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl SentrixPlugin<OpenAIService> for OpenAIPlugin {
+impl BorgkitPlugin<OpenAIService> for OpenAIPlugin {
     fn extract_capabilities(&self, service: &OpenAIService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -168,7 +168,7 @@ impl SentrixPlugin<OpenAIService> for OpenAIPlugin {
         // The actual service reference is not available here, so we produce the
         // user turn only — system prompt injection happens in invoke_native where
         // the service config is accessible.
-        Ok(json!({ "__sentrix_content": content }))
+        Ok(json!({ "__borgkit_content": content }))
     }
 
     /// Extract the assistant reply from `choices[0].message.content`.
@@ -210,7 +210,7 @@ impl SentrixPlugin<OpenAIService> for OpenAIPlugin {
 
         // Recover the raw content string extracted in translate_request.
         let content = input
-            .get("__sentrix_content")
+            .get("__borgkit_content")
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string();

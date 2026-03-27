@@ -1,5 +1,5 @@
 /**
- * Sentrix Identity Providers
+ * Borgkit Identity Providers
  * ─────────────────────────────────────────────────────────────────────────────
  * Provides flexible agent identity without requiring ERC-8004 on-chain
  * registration or a wallet. Identities produce did:key:z... or
@@ -99,7 +99,7 @@ function didPkhEvm(address: string, chainId: number): string {
 // ── base interface ────────────────────────────────────────────────────────────
 
 export interface IdentityProvider {
-  /** Return the Sentrix agent URI (e.g. sentrix://agent/0xABC…) */
+  /** Return the Borgkit agent URI (e.g. borgkit://agent/0xABC…) */
   agentId(): string;
   /** Return the owner identifier (Ethereum address or arbitrary string) */
   owner(): string;
@@ -116,7 +116,7 @@ export interface IdentityProvider {
 export class AnonymousIdentity implements IdentityProvider {
   constructor(private readonly name: string = 'unnamed') {}
 
-  agentId() { return `sentrix://agent/${this.name}`; }
+  agentId() { return `borgkit://agent/${this.name}`; }
   owner()   { return 'anonymous'; }
   privateKeyHex() { return null; }
 
@@ -152,23 +152,23 @@ export class RawKeyIdentity implements IdentityProvider {
 /**
  * Identity from an environment variable (12-factor / container-friendly).
  *
- * Reads the private key from SENTRIX_AGENT_KEY (default) or a custom env var.
+ * Reads the private key from BORGKIT_AGENT_KEY (default) or a custom env var.
  * Falls back to AnonymousIdentity if the env var is not set.
  *
  * @example
- *   process.env.SENTRIX_AGENT_KEY = '0xdeadbeef...';
+ *   process.env.BORGKIT_AGENT_KEY = '0xdeadbeef...';
  *   const identity = new EnvKeyIdentity();
  */
 export class EnvKeyIdentity implements IdentityProvider {
   private readonly _delegate: IdentityProvider;
 
-  constructor(envVar = 'SENTRIX_AGENT_KEY', nameOverride?: string) {
+  constructor(envVar = 'BORGKIT_AGENT_KEY', nameOverride?: string) {
     const val = process.env[envVar];
     if (val) {
       this._delegate = new RawKeyIdentity(val, nameOverride);
     } else {
       console.warn(
-        `[Sentrix] ${envVar} not set — using anonymous identity. ` +
+        `[Borgkit] ${envVar} not set — using anonymous identity. ` +
         'Set the env var or use LocalKeystoreIdentity for persistent identity.'
       );
       this._delegate = new AnonymousIdentity(nameOverride ?? 'unnamed');
@@ -184,7 +184,7 @@ export class EnvKeyIdentity implements IdentityProvider {
 // ── local keystore identity ───────────────────────────────────────────────────
 
 /**
- * Persistent identity stored as a plain-text hex key in ~/.sentrix/keystore/.
+ * Persistent identity stored as a plain-text hex key in ~/.borgkit/keystore/.
  *
  * The key file is created on first use (chmod 0600). The same key is reused on
  * every subsequent run, giving the agent a stable identity across restarts
@@ -192,8 +192,8 @@ export class EnvKeyIdentity implements IdentityProvider {
  *
  * @example
  *   const identity = new LocalKeystoreIdentity('research-agent');
- *   // Key auto-created at ~/.sentrix/keystore/research-agent.key
- *   console.log(identity.agentId()); // sentrix://agent/0x...
+ *   // Key auto-created at ~/.borgkit/keystore/research-agent.key
+ *   console.log(identity.agentId()); // borgkit://agent/0x...
  */
 export class LocalKeystoreIdentity implements IdentityProvider {
   private readonly _key: string;
@@ -203,7 +203,7 @@ export class LocalKeystoreIdentity implements IdentityProvider {
     private readonly name: string,
     keystoreDir?: string,
   ) {
-    const dir  = keystoreDir ?? path.join(os.homedir(), '.sentrix', 'keystore');
+    const dir  = keystoreDir ?? path.join(os.homedir(), '.borgkit', 'keystore');
     this._key  = this._loadOrCreate(dir, name);
     this._address = ethAddressFromPrivKey(this._key);
   }
@@ -225,7 +225,7 @@ export class LocalKeystoreIdentity implements IdentityProvider {
     // Generate new random key
     const key = crypto.randomBytes(32).toString('hex');
     fs.writeFileSync(keyfile, key, { encoding: 'utf8', mode: 0o600 });
-    console.log(`[Sentrix] New identity created: ${keyfile}`);
+    console.log(`[Borgkit] New identity created: ${keyfile}`);
     return key;
   }
 }
@@ -244,7 +244,7 @@ export interface ERC8004IdentityConfig {
  *
  * Anchors the agent's ANR record on a smart contract, providing verifiable
  * on-chain ownership.  Requires a wallet private key and gas to register.
- * All other Sentrix features work identically whether you use this mode or
+ * All other Borgkit features work identically whether you use this mode or
  * an off-chain mode.
  *
  * Note: On-chain registration is OPTIONAL.  You can use this class purely
@@ -342,7 +342,7 @@ export function identityFromConfig(config: IdentityConfig): IdentityProvider {
 
   switch (mode) {
     case 'anonymous': return new AnonymousIdentity(name);
-    case 'env':       return new EnvKeyIdentity(envVar ?? 'SENTRIX_AGENT_KEY', name);
+    case 'env':       return new EnvKeyIdentity(envVar ?? 'BORGKIT_AGENT_KEY', name);
     case 'raw':
       if (!privateKeyHex) throw new Error("mode='raw' requires privateKeyHex");
       return new RawKeyIdentity(privateKeyHex, name);

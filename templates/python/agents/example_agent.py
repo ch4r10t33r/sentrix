@@ -10,13 +10,13 @@ from datetime import datetime, timezone
 
 class ExampleAgent(IAgent):
     # ── ERC-8004 Identity ─────────────────────────────────────────────────
-    agent_id     = "sentrix://agent/example"
+    agent_id     = "borgkit://agent/example"
     owner        = "0xYourWalletAddress"
     metadata_uri = "ipfs://QmYourMetadataHashHere"
     metadata     = {
         "name":        "ExampleAgent",
         "version":     "0.1.0",
-        "description": "A starter Sentrix agent",
+        "description": "A starter Borgkit agent",
         "tags":        ["example", "starter"],
     }
 
@@ -45,7 +45,7 @@ class ExampleAgent(IAgent):
         import os
         from discovery.http_discovery import DiscoveryFactory
 
-        discovery_type = os.environ.get('SENTRIX_DISCOVERY_TYPE', 'local')
+        discovery_type = os.environ.get('BORGKIT_DISCOVERY_TYPE', 'local')
         registry = await DiscoveryFactory.create(discovery_type)
         self._registry = registry
         self._p2p_info = None
@@ -68,9 +68,9 @@ class ExampleAgent(IAgent):
     def _build_entry(self) -> 'DiscoveryEntry':
         import os
         from datetime import datetime, timezone
-        host = os.environ.get('SENTRIX_HOST', 'localhost')
-        port = int(os.environ.get('SENTRIX_PORT', '6174'))
-        tls  = os.environ.get('SENTRIX_TLS', 'false').lower() == 'true'
+        host = os.environ.get('BORGKIT_HOST', 'localhost')
+        port = int(os.environ.get('BORGKIT_PORT', '6174'))
+        tls  = os.environ.get('BORGKIT_TLS', 'false').lower() == 'true'
 
         p2p  = getattr(self, '_p2p_info', None)
         peer_id  = p2p.get('peer_id')  if p2p else None
@@ -102,17 +102,17 @@ class ExampleAgent(IAgent):
 #
 # Run directly:
 #   python agents/example_agent.py
-#   SENTRIX_PORT=9090 python agents/example_agent.py
+#   BORGKIT_PORT=9090 python agents/example_agent.py
 #
-# Or via sentrix-cli:
-#   sentrix run ExampleAgent --port 6174
+# Or via borgkit-cli:
+#   borgkit run ExampleAgent --port 6174
 #
 if __name__ == "__main__":
     import asyncio
     import os
     from server import serve
 
-    port = int(os.environ.get("SENTRIX_PORT", "6174"))
+    port = int(os.environ.get("BORGKIT_PORT", "6174"))
 
     agent = ExampleAgent()
     asyncio.run(serve(agent, port=port))

@@ -60,7 +60,7 @@ pub const ExampleAgent = struct {
     // ── IAgent interface ───────────────────────────────────────────────────
 
     pub fn agentId(_: *const ExampleAgent) []const u8 {
-        return "sentrix://agent/example";
+        return "borgkit://agent/example";
     }
 
     pub fn owner(_: *const ExampleAgent) []const u8 {
@@ -77,7 +77,7 @@ pub const ExampleAgent = struct {
             return types.AgentResponse.success(req.request_id, req.payload);
         } else if (std.mem.eql(u8, req.capability, "ping")) {
             return types.AgentResponse.success(req.request_id,
-                \\{"pong":true,"agentId":"sentrix://agent/example","version":"0.1.0"}
+                \\{"pong":true,"agentId":"borgkit://agent/example","version":"0.1.0"}
             );
         } else {
             return types.AgentResponse.err(req.request_id, "Unknown capability");
@@ -216,7 +216,7 @@ pub fn main() !void {
         .request_id = "test-002",
         .from       = "0xCaller",
         .capability = "echo",
-        .payload    = "{\"message\":\"hello sentrix\"}",
+        .payload    = "{\"message\":\"hello borgkit\"}",
     };
     const echo_resp = agent.handleRequest(echo_req);
     std.log.info("[local] echo → status={s} result={s}", .{
@@ -236,7 +236,7 @@ pub fn main() !void {
     //  HttpDiscovery or GossipDiscovery.
 
     var ag_client = client_mod.AgentClient.init(allocator, .{ .local = &agent.discovery }, .{
-        .caller_id = "sentrix://agent/caller",
+        .caller_id = "borgkit://agent/caller",
     });
     defer ag_client.deinit();
 

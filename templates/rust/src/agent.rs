@@ -4,7 +4,7 @@ use crate::discovery::DiscoveryEntry;
 use async_trait::async_trait;
 
 /// ERC-8004 compliant agent trait.
-/// Every Sentrix agent must implement this.
+/// Every Borgkit agent must implement this.
 ///
 /// # DIDComm v2 encrypted messaging
 ///
@@ -122,8 +122,8 @@ pub trait IAgent: Send + Sync {
     async fn sign_message(&self, message: &str) -> Result<String, Box<dyn std::error::Error>> {
         use std::env;
 
-        let raw_key = env::var("SENTRIX_AGENT_KEY").map_err(|_| {
-            "sign_message: no signing key — set SENTRIX_AGENT_KEY=<hex-private-key> \
+        let raw_key = env::var("BORGKIT_AGENT_KEY").map_err(|_| {
+            "sign_message: no signing key — set BORGKIT_AGENT_KEY=<hex-private-key> \
              or override sign_message() in your agent"
         })?;
 
@@ -136,10 +136,10 @@ pub trait IAgent: Send + Sync {
                     .map(|i| u8::from_str_radix(&s[i..i+2], 16).map_err(|e| -> Box<dyn std::error::Error> { e.into() }))
                     .collect()
             }
-            hex_decode(key_hex).map_err(|_| "sign_message: SENTRIX_AGENT_KEY is not valid hex")?
+            hex_decode(key_hex).map_err(|_| "sign_message: BORGKIT_AGENT_KEY is not valid hex")?
         };
         if key_bytes.len() != 32 {
-            return Err("sign_message: SENTRIX_AGENT_KEY must be 32 bytes (64 hex chars)".into());
+            return Err("sign_message: BORGKIT_AGENT_KEY must be 32 bytes (64 hex chars)".into());
         }
 
         use k256::ecdsa::{SigningKey, signature::Signer};

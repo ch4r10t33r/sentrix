@@ -1,6 +1,6 @@
-//! smolagents → Sentrix Plugin (Zig) — HTTP Bridge
+//! smolagents → Borgkit Plugin (Zig) — HTTP Bridge
 //!
-//! Wraps a smolagents/Gradio server so it participates in the Sentrix mesh as
+//! Wraps a smolagents/Gradio server so it participates in the Borgkit mesh as
 //! a standard IAgent.  Supports both the standard Gradio predict API and a
 //! custom task-oriented endpoint.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
@@ -59,7 +59,7 @@
 //!   const Wrapped = wrapped_agent.WrappedAgent(
 //!       smolagents.SmolagentsService, smolagents.SmolagentsPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/smolagents",
+//!       .agent_id = "borgkit://agent/smolagents",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

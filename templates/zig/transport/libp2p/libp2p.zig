@@ -1,18 +1,18 @@
-//! libp2p.zig — @cImport wrapper for the sentrix-libp2p Rust shared library.
+//! libp2p.zig — @cImport wrapper for the borgkit-libp2p Rust shared library.
 //!
-//! Build: link against libsentrix_libp2p.so (or .dylib / .dll)
+//! Build: link against libborgkit_libp2p.so (or .dylib / .dll)
 //! In build.zig:
 //!   exe.linkLibC();
 //!   exe.addLibraryPath(.{ .path = "path/to/transport/rust/target/release" });
-//!   exe.linkSystemLibrary("sentrix_libp2p");
+//!   exe.linkSystemLibrary("borgkit_libp2p");
 
 const std = @import("std");
 
 pub const c = @cImport({
-    @cInclude("sentrix_libp2p.h");
+    @cInclude("borgkit_libp2p.h");
 });
 
-pub const SentrixNode = *c.SentrixHandle;
+pub const BorgkitNode = *c.BorgkitHandle;
 
 /// Error type for libp2p operations.
 pub const Error = error{
@@ -22,43 +22,43 @@ pub const Error = error{
     GossipFailed,
 };
 
-/// Start a new SentrixNode listening on `listen_addr`.
+/// Start a new BorgkitNode listening on `listen_addr`.
 /// Returns an opaque node handle. Caller must call `destroy` when done.
-pub fn create(listen_addr: [:0]const u8) Error!SentrixNode {
-    const handle = c.sentrix_node_create(listen_addr.ptr, null);
+pub fn create(listen_addr: [:0]const u8) Error!BorgkitNode {
+    const handle = c.borgkit_node_create(listen_addr.ptr, null);
     if (handle == null) return Error.CreateFailed;
     return handle.?;
 }
 
 /// Destroy a previously created node.
-pub fn destroy(node: SentrixNode) void {
-    c.sentrix_node_destroy(node);
+pub fn destroy(node: BorgkitNode) void {
+    c.borgkit_node_destroy(node);
 }
 
 /// Return the node's PeerId as an allocated string. Caller frees with allocator.
-pub fn peerId(node: SentrixNode, allocator: std.mem.Allocator) ![]u8 {
-    const raw = c.sentrix_node_peer_id(node);
-    defer c.sentrix_free_string(raw);
+pub fn peerId(node: BorgkitNode, allocator: std.mem.Allocator) ![]u8 {
+    const raw = c.borgkit_node_peer_id(node);
+    defer c.borgkit_free_string(raw);
     return allocator.dupe(u8, std.mem.span(raw));
 }
 
 /// Return the node's first listen multiaddr as an allocated string.
-pub fn multiaddr(node: SentrixNode, allocator: std.mem.Allocator) ![]u8 {
-    const raw = c.sentrix_node_multiaddr(node);
-    defer c.sentrix_free_string(raw);
+pub fn multiaddr(node: BorgkitNode, allocator: std.mem.Allocator) ![]u8 {
+    const raw = c.borgkit_node_multiaddr(node);
+    defer c.borgkit_free_string(raw);
     return allocator.dupe(u8, std.mem.span(raw));
 }
 
 /// Dial a remote peer by multiaddr.
-pub fn dial(node: SentrixNode, addr: [:0]const u8) Error!void {
-    const rc = c.sentrix_dial(node, addr.ptr);
+pub fn dial(node: BorgkitNode, addr: [:0]const u8) Error!void {
+    const rc = c.borgkit_dial(node, addr.ptr);
     if (rc != 0) return Error.DialFailed;
 }
 
 /// Send a JSON AgentRequest to `peer_id` and return the JSON response.
 /// Caller frees the returned slice.
 pub fn send(
-    node:         SentrixNode,
+    node:         BorgkitNode,
     peer_id:      [:0]const u8,
     request_json: [:0]const u8,
     allocator:    std.mem.Allocator,
@@ -67,7 +67,7 @@ pub fn send(
     const buf = try allocator.alloc(u8, buf_size);
     errdefer allocator.free(buf);
 
-    const n = c.sentrix_send(
+    const n = c.borgkit_send(
         node,
         peer_id.ptr,
         request_json.ptr,
@@ -82,7 +82,7 @@ pub fn send(
 }
 
 /// Publish a JSON gossip message to all peers.
-pub fn gossipPublish(node: SentrixNode, message_json: [:0]const u8) Error!void {
-    const rc = c.sentrix_gossip_publish(node, message_json.ptr);
+pub fn gossipPublish(node: BorgkitNode, message_json: [:0]const u8) Error!void {
+    const rc = c.borgkit_gossip_publish(node, message_json.ptr);
     if (rc != 0) return Error.GossipFailed;
 }

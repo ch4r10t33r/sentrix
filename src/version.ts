@@ -1,5 +1,5 @@
 /**
- * Sentrix version — single source of truth.
+ * Borgkit version — single source of truth.
  * Bump this before every release; the CLI, templates, and docs all read from here.
  */
 

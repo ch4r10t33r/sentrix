@@ -1,4 +1,4 @@
-//! x402 micropayment protocol — Zig implementation for Sentrix agents.
+//! x402 micropayment protocol — Zig implementation for Borgkit agents.
 //!
 //! The x402 protocol (https://x402.org) lets any HTTP endpoint gate access
 //! behind an on-chain micropayment. The flow is:
@@ -14,7 +14,7 @@
 //!   5. Server (optionally via a facilitator) verifies and settles on-chain,
 //!      then proceeds with the request.
 //!
-//! ## Quick-start usage in a Sentrix agent
+//! ## Quick-start usage in a Borgkit agent
 //!
 //! ```zig
 //! const x402 = @import("addons/x402.zig");

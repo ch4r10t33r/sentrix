@@ -1,19 +1,19 @@
 """
-Sentrix Plugin Base
+Borgkit Plugin Base
 ──────────────────────────────────────────────────────────────────────────────
 Defines the plugin contract that every framework adapter must implement.
 
 A plugin wraps a framework-native agent object and produces an IAgent-compliant
-instance that can be registered, discovered, and called through Sentrix.
+instance that can be registered, discovered, and called through Borgkit.
 
 Lifecycle:
   1.  plugin = LangGraphPlugin(config)   # or GoogleADKPlugin, etc.
   2.  agent  = plugin.wrap(my_agent)     # returns IAgent
   3.  await  agent.register_discovery()  # appears on the mesh
-  4.         agent.handle_request(req)   # receives Sentrix calls
+  4.         agent.handle_request(req)   # receives Borgkit calls
 
 Plugin responsibilities:
-  - extract_capabilities()   map framework tools → Sentrix capability names
+  - extract_capabilities()   map framework tools → Borgkit capability names
   - translate_request()      AgentRequest  → framework-native invocation args
   - translate_response()     framework result → AgentResponse
   - build_anr()              produce a signed ANR for the wrapped agent
@@ -47,7 +47,7 @@ class PluginConfig:
     #   identity = LocalKeystoreIdentity("my-agent")
     #   config   = PluginConfig(**identity.to_plugin_config_fields(), port=6174)
 
-    agent_id:     str          = "sentrix://agent/unnamed"
+    agent_id:     str          = "borgkit://agent/unnamed"
     owner:        str          = "anonymous"  # wallet address or any identifier
     name:         str          = "UnnamedAgent"
     version:      str          = "0.1.0"
@@ -106,9 +106,9 @@ class CapabilityDescriptor:
 
 # ── plugin base class ─────────────────────────────────────────────────────────
 
-class SentrixPlugin(ABC, Generic[TAgent]):
+class BorgkitPlugin(ABC, Generic[TAgent]):
     """
-    Abstract base for all Sentrix framework adapters.
+    Abstract base for all Borgkit framework adapters.
 
     Subclass this to integrate a new agent framework.
     Only four methods are mandatory:
@@ -138,7 +138,7 @@ class SentrixPlugin(ABC, Generic[TAgent]):
         descriptor: CapabilityDescriptor,
     ) -> Any:
         """
-        Convert a Sentrix AgentRequest into whatever the framework expects
+        Convert a Borgkit AgentRequest into whatever the framework expects
         as its invocation input (e.g. a dict, a Pydantic model, etc.).
         """
         ...
@@ -146,7 +146,7 @@ class SentrixPlugin(ABC, Generic[TAgent]):
     @abstractmethod
     def translate_response(self, native_result: Any, request_id: str) -> AgentResponse:
         """
-        Convert the framework's native result into a Sentrix AgentResponse.
+        Convert the framework's native result into a Borgkit AgentResponse.
         """
         ...
 
@@ -180,7 +180,7 @@ class SentrixPlugin(ABC, Generic[TAgent]):
 
     def wrap(self, agent: TAgent) -> "WrappedAgent[TAgent]":
         """
-        Wrap a framework-native agent in a Sentrix-compatible IAgent.
+        Wrap a framework-native agent in a Borgkit-compatible IAgent.
         This is the main entrypoint for plugin consumers.
 
         Usage:
@@ -235,15 +235,15 @@ class SentrixPlugin(ABC, Generic[TAgent]):
 
 class WrappedAgent(IAgent, Generic[TAgent]):
     """
-    An IAgent produced by SentrixPlugin.wrap().
-    Dispatches incoming Sentrix requests to the framework-native agent
+    An IAgent produced by BorgkitPlugin.wrap().
+    Dispatches incoming Borgkit requests to the framework-native agent
     via the plugin's translation layer.
     """
 
     def __init__(
         self,
         agent:        TAgent,
-        plugin:       SentrixPlugin,
+        plugin:       BorgkitPlugin,
         capabilities: list[CapabilityDescriptor],
         config:       PluginConfig,
     ):
@@ -429,7 +429,7 @@ class WrappedAgent(IAgent, Generic[TAgent]):
 
         Args:
             host: Bind address.  Defaults to "0.0.0.0" (all interfaces).
-            port: TCP port.  Overridden by SENTRIX_PORT env var if set.
+            port: TCP port.  Overridden by BORGKIT_PORT env var if set.
 
         Example::
 
@@ -467,7 +467,7 @@ def _print_startup_banner(agent: "WrappedAgent") -> None:
 
     line = f"{DIM}{'─' * 60}{W}"
     print(f"\n{line}")
-    print(f"  {B}{C}Sentrix Agent Online{W}  {DIM}v{cfg.version}{W}")
+    print(f"  {B}{C}Borgkit Agent Online{W}  {DIM}v{cfg.version}{W}")
     print(line)
     print(f"  {B}Name       {W}  {cfg.name}")
     print(f"  {B}Agent ID   {W}  {G}{agent.agent_id}{W}")

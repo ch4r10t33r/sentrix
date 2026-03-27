@@ -1,8 +1,8 @@
 /**
- * Google ADK → Sentrix Plugin (TypeScript)
+ * Google ADK → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a Google ADK `BaseAgent` or `LlmAgent` so it is fully discoverable
- * and callable on the Sentrix mesh.
+ * and callable on the Borgkit mesh.
  *
  * Capability extraction (priority order):
  *   1. Explicit capabilityMap in config
@@ -14,28 +14,28 @@
  *   import { wrapGoogleADK } from './plugins/GoogleADKPlugin';
  *
  *   const agent = new LlmAgent({ name: 'Support', model: 'gemini-2.0-flash', tools: [...] });
- *   const sentrixAgent = wrapGoogleADK(agent, {
- *     agentId: 'sentrix://agent/support',
+ *   const borgkitAgent = wrapGoogleADK(agent, {
+ *     agentId: 'borgkit://agent/support',
  *     name:    'SupportAgent',
  *     owner:   '0xYourWallet',
  *   });
- *   await sentrixAgent.registerDiscovery();
+ *   await borgkitAgent.registerDiscovery();
  *
  * Install: npm install @google/adk
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 // ── extended config ───────────────────────────────────────────────────────────
 
 export interface GoogleADKPluginConfig extends PluginConfig {
-  /** ADK app name used when creating a Runner session (default: 'sentrix') */
+  /** ADK app name used when creating a Runner session (default: 'borgkit') */
   appName?:  string;
-  /** ADK user ID for session creation (default: 'sentrix-user') */
+  /** ADK user ID for session creation (default: 'borgkit-user') */
   userId?:   string;
-  /** Expose each tool as a separate Sentrix capability (default: true) */
+  /** Expose each tool as a separate Borgkit capability (default: true) */
   exposeToolsAsCapabilities?: boolean;
   /** Expose sub-agents as capabilities (default: false) */
   exposeSubAgents?: boolean;
@@ -52,15 +52,15 @@ interface ADKNativeInput {
 
 // ── plugin ────────────────────────────────────────────────────────────────────
 
-export class GoogleADKPlugin extends SentrixPlugin<unknown, ADKNativeInput, unknown[]> {
+export class GoogleADKPlugin extends BorgkitPlugin<unknown, ADKNativeInput, unknown[]> {
   private readonly adkConfig: Required<Pick<GoogleADKPluginConfig,
     'appName' | 'userId' | 'exposeToolsAsCapabilities' | 'exposeSubAgents'>>;
 
   constructor(config: GoogleADKPluginConfig) {
     super(config);
     this.adkConfig = {
-      appName:                  config.appName  ?? 'sentrix',
-      userId:                   config.userId   ?? 'sentrix-user',
+      appName:                  config.appName  ?? 'borgkit',
+      userId:                   config.userId   ?? 'borgkit-user',
       exposeToolsAsCapabilities: config.exposeToolsAsCapabilities !== false,
       exposeSubAgents:          config.exposeSubAgents ?? false,
     };

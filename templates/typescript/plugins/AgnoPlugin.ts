@@ -1,26 +1,26 @@
 /**
- * Agno → Sentrix Plugin (TypeScript)
+ * Agno → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
- * Wraps an Agno `Agent` so its tools become Sentrix capabilities.
+ * Wraps an Agno `Agent` so its tools become Borgkit capabilities.
  *
  * Usage:
  *   import { wrapAgno } from './plugins/AgnoPlugin';
  *   import { Agent }    from 'agno';
  *
  *   const agent = new Agent({ model: ..., tools: [webSearch], description: '...' });
- *   const sentrix = wrapAgno(agent, {
- *     agentId: 'sentrix://agent/researcher',
+ *   const borgkit = wrapAgno(agent, {
+ *     agentId: 'borgkit://agent/researcher',
  *     name:    'ResearchAgent',
  *     owner:   '0xYourWallet',
  *   });
- *   await sentrix.registerDiscovery();
+ *   await borgkit.registerDiscovery();
  *
  * Install: npm install agno
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 export interface AgnoPluginConfig extends PluginConfig {
   /** Stream Agno response (default: false — collect full output) */
@@ -34,7 +34,7 @@ interface AgnoNativeInput {
   payload:  Record<string, unknown>;
 }
 
-export class AgnoPlugin extends SentrixPlugin<unknown, AgnoNativeInput, string> {
+export class AgnoPlugin extends BorgkitPlugin<unknown, AgnoNativeInput, string> {
   private readonly agnoConfig: Required<Pick<AgnoPluginConfig, 'stream' | 'markdown'>>;
 
   constructor(config: AgnoPluginConfig) {

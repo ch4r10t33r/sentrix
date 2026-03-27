@@ -1,5 +1,5 @@
 /**
- * DIDComm v2 encrypted messaging for Sentrix agents.
+ * DIDComm v2 encrypted messaging for Borgkit agents.
  *
  * Implements authenticated (authcrypt) and anonymous (anoncrypt) encryption
  * between DID-identified agents using X25519 ECDH + XSalsa20-Poly1305.
@@ -112,13 +112,13 @@ export interface Recipient {
 
 // ── Message type constants ─────────────────────────────────────────────────────
 
-/** Well-known DIDComm v2 message type URIs for Sentrix. */
+/** Well-known DIDComm v2 message type URIs for Borgkit. */
 export const MessageTypes = {
-  INVOKE:   'https://sentrix.dev/didcomm/1.0/invoke',
-  RESPONSE: 'https://sentrix.dev/didcomm/1.0/response',
-  FORWARD:  'https://sentrix.dev/didcomm/1.0/forward',
-  PING:     'https://sentrix.dev/didcomm/1.0/ping',
-  PONG:     'https://sentrix.dev/didcomm/1.0/pong',
+  INVOKE:   'https://borgkit.dev/didcomm/1.0/invoke',
+  RESPONSE: 'https://borgkit.dev/didcomm/1.0/response',
+  FORWARD:  'https://borgkit.dev/didcomm/1.0/forward',
+  PING:     'https://borgkit.dev/didcomm/1.0/ping',
+  PONG:     'https://borgkit.dev/didcomm/1.0/pong',
 } as const;
 
 // ── Crypto / encoding helpers ─────────────────────────────────────────────────

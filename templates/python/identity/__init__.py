@@ -1,15 +1,15 @@
 """
-Sentrix Identity Providers
+Borgkit Identity Providers
 ──────────────────────────
 Flexible identity options — ERC-8004 on-chain registration is optional.
 
 Quick start (no wallet required):
     from identity.provider import LocalKeystoreIdentity
-    identity = LocalKeystoreIdentity(name="my-agent")   # auto-creates key in ~/.sentrix/keystore/
+    identity = LocalKeystoreIdentity(name="my-agent")   # auto-creates key in ~/.borgkit/keystore/
 
 With environment variable:
     from identity.provider import EnvKeyIdentity
-    identity = EnvKeyIdentity()   # reads SENTRIX_AGENT_KEY
+    identity = EnvKeyIdentity()   # reads BORGKIT_AGENT_KEY
 
 On-chain (optional, requires wallet + gas):
     from identity.provider import ERC8004Identity

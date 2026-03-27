@@ -1,6 +1,6 @@
-//! MCP Server — Outbound bridge: Sentrix agent → MCP server
+//! MCP Server — Outbound bridge: Borgkit agent → MCP server
 //!
-//! Exposes any IAgent-compatible Sentrix agent as a Model Context Protocol
+//! Exposes any IAgent-compatible Borgkit agent as a Model Context Protocol
 //! server that MCP clients (e.g. Claude Desktop, Cursor, Continue) can connect
 //! to.  Supports two transport modes:
 //!
@@ -30,7 +30,7 @@
 //!
 //!   {
 //!     "mcpServers": {
-//!       "my-sentrix-agent": {
+//!       "my-borgkit-agent": {
 //!         "command": "/path/to/my-agent",
 //!         "args": []
 //!       }
@@ -54,7 +54,7 @@ pub const Transport = enum { stdio, http };
 
 pub const ServeMcpOptions = struct {
     /// Server name reported in the MCP initialize handshake.
-    /// Defaults to "sentrix-agent".
+    /// Defaults to "borgkit-agent".
     name: ?[]const u8 = null,
     transport: Transport = .stdio,
     /// Bind address for HTTP transport.
@@ -65,7 +65,7 @@ pub const ServeMcpOptions = struct {
 
 // ── serveAsMcp ────────────────────────────────────────────────────────────────
 
-/// Expose a Sentrix agent as an MCP server.
+/// Expose a Borgkit agent as an MCP server.
 ///
 /// This is a comptime function: the agent type is checked at compile time for
 /// the four required IAgent declarations (agentId, owner, getCapabilities,
@@ -81,7 +81,7 @@ pub fn serveAsMcp(
     // Compile-time interface validation (mirrors server.zig pattern).
     _ = iagent.IAgent(AgentType);
 
-    const name = options.name orelse "sentrix-agent";
+    const name = options.name orelse "borgkit-agent";
 
     switch (options.transport) {
         .stdio => try serveStdio(AgentType, agent, name, allocator),
@@ -405,7 +405,7 @@ fn jsonRpcError(
 /// Build the MCP tools JSON array from a slice of capability name strings.
 ///
 /// Each capability becomes:
-///   {"name":"cap","description":"Sentrix capability: cap",
+///   {"name":"cap","description":"Borgkit capability: cap",
 ///    "inputSchema":{"type":"object","properties":{"payload":{"type":"object"}}}}
 fn buildToolsList(caps: []const []const u8, allocator: std.mem.Allocator) ![]const u8 {
     var buf = std.ArrayList(u8).init(allocator);
@@ -422,7 +422,7 @@ fn buildToolsList(caps: []const []const u8, allocator: std.mem.Allocator) ![]con
 
         var desc_raw = std.ArrayList(u8).init(allocator);
         defer desc_raw.deinit();
-        try desc_raw.writer().print("Sentrix capability: {s}", .{cap});
+        try desc_raw.writer().print("Borgkit capability: {s}", .{cap});
 
         var desc_json = std.ArrayList(u8).init(allocator);
         defer desc_json.deinit();

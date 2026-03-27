@@ -1,4 +1,4 @@
-//! HttpDiscovery — REST client for a Sentrix-style central registry.
+//! HttpDiscovery — REST client for a Borgkit-style central registry.
 //!
 //! Expected API (same as Rust `discovery_http` template):
 //!   POST   /agents              register JSON body
@@ -8,8 +8,8 @@
 //!   PUT    /agents/{id}/hb      heartbeat
 //!
 //! Environment:
-//!   `SENTRIX_DISCOVERY_URL` — base URL (optional trailing slash stripped)
-//!   `SENTRIX_DISCOVERY_KEY` — optional value for `X-Api-Key`
+//!   `BORGKIT_DISCOVERY_URL` — base URL (optional trailing slash stripped)
+//!   `BORGKIT_DISCOVERY_KEY` — optional value for `X-Api-Key`
 //!
 //! Callers must free entries from `query` / `listAll` / `findById` with
 //! `discovery.freeDiscoveryEntry` when done.
@@ -47,11 +47,11 @@ pub const HttpDiscovery = struct {
         if (self.api_key) |k| self.allocator.free(k);
     }
 
-    /// Returns null if `SENTRIX_DISCOVERY_URL` is unset.
+    /// Returns null if `BORGKIT_DISCOVERY_URL` is unset.
     pub fn fromEnv(allocator: std.mem.Allocator) ?HttpDiscovery {
-        const url = std.process.getEnvVarOwned(allocator, "SENTRIX_DISCOVERY_URL") catch return null;
+        const url = std.process.getEnvVarOwned(allocator, "BORGKIT_DISCOVERY_URL") catch return null;
         defer allocator.free(url);
-        const key_owned = std.process.getEnvVarOwned(allocator, "SENTRIX_DISCOVERY_KEY") catch null;
+        const key_owned = std.process.getEnvVarOwned(allocator, "BORGKIT_DISCOVERY_KEY") catch null;
         defer if (key_owned) |k| allocator.free(k);
         return initWithKey(allocator, url, key_owned);
     }

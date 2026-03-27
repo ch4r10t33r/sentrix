@@ -4,9 +4,9 @@
 
 **ANR** stands for **Agent Network Record**.
 
-It is the canonical, self-describing identity record for every agent in the Sentrix network. ANR is modelled directly on **EIP-778 (Ethereum Node Record, ENR)** — the same mechanism Ethereum nodes use to announce themselves on the devp2p network — and extends it with agent-specific fields.
+It is the canonical, self-describing identity record for every agent in the Borgkit network. ANR is modelled directly on **EIP-778 (Ethereum Node Record, ENR)** — the same mechanism Ethereum nodes use to announce themselves on the devp2p network — and extends it with agent-specific fields.
 
-Just as an ENR lets an Ethereum node say *"I am at this IP, on this port, with this public key"*, an ANR lets an agent say *"I am `sentrix://agent/0xABC`, I understand these capabilities, reachable here, owned by this wallet."*
+Just as an ENR lets an Ethereum node say *"I am at this IP, on this port, with this public key"*, an ANR lets an agent say *"I am `borgkit://agent/0xABC`, I understand these capabilities, reachable here, owned by this wallet."*
 
 ---
 
@@ -79,20 +79,20 @@ These are identical to ENR keys and ensure ANR records are parseable by ENR-awar
 
 | Key | Size | Description |
 |---|---|---|
-| `id` | string | Identity scheme — always `"amp-v1"` for Sentrix |
+| `id` | string | Identity scheme — always `"amp-v1"` for Borgkit |
 | `secp256k1` | 33 bytes | Compressed secp256k1 public key |
 | `ip` | 4 bytes | IPv4 address (big-endian) |
 | `ip6` | 16 bytes | IPv6 address |
 | `tcp` | uint16 BE | TCP port |
 | `udp` | uint16 BE | UDP port |
 
-### Agent keys (Sentrix extensions, prefix `a.`)
+### Agent keys (Borgkit extensions, prefix `a.`)
 
-All Sentrix-specific keys are prefixed with `a.` to avoid collision with future ENR keys.
+All Borgkit-specific keys are prefixed with `a.` to avoid collision with future ENR keys.
 
 | Key | Type | Description |
 |---|---|---|
-| `a.id` | UTF-8 string | Agent identifier URI, e.g. `sentrix://agent/0xABC` |
+| `a.id` | UTF-8 string | Agent identifier URI, e.g. `borgkit://agent/0xABC` |
 | `a.name` | UTF-8 string | Human-readable agent name |
 | `a.ver` | UTF-8 string | Semantic version, e.g. `1.2.3` |
 | `a.caps` | RLP list of strings | Capability names the agent exposes |
@@ -126,7 +126,7 @@ An ANR record **must not exceed 512 bytes** in its binary RLP form. This is deli
 
 ## Identity scheme: `amp-v1`
 
-The `id` key identifies the signing scheme. Sentrix defines one scheme: **`amp-v1`** (Agent Mesh Protocol v1).
+The `id` key identifies the signing scheme. Borgkit defines one scheme: **`amp-v1`** (Agent Mesh Protocol v1).
 
 `amp-v1` signing algorithm:
 
@@ -178,7 +178,7 @@ const privateKey = secp256k1.utils.randomPrivateKey();
 
 const record = new AnrBuilder()
   .setSeq(1n)
-  .setAgentId('sentrix://agent/0xABC')
+  .setAgentId('borgkit://agent/0xABC')
   .setName('WeatherAgent')
   .setVersion('1.0.0')
   .setCapabilities(['getWeather', 'getForecast'])
@@ -204,7 +204,7 @@ private_key = os.urandom(32)
 record = (
     AnrBuilder()
     .seq(1)
-    .agent_id('sentrix://agent/0xABC')
+    .agent_id('borgkit://agent/0xABC')
     .name('WeatherAgent')
     .version('1.0.0')
     .capabilities(['getWeather', 'getForecast'])
@@ -257,7 +257,7 @@ Peers that receive a record with a **lower or equal** `seq` than what they alrea
 During **local network discovery** (before any P2P gossip or on-chain lookup), agents broadcast their ANR over:
 
 - **mDNS** — zero-config LAN discovery (like Bonjour/Avahi)
-- **UDP broadcast** on port `21337` (the default Sentrix discovery port)
+- **UDP broadcast** on port `21337` (the default Borgkit discovery port)
 - **DNS TXT records** — for DNS-based bootstrapping
 
 The `anr:` string is small enough to fit in all three transports without fragmentation.

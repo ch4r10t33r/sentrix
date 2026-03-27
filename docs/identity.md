@@ -1,6 +1,6 @@
 # Agent Identity
 
-Sentrix agents need an identity to:
+Borgkit agents need an identity to:
 - Sign ANR records (Agent Name Records)
 - Authenticate agent-to-agent calls
 - Derive a stable libp2p PeerId for P2P discovery
@@ -15,7 +15,7 @@ Sentrix agents need an identity to:
 | Mode | Requires wallet? | On-chain? | Best for |
 |------|-----------------|-----------|----------|
 | `anonymous` | no | no | Local dev, throwaway agents |
-| `local` | no | no | **Default** — persistent key auto-created in `~/.sentrix/keystore/` |
+| `local` | no | no | **Default** — persistent key auto-created in `~/.borgkit/keystore/` |
 | `env` | no | no | Containers, cloud, CI/CD (12-factor) |
 | `raw` | no | no | Bring-your-own key (from secret manager etc.) |
 | `erc8004` | yes | optional | Production — verifiable on-chain ownership |
@@ -32,11 +32,11 @@ All keyed modes (local, env, raw, erc8004) use the **same secp256k1 private key*
 ### Python
 
 ```python
-# Simplest: auto-creates key in ~/.sentrix/keystore/my-agent.key
+# Simplest: auto-creates key in ~/.borgkit/keystore/my-agent.key
 from identity.provider import LocalKeystoreIdentity
 
 identity = LocalKeystoreIdentity(name="my-agent")
-print(identity.agent_id())   # sentrix://agent/0xAbCd...
+print(identity.agent_id())   # borgkit://agent/0xAbCd...
 print(identity.owner())      # 0xAbCd...  (Ethereum address)
 
 # Use with PluginConfig
@@ -47,7 +47,7 @@ config = PluginConfig(**identity.to_plugin_config_fields(), port=8080)
 ```python
 # Container / cloud: key from environment variable
 from identity.provider import EnvKeyIdentity
-# export SENTRIX_AGENT_KEY=0x<32-byte-hex>
+# export BORGKIT_AGENT_KEY=0x<32-byte-hex>
 
 identity = EnvKeyIdentity()
 ```
@@ -80,7 +80,7 @@ tx_hash = await identity.register_on_chain(anr_text)
 import { LocalKeystoreIdentity } from './identity';
 
 const identity = new LocalKeystoreIdentity('my-agent');
-console.log(identity.agentId());  // sentrix://agent/0xAbCd...
+console.log(identity.agentId());  // borgkit://agent/0xAbCd...
 console.log(identity.owner());    // 0xAbCd...
 
 // Use with wrapped agent config
@@ -90,7 +90,7 @@ const { agentId, owner, signingKey } = identity.toPluginConfigFields();
 ```typescript
 // Container / cloud
 import { EnvKeyIdentity } from './identity';
-// SENTRIX_AGENT_KEY=0x<32-byte-hex>
+// BORGKIT_AGENT_KEY=0x<32-byte-hex>
 const identity = new EnvKeyIdentity();
 ```
 
@@ -109,13 +109,13 @@ await identity.registerOnChain(anrText);  // optional
 
 ---
 
-## How identity flows through Sentrix
+## How identity flows through Borgkit
 
 ```
 Private key (secp256k1, 32 bytes)
   │
   ├─── Ethereum address derivation ──→ agent_id / owner fields
-  │                                    (sentrix://agent/0xAbCd...)
+  │                                    (borgkit://agent/0xAbCd...)
   │
   ├─── ANR signing ─────────────────→ signed ANR text (anr:...)
   │                                    published to discovery layer
@@ -133,7 +133,7 @@ The same 32-byte key is the single source of truth for all three derived identit
 `LocalKeystoreIdentity` stores a plain-text 32-byte hex key:
 
 ```
-~/.sentrix/keystore/
+~/.borgkit/keystore/
 └── my-agent.key    (chmod 0600)
     # Contents: 64 lowercase hex chars, no 0x prefix
     # e.g.: a1b2c3d4e5f6...
@@ -149,8 +149,8 @@ The same 32-byte key is the single source of truth for all three derived identit
 
 ```bash
 # 32-byte hex, with or without 0x prefix
-export SENTRIX_AGENT_KEY=0xa1b2c3d4e5f6...  # with 0x
-export SENTRIX_AGENT_KEY=a1b2c3d4e5f6...    # also accepted
+export BORGKIT_AGENT_KEY=0xa1b2c3d4e5f6...  # with 0x
+export BORGKIT_AGENT_KEY=a1b2c3d4e5f6...    # also accepted
 ```
 
 ---
@@ -179,7 +179,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 # Node.js
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# Or let Sentrix create one automatically:
+# Or let Borgkit create one automatically:
 python -c "from identity.provider import LocalKeystoreIdentity; LocalKeystoreIdentity('my-agent')"
 ```
 

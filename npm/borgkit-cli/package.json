@@ -1,0 +1,40 @@
+{
+  "name": "@ch4r10teer41/borgkit-cli",
+  "version": "0.1.0",
+  "description": "Scaffold P2P-discoverable, DID-native AI agents across any framework",
+  "keywords": [
+    "borgkit",
+    "agents",
+    "p2p",
+    "libp2p",
+    "did",
+    "ai"
+  ],
+  "bin": {
+    "borgkit": "./bin/borgkit"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "optionalDependencies": {
+    "@ch4r10teer41/borgkit-cli-linux-x64": "1.22.0",
+    "@ch4r10teer41/borgkit-cli-linux-arm64": "1.22.0",
+    "@ch4r10teer41/borgkit-cli-darwin-x64": "1.22.0",
+    "@ch4r10teer41/borgkit-cli-darwin-arm64": "1.22.0",
+    "@ch4r10teer41/borgkit-cli-win32-x64": "1.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ch4r10t33r/borgkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ch4r10t33r/borgkit.git",
+    "directory": "npm/borgkit-cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

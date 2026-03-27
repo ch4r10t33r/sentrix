@@ -1,14 +1,14 @@
-//! WrappedAgent — adapts a foreign agent to the Sentrix IAgent interface.
+//! WrappedAgent — adapts a foreign agent to the Borgkit IAgent interface.
 //!
 //! Combines IPlugin's translation pipeline with a DiscoveryEntry so that any
-//! third-party model or service can participate in the Sentrix mesh without
+//! third-party model or service can participate in the Borgkit mesh without
 //! modification.
 //!
 //! Usage:
 //!   var wrapped = WrappedAgent(MyAgent, MyPlugin).init(
 //!       &my_agent, &my_plugin,
 //!       .{
-//!           .agent_id = "sentrix://agent/my-wrapped",
+//!           .agent_id = "borgkit://agent/my-wrapped",
 //!           .owner    = "0xABC",
 //!       },
 //!       allocator,
@@ -47,7 +47,7 @@ pub fn WrappedAgent(comptime TAgent: type, comptime TPlugin: type) type {
         // ── configuration ─────────────────────────────────────────────────────
 
         pub const WrappedAgentConfig = struct {
-            /// Sentrix agent URI, e.g. "sentrix://agent/my-wrapped"
+            /// Borgkit agent URI, e.g. "borgkit://agent/my-wrapped"
             agent_id: []const u8,
             /// Wallet address or DID of the agent owner.
             owner: []const u8,
@@ -84,7 +84,7 @@ pub fn WrappedAgent(comptime TAgent: type, comptime TPlugin: type) type {
 
         // ── IAgent interface ──────────────────────────────────────────────────
 
-        /// Return the agent's Sentrix URI.
+        /// Return the agent's Borgkit URI.
         pub fn agentId(self: *const Self) []const u8 {
             return self.config.agent_id;
         }

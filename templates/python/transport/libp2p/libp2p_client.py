@@ -14,7 +14,7 @@ from interfaces.iagent_client import IAgentClient, AgentClient
 from interfaces.agent_request import AgentRequest
 from interfaces.agent_response import AgentResponse
 from interfaces.iagent_discovery import DiscoveryEntry, IAgentDiscovery
-from .ffi import SentrixLibp2P
+from .ffi import BorgkitLibp2P
 
 if TYPE_CHECKING:
     from interfaces.iagent_mesh import (
@@ -29,7 +29,7 @@ class Libp2PAgentClient(IAgentClient):
 
     Usage
     -----
-    ffi    = SentrixLibp2P()
+    ffi    = BorgkitLibp2P()
     ffi.start("/ip4/0.0.0.0/tcp/0")
     client = Libp2PAgentClient(ffi, discovery)
     resp   = await client.call_capability("weather_forecast", {"city": "NYC"})
@@ -37,7 +37,7 @@ class Libp2PAgentClient(IAgentClient):
 
     def __init__(
         self,
-        ffi:         SentrixLibp2P,
+        ffi:         BorgkitLibp2P,
         discovery:   IAgentDiscovery,
         *,
         caller_id:   str = "anonymous",

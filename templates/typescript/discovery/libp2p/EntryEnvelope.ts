@@ -9,7 +9,7 @@
  *   "sig":   "<base64url 64-byte compact secp256k1 signature>"
  * }
  *
- * Signed bytes: keccak256( "sentrix:anr:v1:" + JSON.stringify(entry) )
+ * Signed bytes: keccak256( "borgkit:anr:v1:" + JSON.stringify(entry) )
  *
  * Recipients MUST:
  *   1. Verify the signature against the owner's public key (from entry.owner or ANR).
@@ -23,7 +23,7 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
 import { toString, fromString }   from 'uint8arrays';
 import { DiscoveryEntry }         from '../../interfaces/IAgentDiscovery';
 
-const SIGN_PREFIX = 'sentrix:anr:v1:';
+const SIGN_PREFIX = 'borgkit:anr:v1:';
 const ENVELOPE_VERSION = 1;
 
 export interface DhtEnvelope {

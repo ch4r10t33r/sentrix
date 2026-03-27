@@ -58,7 +58,7 @@ export async function runCommand(agentName: string, options: RunOptions): Promis
         '--project', 'tsconfig.json',
         path.join('agents', `${agentName}.ts`),
       ],
-      env: { ...process.env, SENTRIX_PORT: port },
+      env: { ...process.env, BORGKIT_PORT: port },
     }),
 
     python: () => {
@@ -73,20 +73,20 @@ export async function runCommand(agentName: string, options: RunOptions): Promis
         args: [
           path.join('agents', `${moduleName}.py`),
         ],
-        env: { ...process.env, SENTRIX_PORT: port },
+        env: { ...process.env, BORGKIT_PORT: port },
       };
     },
 
     rust: () => ({
       cmd: 'cargo',
       args: ['run', '--', agentName, '--port', port],
-      env: { ...process.env, SENTRIX_PORT: port },
+      env: { ...process.env, BORGKIT_PORT: port },
     }),
 
     zig: () => ({
       cmd: 'zig',
       args: ['build', 'run', '--', agentName, '--port', port],
-      env: { ...process.env, SENTRIX_PORT: port },
+      env: { ...process.env, BORGKIT_PORT: port },
     }),
   };
 

@@ -1,7 +1,7 @@
-//! Sentrix comptime plugin interface.
+//! Borgkit comptime plugin interface.
 //!
 //! A plugin wraps a "foreign" agent (one that does not natively speak the
-//! Sentrix AgentRequest/AgentResponse wire format) and makes it callable via
+//! Borgkit AgentRequest/AgentResponse wire format) and makes it callable via
 //! the standard IAgent pipeline.
 //!
 //! Required declarations on TPlugin:
@@ -12,7 +12,7 @@
 //!
 //!   translateRequest(self, req: AgentRequest, allocator: Allocator)
 //!       ![]const u8
-//!       — convert a Sentrix AgentRequest to the foreign agent's native input
+//!       — convert a Borgkit AgentRequest to the foreign agent's native input
 //!         format (returned as a JSON string or arbitrary bytes).
 //!
 //!   translateResponse(self, request_id: []const u8, native_output: []const u8)
@@ -91,9 +91,9 @@ pub fn IPlugin(comptime TPlugin: type, comptime TAgent: type) type {
         // ── pipeline ──────────────────────────────────────────────────────────
 
         /// Execute the full plugin pipeline for a single request:
-        ///   1. translateRequest  — Sentrix AgentRequest → foreign format
+        ///   1. translateRequest  — Borgkit AgentRequest → foreign format
         ///   2. invokeNative      — run the wrapped agent
-        ///   3. translateResponse — foreign output → Sentrix AgentResponse
+        ///   3. translateResponse — foreign output → Borgkit AgentResponse
         pub fn invoke(
             plugin: *TPlugin,
             agent: *TAgent,

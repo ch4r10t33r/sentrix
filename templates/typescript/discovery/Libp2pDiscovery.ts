@@ -1,18 +1,18 @@
 /**
- * Libp2pDiscovery — fully P2P discovery backend for Sentrix.
+ * Libp2pDiscovery — fully P2P discovery backend for Borgkit.
  *
  * Architecture:
  *   Transport   : QUIC (via @chainsafe/libp2p-quic) — no TCP listener opened
- *   Routing     : Kademlia DHT (custom /sentrix/kad/1.0.0 protocol)
+ *   Routing     : Kademlia DHT (custom /borgkit/kad/1.0.0 protocol)
  *   Local LAN   : mDNS (optional, default on)
  *   NAT         : DCUtR hole punching + circuit-relay-v2 fallback
  *   Identity    : secp256k1 keypair from ANR — same key, same PeerId
  *
  * Capability discovery uses DHT provider records:
- *   SHA256("sentrix:cap:<capability>") → CIDv1 → dht.provide() / findProviders()
+ *   SHA256("borgkit:cap:<capability>") → CIDv1 → dht.provide() / findProviders()
  *
  * Full DiscoveryEntry is stored as a signed JSON envelope:
- *   SHA256("sentrix:anr:<agentId>") → key → dht.put() / get()
+ *   SHA256("borgkit:anr:<agentId>") → key → dht.put() / get()
  *
  * A reverse PeerId→agentId mapping is also stored so findProviders() results
  * can be resolved to full entries.
@@ -60,7 +60,7 @@ export interface Libp2pDiscoveryConfig {
 
   /**
    * Multiaddrs of known bootstrap peers (format: /ip4/.../udp/.../quic-v1/p2p/...)
-   * Also reads from SENTRIX_BOOTSTRAP_PEERS env var (comma-separated).
+   * Also reads from BORGKIT_BOOTSTRAP_PEERS env var (comma-separated).
    */
   bootstrapPeers?: string[];
 
@@ -92,10 +92,10 @@ interface LocalEntry {
   publicKey: Uint8Array;
 }
 
-// ── Sentinel bootstrap peers for the public Sentrix network ──────────────────
+// ── Sentinel bootstrap peers for the public Borgkit network ──────────────────
 // Replace these with real multiaddrs when production bootstrap nodes are deployed.
-const SENTRIX_BOOTSTRAP_PEERS: string[] = [
-  // '/ip4/bootstrap1.sentrix.io/udp/4001/quic-v1/p2p/12D3KooWXXX...',
+const BORGKIT_BOOTSTRAP_PEERS: string[] = [
+  // '/ip4/bootstrap1.borgkit.io/udp/4001/quic-v1/p2p/12D3KooWXXX...',
 ];
 
 // ── Libp2pDiscovery ───────────────────────────────────────────────────────────
@@ -145,11 +145,11 @@ export class Libp2pDiscovery implements IAgentDiscovery {
     const pubKey = libp2pPrivKey.publicKey.raw;
 
     // ── Bootstrap peers ──────────────────────────────────────────────────────
-    const envPeers    = process.env['SENTRIX_BOOTSTRAP_PEERS']?.split(',').filter(Boolean) ?? [];
+    const envPeers    = process.env['BORGKIT_BOOTSTRAP_PEERS']?.split(',').filter(Boolean) ?? [];
     const allBootstrap = [
       ...(config.bootstrapPeers ?? []),
       ...envPeers,
-      ...SENTRIX_BOOTSTRAP_PEERS,
+      ...BORGKIT_BOOTSTRAP_PEERS,
     ];
 
     // ── libp2p node ──────────────────────────────────────────────────────────
@@ -173,7 +173,7 @@ export class Libp2pDiscovery implements IAgentDiscovery {
       services: {
         identify: identify(),
         dht: kadDHT({
-          protocol:   '/sentrix/kad/1.0.0',  // isolated from public IPFS DHT
+          protocol:   '/borgkit/kad/1.0.0',  // isolated from public IPFS DHT
           clientMode: config.dhtClientMode ?? false,
         }),
         dcutr:  dcutr(),

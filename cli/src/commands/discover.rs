@@ -36,7 +36,7 @@ pub fn run(args: DiscoverArgs) -> Result<()> {
         url.push_str(&format!("?capability={}", cap));
     }
 
-    logger::title("Sentrix Discovery Query");
+    logger::title("Borgkit Discovery Query");
     logger::info(&format!("Querying: {}", url));
 
     let response = reqwest::blocking::get(&url).context("Could not reach discovery server")?;

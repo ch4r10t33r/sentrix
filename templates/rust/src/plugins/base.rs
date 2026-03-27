@@ -47,18 +47,18 @@ impl Default for PluginConfig {
     }
 }
 
-// ── SentrixPlugin ─────────────────────────────────────────────────────────────
+// ── BorgkitPlugin ─────────────────────────────────────────────────────────────
 
 /// A plugin wraps a foreign-framework agent and makes it `IAgent`-compatible.
 ///
 /// Implement this trait to bridge any third-party agent framework (LangChain,
-/// Eliza, CrewAI, etc.) into the Sentrix mesh.
+/// Eliza, CrewAI, etc.) into the Borgkit mesh.
 #[async_trait]
-pub trait SentrixPlugin<TAgent>: Send + Sync {
+pub trait BorgkitPlugin<TAgent>: Send + Sync {
     /// Extract capability descriptors from the native agent.
     fn extract_capabilities(&self, agent: &TAgent) -> Vec<CapabilityDescriptor>;
 
-    /// Translate a Sentrix `AgentRequest` into the native framework's input type
+    /// Translate a Borgkit `AgentRequest` into the native framework's input type
     /// (as a `serde_json::Value`).
     fn translate_request(&self, request: &AgentRequest) -> Result<Value, String>;
 
@@ -88,7 +88,7 @@ pub trait SentrixPlugin<TAgent>: Send + Sync {
 // ── WrappedAgent ──────────────────────────────────────────────────────────────
 
 /// An `IAgent`-compatible wrapper around any native agent + plugin pair.
-pub struct WrappedAgent<TAgent, P: SentrixPlugin<TAgent>> {
+pub struct WrappedAgent<TAgent, P: BorgkitPlugin<TAgent>> {
     agent:        TAgent,
     plugin:       P,
     config:       PluginConfig,
@@ -96,7 +96,7 @@ pub struct WrappedAgent<TAgent, P: SentrixPlugin<TAgent>> {
     started_at:   std::time::Instant,
 }
 
-impl<TAgent, P: SentrixPlugin<TAgent>> WrappedAgent<TAgent, P> {
+impl<TAgent, P: BorgkitPlugin<TAgent>> WrappedAgent<TAgent, P> {
     /// Create a new `WrappedAgent`.  Capabilities are resolved here:
     /// explicit list from `config.capabilities`, or auto-extracted via the plugin.
     pub fn new(agent: TAgent, plugin: P, mut config: PluginConfig) -> Self {
@@ -120,7 +120,7 @@ impl<TAgent, P: SentrixPlugin<TAgent>> WrappedAgent<TAgent, P> {
 impl<TAgent, P> IAgent for WrappedAgent<TAgent, P>
 where
     TAgent: Send + Sync,
-    P:      SentrixPlugin<TAgent> + Send + Sync,
+    P:      BorgkitPlugin<TAgent> + Send + Sync,
 {
     fn agent_id(&self) -> &str {
         &self.config.agent_id
@@ -141,7 +141,7 @@ where
     async fn handle_request(&self, request: AgentRequest) -> AgentResponse {
         let request_id = request.request_id.clone();
 
-        // 1. Translate Sentrix request → native input
+        // 1. Translate Borgkit request → native input
         let native_input = match self.plugin.translate_request(&request) {
             Ok(v)    => v,
             Err(msg) => return AgentResponse::error(request_id, msg),

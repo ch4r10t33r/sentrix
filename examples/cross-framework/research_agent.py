@@ -1,5 +1,5 @@
 """
-ResearchAgent — Google ADK, wrapped for the Sentrix mesh.
+ResearchAgent — Google ADK, wrapped for the Borgkit mesh.
 ──────────────────────────────────────────────────────────
 Capability: research_topic(topic, depth) → structured findings
 
@@ -132,11 +132,11 @@ class _DemoAwareGoogleADKPlugin:
             return json.dumps({"error": str(e)})
 
 
-# ── Wrap for Sentrix ──────────────────────────────────────────────────────────
+# ── Wrap for Borgkit ──────────────────────────────────────────────────────────
 
 def build_research_agent():
     """
-    Build and return a Sentrix-wrapped ResearchAgent.
+    Build and return a Borgkit-wrapped ResearchAgent.
 
     Returns a WrappedAgent (implements IAgent) ready for:
         await agent.register_discovery()
@@ -144,7 +144,7 @@ def build_research_agent():
     """
     if DEMO_MODE or not _ADK_AVAILABLE:
         # Demo path: use a simple IAgent that calls tool functions directly.
-        # Shows full Sentrix plumbing (capability extraction, discovery, A2A calling)
+        # Shows full Borgkit plumbing (capability extraction, discovery, A2A calling)
         # without needing a GOOGLE_API_KEY.
         from interfaces.iagent          import IAgent
         from interfaces.agent_request   import AgentRequest
@@ -159,7 +159,7 @@ def build_research_agent():
         }
 
         class ResearchAgentDemo(IAgent):
-            agent_id    = "sentrix://agent/research"
+            agent_id    = "borgkit://agent/research"
             owner       = "0xResearchOwner"
 
             def get_capabilities(self):
@@ -202,7 +202,7 @@ def build_research_agent():
         return wrap_google_adk(
             agent    = _adk_agent,
             name     = "ResearchAgent",
-            agent_id = "sentrix://agent/research",
+            agent_id = "borgkit://agent/research",
             owner    = "0xResearchOwner",
             tags     = ["research", "adk", "gemini"],
             port     = 8081,

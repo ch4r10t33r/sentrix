@@ -31,11 +31,11 @@ const ERC8004_ABI = [
 // ── Config ─────────────────────────────────────────────────────────────────────
 
 export interface OnChainDiscoveryConfig {
-  /** JSON-RPC endpoint. Default: SENTRIX_RPC_URL env var */
+  /** JSON-RPC endpoint. Default: BORGKIT_RPC_URL env var */
   rpcUrl?: string;
-  /** Deployed ERC-8004 registry contract address. Default: SENTRIX_CONTRACT_ADDRESS env var */
+  /** Deployed ERC-8004 registry contract address. Default: BORGKIT_CONTRACT_ADDRESS env var */
   contractAddress?: string;
-  /** Hex private key for signing transactions. Omit for read-only mode. Default: SENTRIX_PRIVATE_KEY env var */
+  /** Hex private key for signing transactions. Omit for read-only mode. Default: BORGKIT_PRIVATE_KEY env var */
   privateKey?: string;
   /** Chain ID. Default: 8453 (Base mainnet) */
   chainId?: number;
@@ -67,23 +67,23 @@ export class OnChainDiscovery implements IAgentDiscovery {
 
   constructor(cfg: OnChainDiscoveryConfig = {}) {
     const rpcUrl = cfg.rpcUrl
-      ?? process.env['SENTRIX_RPC_URL']
+      ?? process.env['BORGKIT_RPC_URL']
       ?? '';
     const contractAddress = cfg.contractAddress
-      ?? process.env['SENTRIX_CONTRACT_ADDRESS']
+      ?? process.env['BORGKIT_CONTRACT_ADDRESS']
       ?? '';
     const privateKey = cfg.privateKey
-      ?? process.env['SENTRIX_PRIVATE_KEY']
+      ?? process.env['BORGKIT_PRIVATE_KEY']
       ?? '';
 
     if (!rpcUrl) {
       throw new Error(
-        '[OnChainDiscovery] rpcUrl is required. Pass it in config or set SENTRIX_RPC_URL.'
+        '[OnChainDiscovery] rpcUrl is required. Pass it in config or set BORGKIT_RPC_URL.'
       );
     }
     if (!contractAddress) {
       throw new Error(
-        '[OnChainDiscovery] contractAddress is required. Pass it in config or set SENTRIX_CONTRACT_ADDRESS.'
+        '[OnChainDiscovery] contractAddress is required. Pass it in config or set BORGKIT_CONTRACT_ADDRESS.'
       );
     }
 
@@ -291,7 +291,7 @@ export class OnChainDiscovery implements IAgentDiscovery {
     if (!this.rwContract) {
       throw new Error(
         `OnChainDiscovery.${operation} requires a privateKey. ` +
-        'Pass it in config or set SENTRIX_PRIVATE_KEY.'
+        'Pass it in config or set BORGKIT_PRIVATE_KEY.'
       );
     }
   }

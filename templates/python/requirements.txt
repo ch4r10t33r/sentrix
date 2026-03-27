@@ -11,7 +11,7 @@ anyio>=4.3.0
 coincurve>=13.0.0
 
 # MCP bridge (optional — only needed if using MCPPlugin or serve_as_mcp)
-# Wraps any MCP server as a Sentrix agent, or exposes a Sentrix agent as MCP.
+# Wraps any MCP server as a Borgkit agent, or exposes a Borgkit agent as MCP.
 # Supports stdio, SSE, and Streamable HTTP transports.
 mcp>=1.0.0
 

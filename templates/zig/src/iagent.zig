@@ -1,4 +1,4 @@
-/// Sentrix agent interface (comptime vtable pattern).
+/// Borgkit agent interface (comptime vtable pattern).
 ///
 /// Required declarations on the implementing type:
 ///   agentId()        []const u8
@@ -15,7 +15,7 @@
 ///
 /// Usage:
 ///   const MyAgent = struct {
-///       pub fn agentId(_: *const @This()) []const u8 { return "sentrix://agent/my"; }
+///       pub fn agentId(_: *const @This()) []const u8 { return "borgkit://agent/my"; }
 ///       pub fn owner  (_: *const @This()) []const u8 { return "0xWallet"; }
 ///       pub fn getCapabilities(_: *const @This()) []const []const u8 { return &.{"myCapability"}; }
 ///       pub fn handleRequest(self: *@This(), req: types.AgentRequest) types.AgentResponse { ... }

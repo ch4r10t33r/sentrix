@@ -1,7 +1,7 @@
 /*!
 HttpDiscovery — centralised discovery adapter (optional extension).
 
-Connects to any REST-based agent registry that implements the Sentrix
+Connects to any REST-based agent registry that implements the Borgkit
 centralised discovery API. This is NOT the default; LocalDiscovery and
 GossipDiscovery are preferred.
 
@@ -61,10 +61,10 @@ impl HttpDiscovery {
         }
     }
 
-    /// Create from the SENTRIX_DISCOVERY_URL environment variable.
+    /// Create from the BORGKIT_DISCOVERY_URL environment variable.
     pub fn from_env() -> Option<Self> {
-        std::env::var("SENTRIX_DISCOVERY_URL").ok().map(|url| {
-            let key = std::env::var("SENTRIX_DISCOVERY_KEY").ok();
+        std::env::var("BORGKIT_DISCOVERY_URL").ok().map(|url| {
+            let key = std::env::var("BORGKIT_DISCOVERY_KEY").ok();
             Self::with_options(url, key.as_deref(), 5_000, 30_000)
         })
     }
@@ -210,7 +210,7 @@ impl DiscoveryFactory {
         AnyDiscovery::Http(HttpDiscovery::new(base_url))
     }
 
-    /// Auto-select: HTTP if SENTRIX_DISCOVERY_URL is set, else Local.
+    /// Auto-select: HTTP if BORGKIT_DISCOVERY_URL is set, else Local.
     pub fn from_env() -> AnyDiscovery {
         HttpDiscovery::from_env()
             .map(AnyDiscovery::Http)
@@ -222,9 +222,9 @@ impl DiscoveryFactory {
         Ok(AnyDiscovery::Libp2p(Libp2pDiscovery::start(cfg).await?))
     }
 
-    /// Auto-select: libp2p if SENTRIX_P2P=true, HTTP if SENTRIX_DISCOVERY_URL set, else Local.
+    /// Auto-select: libp2p if BORGKIT_P2P=true, HTTP if BORGKIT_DISCOVERY_URL set, else Local.
     pub async fn from_env_async() -> AnyDiscovery {
-        if std::env::var("SENTRIX_P2P").as_deref() == Ok("true") {
+        if std::env::var("BORGKIT_P2P").as_deref() == Ok("true") {
             let cfg = Libp2pDiscoveryConfig::default();
             if let Ok(d) = Libp2pDiscovery::start(cfg).await {
                 return AnyDiscovery::Libp2p(d);

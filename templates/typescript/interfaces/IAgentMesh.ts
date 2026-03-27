@@ -1,8 +1,8 @@
 /**
- * Sentrix Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
+ * Borgkit Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
  * ─────────────────────────────────────────────────────────────────────────────
  * Defines message types and interfaces for the four built-in agent-to-agent
- * protocols that every Sentrix agent understands:
+ * protocols that every Borgkit agent understands:
  *
  *   1. Heartbeat          — liveness ping with status payload
  *   2. Capability Exchange — direct capability query (bypasses discovery layer)

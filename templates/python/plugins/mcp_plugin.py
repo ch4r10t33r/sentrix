@@ -1,11 +1,11 @@
 """
-Sentrix ↔ MCP Bridge — Python (inbound direction)
+Borgkit ↔ MCP Bridge — Python (inbound direction)
 ──────────────────────────────────────────────────────────────────────────────
-Wraps any MCP-compatible server as a Sentrix agent.
+Wraps any MCP-compatible server as a Borgkit agent.
 
-Every MCP tool exposed by the server becomes a Sentrix capability.
+Every MCP tool exposed by the server becomes a Borgkit capability.
 The wrapped agent can then be registered with discovery, called by other
-Sentrix agents, and served over HTTP with the built-in server — all
+Borgkit agents, and served over HTTP with the built-in server — all
 without changing a single line of the underlying MCP server.
 
 Supported transports
@@ -21,7 +21,7 @@ Usage
   from plugins.base import PluginConfig
 
   config = PluginConfig(
-      agent_id="sentrix://agent/github-mcp",
+      agent_id="borgkit://agent/github-mcp",
       name="GitHubMCP",
       owner="0xYourWallet",
       port=8081,
@@ -53,7 +53,7 @@ from typing import Any, Optional
 from plugins.base import (
     CapabilityDescriptor,
     PluginConfig,
-    SentrixPlugin,
+    BorgkitPlugin,
     WrappedAgent,
 )
 from interfaces import AgentRequest, AgentResponse
@@ -71,9 +71,9 @@ class _MCPTool:
 
 # ── plugin ─────────────────────────────────────────────────────────────────────
 
-class MCPPlugin(SentrixPlugin[None]):
+class MCPPlugin(BorgkitPlugin[None]):
     """
-    Sentrix plugin that wraps any MCP server as a discoverable agent.
+    Borgkit plugin that wraps any MCP server as a discoverable agent.
 
     Build instances with the async factory methods — do not call the
     constructor directly (the session must be established asynchronously).
@@ -106,7 +106,7 @@ class MCPPlugin(SentrixPlugin[None]):
 
         Args:
             command: argv list, e.g. ``["npx", "-y", "@modelcontextprotocol/server-github"]``
-            config:  Sentrix PluginConfig for the wrapped agent.
+            config:  Borgkit PluginConfig for the wrapped agent.
             env:     Extra environment variables forwarded to the subprocess.
 
         Example::
@@ -161,7 +161,7 @@ class MCPPlugin(SentrixPlugin[None]):
             url:     The MCP server URL.
                      SSE endpoint:              ``http://host:port/sse``
                      Streamable HTTP endpoint:  ``http://host:port/mcp``
-            config:  Sentrix PluginConfig for the wrapped agent.
+            config:  Borgkit PluginConfig for the wrapped agent.
             headers: Optional HTTP headers (e.g. for authentication).
 
         Example::
@@ -224,7 +224,7 @@ class MCPPlugin(SentrixPlugin[None]):
             for t in result.tools
         ]
 
-    # ── SentrixPlugin contract ─────────────────────────────────────────────────
+    # ── BorgkitPlugin contract ─────────────────────────────────────────────────
 
     def extract_capabilities(self, _agent: None) -> list[CapabilityDescriptor]:
         return [

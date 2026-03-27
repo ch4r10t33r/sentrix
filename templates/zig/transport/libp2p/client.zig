@@ -1,4 +1,4 @@
-//! Libp2PAgentClient — Sentrix agent client over libp2p for Zig agents.
+//! Libp2PAgentClient — Borgkit agent client over libp2p for Zig agents.
 //!
 //! Dispatches AgentRequests to libp2p peers via the Rust FFI.
 //! Falls back to HTTP for entries without a peerId.
@@ -39,10 +39,10 @@ pub const DiscoveryEntry = struct {
 };
 
 pub const Libp2PAgentClient = struct {
-    node:      libp2p.SentrixNode,
+    node:      libp2p.BorgkitNode,
     allocator: std.mem.Allocator,
 
-    pub fn init(node: libp2p.SentrixNode, allocator: std.mem.Allocator) Libp2PAgentClient {
+    pub fn init(node: libp2p.BorgkitNode, allocator: std.mem.Allocator) Libp2PAgentClient {
         return .{ .node = node, .allocator = allocator };
     }
 

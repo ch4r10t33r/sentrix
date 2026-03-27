@@ -1,6 +1,6 @@
-//! Agno → Sentrix Plugin (Rust) — HTTP Bridge
+//! Agno → Borgkit Plugin (Rust) — HTTP Bridge
 //!
-//! Wraps a deployed Agno FastAPI server so it participates in the Sentrix mesh
+//! Wraps a deployed Agno FastAPI server so it participates in the Borgkit mesh
 //! as a standard `IAgent`.  Agno agents are served via `app.run()` which starts
 //! a FastAPI server; this plugin bridges both the multi-agent route and the
 //! simpler single-agent `/run` route.
@@ -29,8 +29,8 @@
 //!
 //! ── Usage ─────────────────────────────────────────────────────────────────────
 //!
-//!   use sentrix::plugins::agno::{AgnoPlugin, AgnoService};
-//!   use sentrix::plugins::base::PluginConfig;
+//!   use borgkit::plugins::agno::{AgnoPlugin, AgnoService};
+//!   use borgkit::plugins::base::PluginConfig;
 //!
 //!   let service = AgnoService {
 //!       base_url:     "http://localhost:7777".to_string(),
@@ -41,7 +41,7 @@
 //!
 //!   let plugin = AgnoPlugin::with_timeout(120);
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "sentrix://agent/agno-researcher".to_string(),
+//!       agent_id:     "borgkit://agent/agno-researcher".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -51,7 +51,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, SentrixPlugin};
+use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -126,10 +126,10 @@ impl Default for AgnoPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── SentrixPlugin impl ────────────────────────────────────────────────────────
+// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl SentrixPlugin<AgnoService> for AgnoPlugin {
+impl BorgkitPlugin<AgnoService> for AgnoPlugin {
     fn extract_capabilities(&self, service: &AgnoService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {

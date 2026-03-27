@@ -297,6 +297,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "borgkit-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64",
+ "chrono",
+ "clap 4.6.0",
+ "indicatif",
+ "owo-colors",
+ "reqwest",
+ "rust-embed",
+ "serde",
+ "serde_json",
+ "toml 0.8.23",
+ "walkdir",
+]
+
+[[package]]
+name = "borgkit-libp2p"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "cbindgen",
+ "futures",
+ "libp2p",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2952,41 +2987,6 @@ name = "semver"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2"
-
-[[package]]
-name = "sentrix-cli"
-version = "1.22.0"
-dependencies = [
- "anyhow",
- "base64",
- "chrono",
- "clap 4.6.0",
- "indicatif",
- "owo-colors",
- "reqwest",
- "rust-embed",
- "serde",
- "serde_json",
- "toml 0.8.23",
- "walkdir",
-]
-
-[[package]]
-name = "sentrix-libp2p"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "bytes",
- "cbindgen",
- "futures",
- "libp2p",
- "once_cell",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
 
 [[package]]
 name = "serde"

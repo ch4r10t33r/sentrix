@@ -1,6 +1,6 @@
-//! CrewAI → Sentrix Plugin (Zig) — HTTP Bridge
+//! CrewAI → Borgkit Plugin (Zig) — HTTP Bridge
 //!
-//! Wraps a running CrewAI HTTP service so Zig agents on the Sentrix mesh can
+//! Wraps a running CrewAI HTTP service so Zig agents on the Borgkit mesh can
 //! invoke CrewAI crews without embedding a Python interpreter.
 //!
 //! ── Expected service endpoints ─────────────────────────────────────────────────
@@ -43,7 +43,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(crewai.CrewAIService, crewai.CrewAIPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "sentrix://agent/writer-crew",
+//!       .agent_id = "borgkit://agent/writer-crew",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 
@@ -125,7 +125,7 @@ pub const CrewAIPlugin = struct {
         return parseCapabilities(raw, allocator);
     }
 
-    /// Build the CrewAI kickoff JSON body from a Sentrix `AgentRequest`.
+    /// Build the CrewAI kickoff JSON body from a Borgkit `AgentRequest`.
     ///
     /// The `task`, `query`, or `input` payload key (first found) becomes the
     /// `task` field; the full payload is forwarded as `inputs`.

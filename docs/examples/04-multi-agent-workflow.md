@@ -30,7 +30,7 @@ OrchestratorAgent  ─── discover & call ──>  WeatherAgent
 from interfaces import IAgent, AgentRequest, AgentResponse
 
 class WeatherAgent(IAgent):
-    agent_id = 'sentrix://agent/weather'
+    agent_id = 'borgkit://agent/weather'
     owner    = '0xWallet'
     def get_capabilities(self): return ['get_weather']
     async def handle_request(self, req):
@@ -41,7 +41,7 @@ class WeatherAgent(IAgent):
 ```python
 # agents/news_agent.py
 class NewsAgent(IAgent):
-    agent_id = 'sentrix://agent/news'
+    agent_id = 'borgkit://agent/news'
     owner    = '0xWallet'
     def get_capabilities(self): return ['get_headlines']
     async def handle_request(self, req):
@@ -54,7 +54,7 @@ class NewsAgent(IAgent):
 ```python
 # agents/currency_agent.py
 class CurrencyAgent(IAgent):
-    agent_id = 'sentrix://agent/currency'
+    agent_id = 'borgkit://agent/currency'
     owner    = '0xWallet'
     def get_capabilities(self): return ['get_exchange_rate']
     async def handle_request(self, req):
@@ -73,7 +73,7 @@ from interfaces import IAgent, AgentRequest, AgentResponse
 from discovery.local_discovery import LocalDiscovery
 
 class OrchestratorAgent(IAgent):
-    agent_id = 'sentrix://agent/orchestrator'
+    agent_id = 'borgkit://agent/orchestrator'
     owner    = '0xWallet'
     metadata = {'name': 'OrchestratorAgent', 'version': '0.1.0'}
 
@@ -253,7 +253,7 @@ async def call_with_fallback(registry, capability, payload, timeout_s=5.0):
         try:
             agent = _live_agents[peer.agent_id]
             req   = AgentRequest(request_id=str(uuid.uuid4()),
-                                  from_id='sentrix://agent/orchestrator',
+                                  from_id='borgkit://agent/orchestrator',
                                   capability=capability, payload=payload)
             resp  = await asyncio.wait_for(agent.handle_request(req), timeout=timeout_s)
             if resp.status == 'success':

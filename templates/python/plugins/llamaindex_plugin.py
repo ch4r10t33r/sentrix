@@ -1,8 +1,8 @@
 """
-LlamaIndexPlugin — Sentrix adapter for LlamaIndex agents.
+LlamaIndexPlugin — Borgkit adapter for LlamaIndex agents.
 
 Wraps a LlamaIndex agent (ReActAgent, OpenAIAgent, FunctionCallingAgent, etc.)
-so it is fully discoverable and callable on the Sentrix mesh.
+so it is fully discoverable and callable on the Borgkit mesh.
 
 How it works
 ────────────
@@ -31,10 +31,10 @@ Usage:
     llm   = OpenAI(model="gpt-4o-mini")
     agent = ReActAgent.from_tools([tool], llm=llm, verbose=False)
 
-    sentrix_agent = wrap_llamaindex(
+    borgkit_agent = wrap_llamaindex(
         agent    = agent,
         name     = "ResearchAgent",
-        agent_id = "sentrix://agent/researcher",
+        agent_id = "borgkit://agent/researcher",
         owner    = "0xYourWallet",
         tags     = ["research", "llamaindex"],
         tools    = [tool],
@@ -49,7 +49,7 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
 from plugins.base import (
-    SentrixPlugin,
+    BorgkitPlugin,
     PluginConfig,
     CapabilityDescriptor,
     WrappedAgent,
@@ -87,9 +87,9 @@ class LlamaIndexPluginConfig(PluginConfig):
 
 # ── Plugin ────────────────────────────────────────────────────────────────────
 
-class LlamaIndexPlugin(SentrixPlugin):
+class LlamaIndexPlugin(BorgkitPlugin):
     """
-    Sentrix ↔ LlamaIndex bridge.
+    Borgkit ↔ LlamaIndex bridge.
 
     Supports ReActAgent, OpenAIAgent, FunctionCallingAgent, and any other agent
     that subclasses BaseAgent and exposes .chat() or .query().
@@ -103,7 +103,7 @@ class LlamaIndexPlugin(SentrixPlugin):
         super().__init__(config)
         self._cfg: LlamaIndexPluginConfig = config
 
-    # ── SentrixPlugin abstract methods ────────────────────────────────────────
+    # ── BorgkitPlugin abstract methods ────────────────────────────────────────
 
     def extract_capabilities(self, agent: BaseAgent) -> List[CapabilityDescriptor]:
         """
@@ -256,12 +256,12 @@ def wrap_llamaindex(
     **kwargs:      Any,
 ) -> WrappedAgent:
     """
-    Wrap a LlamaIndex agent for the Sentrix mesh.
+    Wrap a LlamaIndex agent for the Borgkit mesh.
 
     Args:
         agent:         The LlamaIndex agent instance.
         name:          Human-readable display name.
-        agent_id:      Unique Sentrix URI.
+        agent_id:      Unique Borgkit URI.
         owner:         Wallet or contract address.
         tags:          Optional search tags.
         tools:         Explicit tool list for capability discovery (recommended).

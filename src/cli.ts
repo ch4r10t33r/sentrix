@@ -11,13 +11,13 @@ import { VERSION }         from './version';
 const program = new Command();
 
 program
-  .name('sentrix')
-  .description('Sentrix CLI — Autonomous Agentic Coordination Middleware: scaffold P2P-discoverable, DID-native agents across any framework')
-  .version(VERSION, '-v, --version', 'Print the current Sentrix CLI version');
+  .name('borgkit')
+  .description('Borgkit CLI — Autonomous Agentic Coordination Middleware: scaffold P2P-discoverable, DID-native agents across any framework')
+  .version(VERSION, '-v, --version', 'Print the current Borgkit CLI version');
 
 program
   .command('init <project-name>')
-  .description('Scaffold a new Sentrix agent project')
+  .description('Scaffold a new Borgkit agent project')
   .option('-l, --lang <language>', 'Target language: typescript | python | rust | zig', 'typescript')
   .option('--no-discovery', 'Skip discovery adapter scaffolding')
   .option('--no-example', 'Skip example agent generation')
@@ -25,7 +25,7 @@ program
 
 program
   .command('create agent <agent-name>')
-  .description('Generate a new agent inside an existing Sentrix project')
+  .description('Generate a new agent inside an existing Borgkit project')
   .option('-l, --lang <language>', 'Target language (auto-detected from project if omitted)')
   .option('-c, --capabilities <caps>', 'Comma-separated list of capability names', 'exampleCapability')
   .option('-f, --framework <framework>', 'Agent framework: none | google-adk | crewai | langgraph | agno | llamaindex | smolagents', 'none')

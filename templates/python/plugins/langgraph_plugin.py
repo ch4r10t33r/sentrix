@@ -1,8 +1,8 @@
 """
-LangGraph → Sentrix Plugin
+LangGraph → Borgkit Plugin
 ──────────────────────────────────────────────────────────────────────────────
 Wraps a compiled LangGraph graph (or any callable with a `.invoke()` method)
-so it appears as a standard Sentrix IAgent on the mesh.
+so it appears as a standard Borgkit IAgent on the mesh.
 
 Capability extraction strategy
 ──────────────────────────────
@@ -10,7 +10,7 @@ LangGraph has no single universal tool registry, so we use four strategies
 in priority order:
 
   1. Explicit map in PluginConfig.capability_map
-       { "sentrix_cap_name": "node_or_tool_name" }
+       { "borgkit_cap_name": "node_or_tool_name" }
   2. Tools bound on the graph's LLM node  (most common ReAct / Tool-Use pattern)
        graph.nodes["agent"].bound.tools  or  graph.nodes["agent"].tools
   3. tools= kwarg passed directly to LangGraphPlugin
@@ -22,11 +22,11 @@ Usage
   from plugins.base import PluginConfig
 
   config = LangGraphPluginConfig(
-      agent_id   = "sentrix://agent/weather",
+      agent_id   = "borgkit://agent/weather",
       name       = "WeatherAgent",
       version    = "1.0.0",
       tags       = ["weather", "langraph"],
-      # optional: expose each tool as a separate Sentrix capability
+      # optional: expose each tool as a separate Borgkit capability
       expose_tools_as_capabilities = True,
   )
   plugin = LangGraphPlugin(config)
@@ -34,7 +34,7 @@ Usage
 
   await agent.register_discovery()
 
-  # Sentrix will now call agent.handle_request(req)
+  # Borgkit will now call agent.handle_request(req)
   # e.g. req.capability == "getWeather", req.payload == {"city": "London"}
 
 Install deps:
@@ -48,7 +48,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from interfaces import AgentRequest, AgentResponse
-from plugins.base import SentrixPlugin, CapabilityDescriptor, PluginConfig
+from plugins.base import BorgkitPlugin, CapabilityDescriptor, PluginConfig
 
 
 # ── extended config ───────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ from plugins.base import SentrixPlugin, CapabilityDescriptor, PluginConfig
 class LangGraphPluginConfig(PluginConfig):
     """LangGraph-specific configuration (extends PluginConfig)."""
 
-    # If True, each tool in the graph is exposed as a separate Sentrix capability.
+    # If True, each tool in the graph is exposed as a separate Borgkit capability.
     # If False, the entire graph is exposed as one capability named `invoke`.
     expose_tools_as_capabilities: bool = True
 
@@ -79,9 +79,9 @@ class LangGraphPluginConfig(PluginConfig):
 
 # ── plugin implementation ─────────────────────────────────────────────────────
 
-class LangGraphPlugin(SentrixPlugin):
+class LangGraphPlugin(BorgkitPlugin):
     """
-    Sentrix plugin for LangGraph agents.
+    Borgkit plugin for LangGraph agents.
 
     Accepts any LangGraph `CompiledGraph` (or duck-typed equivalent).
     """
@@ -215,9 +215,9 @@ class LangGraphPlugin(SentrixPlugin):
             )
             return {
                 input_key: [HumanMessage(content=content)],
-                "__sentrix_request_id__": req.request_id,
-                "__sentrix_capability__": req.capability,
-                "__sentrix_from__": req.from_id,
+                "__borgkit_request_id__": req.request_id,
+                "__borgkit_capability__": req.capability,
+                "__borgkit_from__": req.from_id,
             }
         else:
             # Tool-specific invocation: inject a tool call into the messages
@@ -225,15 +225,15 @@ class LangGraphPlugin(SentrixPlugin):
             tool_input = json.dumps(req.payload)
             return {
                 input_key: [HumanMessage(content=tool_input)],
-                "__sentrix_request_id__": req.request_id,
-                "__sentrix_tool__": native,
+                "__borgkit_request_id__": req.request_id,
+                "__borgkit_tool__": native,
             }
 
     # ── response translation ──────────────────────────────────────────────────
 
     def translate_response(self, native_result: Any, request_id: str) -> AgentResponse:
         """
-        Convert LangGraph's state dict output into a Sentrix AgentResponse.
+        Convert LangGraph's state dict output into a Borgkit AgentResponse.
         Handles both dict states (standard) and BaseMessage list outputs.
         """
         try:
@@ -337,7 +337,7 @@ def wrap_langgraph(
       agent = wrap_langgraph(
           graph    = compiled_graph,
           name     = "MyResearcher",
-          agent_id = "sentrix://agent/researcher",
+          agent_id = "borgkit://agent/researcher",
           tags     = ["research", "web"],
       )
       await agent.register_discovery()

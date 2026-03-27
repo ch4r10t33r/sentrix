@@ -137,7 +137,7 @@ export function withX402Payment(agent: IAgent, options: X402ServerOptions): IAge
  * @example
  * ```ts
  * class MyPaidAgent extends X402Agent {
- *   readonly agentId = 'sentrix://agent/my-paid-agent';
+ *   readonly agentId = 'borgkit://agent/my-paid-agent';
  *   readonly owner   = '0xMyWallet';
  *
  *   protected pricing = {

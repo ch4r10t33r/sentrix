@@ -1,13 +1,13 @@
 """
-AgnoPlugin — Sentrix adapter for Agno agents.
+AgnoPlugin — Borgkit adapter for Agno agents.
 
 Wraps an Agno Agent so it is fully discoverable and callable on the
-Sentrix mesh without any changes to the original agent code.
+Borgkit mesh without any changes to the original agent code.
 
 How it works
 ────────────
 1. Capabilities are extracted from the agent's tools list at wrap time.
-   Each tool function becomes one Sentrix capability.
+   Each tool function becomes one Borgkit capability.
 
 2. AgentRequest payloads are translated into a plain string message for
    the Agno agent's .run() method.
@@ -32,10 +32,10 @@ Usage:
         description="Research assistant",
     )
 
-    sentrix_agent = wrap_agno(
+    borgkit_agent = wrap_agno(
         agent    = agent,
         name     = "ResearchAgent",
-        agent_id = "sentrix://agent/researcher",
+        agent_id = "borgkit://agent/researcher",
         owner    = "0xYourWallet",
         tags     = ["research", "agno"],
     )
@@ -49,7 +49,7 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
 from plugins.base import (
-    SentrixPlugin,
+    BorgkitPlugin,
     PluginConfig,
     CapabilityDescriptor,
     WrappedAgent,
@@ -86,12 +86,12 @@ class AgnoPluginConfig(PluginConfig):
 
 # ── Plugin ────────────────────────────────────────────────────────────────────
 
-class AgnoPlugin(SentrixPlugin):
+class AgnoPlugin(BorgkitPlugin):
     """
-    Sentrix ↔ Agno bridge.
+    Borgkit ↔ Agno bridge.
 
-    Each tool registered on the Agno Agent becomes one Sentrix capability.
-    Sentrix AgentRequests are translated into plain-text run inputs for the
+    Each tool registered on the Agno Agent becomes one Borgkit capability.
+    Borgkit AgentRequests are translated into plain-text run inputs for the
     Agno Agent's .run() method.
     """
 
@@ -103,7 +103,7 @@ class AgnoPlugin(SentrixPlugin):
         super().__init__(config)
         self._cfg: AgnoPluginConfig = config
 
-    # ── SentrixPlugin abstract methods ────────────────────────────────────────
+    # ── BorgkitPlugin abstract methods ────────────────────────────────────────
 
     def extract_capabilities(self, agent: AgnoAgent) -> List[CapabilityDescriptor]:
         """Extract capabilities from the Agno agent's tool list."""
@@ -223,17 +223,17 @@ def wrap_agno(
     **kwargs:   Any,
 ) -> WrappedAgent:
     """
-    Wrap an Agno Agent for the Sentrix mesh.
+    Wrap an Agno Agent for the Borgkit mesh.
 
     After wrapping the agent:
-      - exposes each tool as a Sentrix capability
+      - exposes each tool as a Borgkit capability
       - registers with the configured discovery backend
       - handles AgentRequest / AgentResponse translation automatically
 
     Args:
         agent:      The Agno Agent instance to wrap.
         name:       Human-readable display name.
-        agent_id:   Unique Sentrix URI, e.g. "sentrix://agent/researcher".
+        agent_id:   Unique Borgkit URI, e.g. "borgkit://agent/researcher".
         owner:      Wallet or contract address.
         tags:       Optional search tags for discovery.
         stream:     Pass stream=True to agent.run() (default: False).

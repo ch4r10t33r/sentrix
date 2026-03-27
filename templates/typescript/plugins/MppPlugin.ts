@@ -1,7 +1,7 @@
 /**
- * Machine Payments Protocol (MPP) → Sentrix Plugin (TypeScript)
+ * Machine Payments Protocol (MPP) → Borgkit Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
- * Adds MPP payment gating to any Sentrix agent.  Intercepts incoming `/invoke`
+ * Adds MPP payment gating to any Borgkit agent.  Intercepts incoming `/invoke`
  * requests, issues HTTP 402 challenges when no valid credential is present, and
  * attaches a Payment-Receipt to successful responses.
  *
@@ -44,12 +44,12 @@
  *   },
  * });
  *
- * // Wrap a fetch-style handler (used in Sentrix agent.ts):
+ * // Wrap a fetch-style handler (used in Borgkit agent.ts):
  * export const handler = mpp.middleware(async (req: Request) => {
  *   return Response.json({ result: 'hello' });
  * });
  *
- * // Or use the SentrixPlugin interface with any IAgent:
+ * // Or use the BorgkitPlugin interface with any IAgent:
  * const agent = wrapWithPayments(myAgent, mpp);
  * await agent.serve({ port: 6174 });
  * ```
@@ -57,7 +57,7 @@
 
 import { AgentRequest }  from '../interfaces/IAgentRequest';
 import { AgentResponse } from '../interfaces/IAgentResponse';
-import { SentrixPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
+import { BorgkitPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Config types
@@ -178,13 +178,13 @@ function buildReceipt(nonce: string, method: MppPaymentMethod, amount: string): 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * MPP payment middleware for Sentrix agents.
+ * MPP payment middleware for Borgkit agents.
  *
  * Two integration modes:
  *   1. `middleware(handler)` — wraps a fetch-API `(Request) => Promise<Response>` handler
- *   2. `SentrixPlugin` interface — use with `wrapWithPayments(agent, plugin)`
+ *   2. `BorgkitPlugin` interface — use with `wrapWithPayments(agent, plugin)`
  */
-export class MppPlugin implements SentrixPlugin {
+export class MppPlugin implements BorgkitPlugin {
   readonly name = 'MppPlugin';
 
   constructor(private readonly cfg: MppPluginConfig) {
@@ -196,7 +196,7 @@ export class MppPlugin implements SentrixPlugin {
     }
   }
 
-  // ── SentrixPlugin interface ──────────────────────────────────────────────
+  // ── BorgkitPlugin interface ──────────────────────────────────────────────
 
   capabilities(): CapabilityDescriptor[] {
     return [];  // MPP doesn't add capabilities — it gates existing ones
