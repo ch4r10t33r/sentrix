@@ -654,12 +654,12 @@ fn gen_rust_agent(
     } else {
         "http"
     };
-    let mut lines: Vec<String> = Vec::new();
-
-    lines.push("use anyhow::Result;".into());
-    lines.push("use serde::{Deserialize, Serialize};".into());
-    lines.push("use serde_json::{json, Value};".into());
-    lines.push(String::new());
+    let mut lines: Vec<String> = vec![
+        "use anyhow::Result;".into(),
+        "use serde::{Deserialize, Serialize};".into(),
+        "use serde_json::{json, Value};".into(),
+        String::new(),
+    ];
 
     if !plugins.is_empty() {
         lines.push("pub mod plugins;".into());
@@ -751,9 +751,7 @@ fn gen_rust_agent(
     lines.push("        let host = std::env::var(\"SENTRIX_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
     lines.push("        let port: u16 = std::env::var(\"PORT\").ok().and_then(|p| p.parse().ok()).unwrap_or(6174);".into());
     lines.push("        let body = json!({".into());
-    lines.push(format!(
-        "            \"agentId\":      &self.info.agent_id,"
-    ));
+    lines.push("            \"agentId\":      &self.info.agent_id,".into());
     lines.push(format!(
         "            \"name\":         \"{name}\",",
         name = name
@@ -763,7 +761,7 @@ fn gen_rust_agent(
         name = name
     ));
     lines.push("            \"network\": {".into());
-    lines.push(format!("                \"protocol\": disc_type,"));
+    lines.push("                \"protocol\": disc_type,".into());
     lines.push("                \"host\":     host,".into());
     lines.push("                \"port\":     port,".into());
     lines.push("            }".into());
@@ -804,9 +802,9 @@ fn gen_rust_agent(
     lines.push("        // Minimal HTTP server using tokio".into());
     lines.push("        use tokio::net::TcpListener;".into());
     lines.push("        use tokio::io::{AsyncReadExt, AsyncWriteExt};".into());
-    lines.push(format!(
-        "        let listener = TcpListener::bind(format!(\"0.0.0.0:{{}}\", port)).await?;"
-    ));
+    lines.push(
+        "        let listener = TcpListener::bind(format!(\"0.0.0.0:{}\", port)).await?;".into(),
+    );
     lines.push(format!(
         "        println!(\"[{name}] listening on http://localhost:{{port}}\");",
         name = name
@@ -1455,7 +1453,7 @@ pub fn run(args: ScaffoldArgs) -> Result<()> {
         print_tree(&args.name, &files);
         println!(
             "\n{}",
-            format!("  (no files written — remove --dry-run to scaffold for real)").dimmed()
+            "  (no files written — remove --dry-run to scaffold for real)".dimmed()
         );
         return Ok(());
     }
@@ -1526,9 +1524,9 @@ pub fn run(args: ScaffoldArgs) -> Result<()> {
         }
     }
 
-    logger::dim(&format!(
-        "\n  Invoke:  curl -s -X POST http://localhost:6174/invoke \\\n             -H 'Content-Type: application/json' \\\n             -d '{{\"capability\":\"echo\",\"payload\":{{\"hello\":\"world\"}},\"requestId\":\"req-1\",\"from\":\"client\"}}' | jq ."
-    ));
+    logger::dim(
+        "\n  Invoke:  curl -s -X POST http://localhost:6174/invoke \\\n             -H 'Content-Type: application/json' \\\n             -d '{\"capability\":\"echo\",\"payload\":{\"hello\":\"world\"},\"requestId\":\"req-1\",\"from\":\"client\"}' | jq .",
+    );
 
     Ok(())
 }
