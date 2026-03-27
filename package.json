@@ -1,6 +1,6 @@
 {
   "name": "@ch4r10teer41/borgkit-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
     "borgkit": "bin/borgkit.js"

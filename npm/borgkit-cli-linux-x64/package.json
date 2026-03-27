@@ -1,6 +1,6 @@
 {
   "name": "@ch4r10teer41/borgkit-cli-linux-x64",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Prebuilt borgkit CLI binary for Linux x64",
   "license": "Apache-2.0",
   "os": [

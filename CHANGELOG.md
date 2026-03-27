@@ -4,6 +4,12 @@ All notable changes to `borgkit-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/ch4r10t33r/borgkit/compare/v0.2.0...v0.3.0) (2026-03-27)
+
+### Features
+
+* make libp2p the default discovery mode ([80dc7bb](https://github.com/ch4r10t33r/borgkit/commit/80dc7bb52fe1b7f8d1d5b0be1d28e6988146e33a))
+
 ## [0.2.0](https://github.com/ch4r10t33r/borgkit/compare/v0.1.1...v0.2.0) (2026-03-27)
 
 ### Features
