@@ -126,11 +126,9 @@ class DiscoveryFactory:
     ) -> IAgentDiscovery:
         from discovery.local_discovery import LocalDiscovery
 
-        t = discovery_type or (
-            'libp2p' if os.environ.get('BORGKIT_P2P') == 'true' else
-            'http'   if os.environ.get('BORGKIT_DISCOVERY_URL') else
-            'local'
-        )
+        t = discovery_type \
+            or os.environ.get('BORGKIT_DISCOVERY_TYPE') \
+            or ('http' if os.environ.get('BORGKIT_DISCOVERY_URL') else 'libp2p')
 
         if t == 'http':
             url = http_base_url or os.environ.get('BORGKIT_DISCOVERY_URL')
@@ -142,9 +140,20 @@ class DiscoveryFactory:
             )
 
         if t == 'libp2p':
-            from discovery.libp2p_discovery import Libp2pDiscovery, Libp2pDiscoveryConfig
-            cfg = libp2p_config or Libp2pDiscoveryConfig()
-            return await Libp2pDiscovery.start(cfg)
+            try:
+                from discovery.libp2p_discovery import Libp2pDiscovery, Libp2pDiscoveryConfig
+                cfg = libp2p_config or Libp2pDiscoveryConfig()
+                return await Libp2pDiscovery.start(cfg)
+            except Exception as exc:
+                import warnings
+                warnings.warn(
+                    f'[DiscoveryFactory] libp2p failed to start ({exc}); '
+                    'falling back to LocalDiscovery. '
+                    'Set BORGKIT_DISCOVERY_TYPE=local to suppress this warning.',
+                    stacklevel=2,
+                )
+                from discovery.local_discovery import LocalDiscovery
+                return LocalDiscovery.get_instance()
 
         if t == 'onchain':
             from discovery.onchain_discovery import OnChainDiscovery, OnChainDiscoveryConfig

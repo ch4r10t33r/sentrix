@@ -37,8 +37,8 @@ pub struct ScaffoldArgs {
     #[arg(short = 'x', long)]
     pub x402: bool,
 
-    /// Discovery backend: http | libp2p
-    #[arg(long, default_value = "http")]
+    /// Discovery backend: local | http | libp2p
+    #[arg(long, default_value = "libp2p")]
     pub discovery: String,
 
     /// Print what would be generated without writing files
@@ -528,20 +528,44 @@ export class {class} {{
 }
 
 fn gen_ts_env_example(name: &str, discovery: &Discovery) -> String {
-    let disc_url = if *discovery == Discovery::Libp2p {
-        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
+    let disc_block = if *discovery == Discovery::Libp2p {
+        r#"# Discovery — libp2p P2P mesh (default)
+BORGKIT_DISCOVERY_TYPE=libp2p
+
+# Persistent agent key — keeps your Peer ID stable across restarts.
+# Generate: node -e "const {secp256k1}=require('ethereum-cryptography/secp256k1'); \
+#   console.log(Buffer.from(secp256k1.utils.randomPrivateKey()).toString('hex'));"
+# Leave blank to use an ephemeral key (Peer ID changes on each restart).
+BORGKIT_AGENT_KEY=
+
+# Bootstrap peers — comma-separated multiaddrs of known peers.
+# Leave blank to rely on mDNS (LAN only) or run isolated.
+# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
+
+# To switch to local (dev/test, no ports opened):
+# BORGKIT_DISCOVERY_TYPE=local
+
+# To switch to centralised HTTP registry:
+# BORGKIT_DISCOVERY_TYPE=http
+# BORGKIT_DISCOVERY_URL=https://registry.example.com
+# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
     } else {
-        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
+        r#"# Discovery — centralised HTTP registry
+BORGKIT_DISCOVERY_TYPE=http
+BORGKIT_DISCOVERY_URL=http://localhost:8080
+BORGKIT_DISCOVERY_KEY=your-api-key-here
+
+# To switch to libp2p P2P mesh (recommended for production):
+# BORGKIT_DISCOVERY_TYPE=libp2p
+# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
 # Copy to .env and fill in your values.
 
-# Discovery
-{disc_url}
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+{disc_block}
 
-# Agent identity
+# Agent network
 BORGKIT_HOST=localhost
 PORT=6174
 BORGKIT_TLS=false
@@ -549,12 +573,9 @@ BORGKIT_TLS=false
 # Optional: ERC-8004 on-chain registry
 # BORGKIT_REGISTRY_ADDRESS=0xYourContractAddress
 # BORGKIT_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
-
-# Optional: agent signing key (32-byte hex, no 0x prefix)
-# BORGKIT_AGENT_KEY=deadbeef...
 "#,
         name = name,
-        disc_url = disc_url,
+        disc_block = disc_block,
     )
 }
 
@@ -636,12 +657,7 @@ npm start
 
 // ── Rust generators ───────────────────────────────────────────────────────────
 
-fn gen_rust_cargo_toml(
-    name: &str,
-    plugins: &[String],
-    discovery: &Discovery,
-    did: bool,
-) -> String {
+fn gen_rust_cargo_toml(name: &str, plugins: &[String], discovery: &Discovery, did: bool) -> String {
     let lib_name = name.replace('-', "_");
 
     let mut extra: Vec<String> = Vec::new();
@@ -972,22 +988,45 @@ impl {plugin_upper}Plugin {{
 }
 
 fn gen_rust_env_example(name: &str, discovery: &Discovery) -> String {
-    let disc_url = if *discovery == Discovery::Libp2p {
-        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
+    let disc_block = if *discovery == Discovery::Libp2p {
+        r#"# Discovery — libp2p P2P mesh (default)
+BORGKIT_DISCOVERY_TYPE=libp2p
+
+# Persistent secp256k1 key — keeps your Peer ID stable across restarts.
+# Generate: openssl rand -hex 32
+BORGKIT_AGENT_KEY=
+
+# Bootstrap peers (comma-separated multiaddrs); leave blank for mDNS / isolated.
+# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
+
+# To use local in-process discovery (dev/test, no ports):
+# BORGKIT_DISCOVERY_TYPE=local
+
+# To use centralised HTTP registry:
+# BORGKIT_DISCOVERY_TYPE=http
+# BORGKIT_DISCOVERY_URL=https://registry.example.com
+# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
     } else {
-        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
+        r#"# Discovery — centralised HTTP registry
+BORGKIT_DISCOVERY_TYPE=http
+BORGKIT_DISCOVERY_URL=http://localhost:8080
+BORGKIT_DISCOVERY_KEY=your-api-key-here
+
+# To switch to libp2p P2P mesh (recommended for production):
+# BORGKIT_DISCOVERY_TYPE=libp2p
+# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
 # Copy to .env and fill in your values.
 
-{disc_url}
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+{disc_block}
+
 BORGKIT_HOST=localhost
 PORT=6174
 "#,
         name = name,
-        disc_url = disc_url,
+        disc_block = disc_block,
     )
 }
 
@@ -1371,22 +1410,45 @@ pub const {class}Plugin = struct {{
 }
 
 fn gen_zig_env_example(name: &str, discovery: &Discovery) -> String {
-    let disc_url = if *discovery == Discovery::Libp2p {
-        "# BORGKIT_DISCOVERY_URL=  # not used in libp2p mode"
+    let disc_block = if *discovery == Discovery::Libp2p {
+        r#"# Discovery — libp2p / pure-Zig Kademlia DHT (default)
+BORGKIT_DISCOVERY_TYPE=libp2p
+
+# Persistent secp256k1 key — keeps your Peer ID stable across restarts.
+# Generate: openssl rand -hex 32
+BORGKIT_AGENT_KEY=
+
+# Bootstrap peers (comma-separated multiaddrs); leave blank for mDNS / isolated.
+# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/udp/6174/p2p/...
+
+# To use local in-process discovery (dev/test, no ports):
+# BORGKIT_DISCOVERY_TYPE=local
+
+# To use centralised HTTP registry:
+# BORGKIT_DISCOVERY_TYPE=http
+# BORGKIT_DISCOVERY_URL=https://registry.example.com
+# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
     } else {
-        "BORGKIT_DISCOVERY_URL=http://localhost:8080"
+        r#"# Discovery — centralised HTTP registry
+BORGKIT_DISCOVERY_TYPE=http
+BORGKIT_DISCOVERY_URL=http://localhost:8080
+BORGKIT_DISCOVERY_KEY=your-api-key-here
+
+# To switch to libp2p Kademlia DHT (recommended for production):
+# BORGKIT_DISCOVERY_TYPE=libp2p
+# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
 # Copy to .env and fill in your values.
 
-{disc_url}
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+{disc_block}
+
 BORGKIT_HOST=localhost
 PORT=6174
 "#,
         name = name,
-        disc_url = disc_url,
+        disc_block = disc_block,
     )
 }
 

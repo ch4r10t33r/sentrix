@@ -70,7 +70,7 @@ class PluginConfig:
     tls:          bool = False
 
     # ── Discovery ─────────────────────────────────────────────────────────────
-    discovery_type: str           = "local"   # "local" | "http" | "libp2p"
+    discovery_type: str           = "libp2p"  # "local" | "http" | "libp2p"
     discovery_url:  Optional[str] = None
     discovery_key:  Optional[str] = None
 

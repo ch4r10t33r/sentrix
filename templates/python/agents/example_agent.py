@@ -45,7 +45,7 @@ class ExampleAgent(IAgent):
         import os
         from discovery.http_discovery import DiscoveryFactory
 
-        discovery_type = os.environ.get('BORGKIT_DISCOVERY_TYPE', 'local')
+        discovery_type = os.environ.get('BORGKIT_DISCOVERY_TYPE', 'libp2p')
         registry = await DiscoveryFactory.create(discovery_type)
         self._registry = registry
         self._p2p_info = None

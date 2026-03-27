@@ -211,6 +211,7 @@ impl DiscoveryFactory {
     }
 
     /// Auto-select: HTTP if BORGKIT_DISCOVERY_URL is set, else Local.
+    /// Prefer `from_env_async` for new code — it defaults to libp2p.
     pub fn from_env() -> AnyDiscovery {
         HttpDiscovery::from_env()
             .map(AnyDiscovery::Http)
@@ -222,14 +223,47 @@ impl DiscoveryFactory {
         Ok(AnyDiscovery::Libp2p(Libp2pDiscovery::start(cfg).await?))
     }
 
-    /// Auto-select: libp2p if BORGKIT_P2P=true, HTTP if BORGKIT_DISCOVERY_URL set, else Local.
+    /// Auto-select from environment (recommended).
+    ///
+    /// Priority:
+    ///   1. `BORGKIT_DISCOVERY_TYPE` = "local" | "http" | "libp2p"
+    ///   2. `BORGKIT_DISCOVERY_URL` set → http
+    ///   3. default → libp2p (falls back to local if libp2p fails to bind)
     pub async fn from_env_async() -> AnyDiscovery {
-        if std::env::var("BORGKIT_P2P").as_deref() == Ok("true") {
-            let cfg = Libp2pDiscoveryConfig::default();
-            if let Ok(d) = Libp2pDiscovery::start(cfg).await {
-                return AnyDiscovery::Libp2p(d);
+        let dtype = std::env::var("BORGKIT_DISCOVERY_TYPE").unwrap_or_default();
+        match dtype.as_str() {
+            "local" => return AnyDiscovery::Local(LocalDiscovery::default()),
+            "http"  => return Self::from_env(),
+            "libp2p" | _ if dtype.is_empty() => {
+                // libp2p is the default; fall through to attempt below
+            }
+            _ => {
+                eprintln!(
+                    "[DiscoveryFactory] Unknown BORGKIT_DISCOVERY_TYPE '{}', defaulting to libp2p",
+                    dtype
+                );
             }
         }
-        Self::from_env()
+
+        // Honour legacy BORGKIT_DISCOVERY_URL shorthand
+        if dtype.is_empty() {
+            if let Some(d) = HttpDiscovery::from_env() {
+                return AnyDiscovery::Http(d);
+            }
+        }
+
+        // Attempt libp2p; fall back to local on failure
+        let cfg = Libp2pDiscoveryConfig::default();
+        match Libp2pDiscovery::start(cfg).await {
+            Ok(d) => AnyDiscovery::Libp2p(d),
+            Err(e) => {
+                eprintln!(
+                    "[DiscoveryFactory] libp2p failed to start ({e}); \
+                     falling back to LocalDiscovery. \
+                     Set BORGKIT_DISCOVERY_TYPE=local to suppress this warning."
+                );
+                AnyDiscovery::Local(LocalDiscovery::default())
+            }
+        }
     }
 }

@@ -18,10 +18,11 @@ Heartbeats keep entries alive. If an agent stops sending heartbeats, the registr
 
 ---
 
-## LocalDiscovery (default)
+## LocalDiscovery
 
 **Backend:** in-process `HashMap` / `dict`
-**Use when:** development, unit tests, single-process multi-agent setups
+**Use when:** unit tests, single-process multi-agent demos, CI environments where opening ports is undesirable
+**Enable with:** `BORGKIT_DISCOVERY_TYPE=local`
 
 ```typescript
 // TypeScript — singleton, shared across all agents in the process
@@ -103,8 +104,10 @@ HttpDiscovery(
 
 ```
 1. Explicit type in config / constructor argument
-2. BORGKIT_DISCOVERY_URL env var  →  HttpDiscovery
-3. (default)                      →  LocalDiscovery
+2. BORGKIT_DISCOVERY_TYPE env var  →  local | http | libp2p
+3. BORGKIT_DISCOVERY_URL env var   →  HttpDiscovery
+4. (default)                       →  Libp2pDiscovery
+                                      (falls back to LocalDiscovery if libp2p fails to bind)
 ```
 
 ```typescript
@@ -160,20 +163,30 @@ ERC-8004 on-chain registry adapter.
 ## Choosing a discovery mode
 
 ```
-Is this a local dev / test scenario?
-  → LocalDiscovery  (default, no config needed)
+Default (no env vars set)?
+  → Libp2pDiscovery  (Kademlia DHT, mDNS on LAN, graceful fallback to local on bind failure)
+
+Do you need in-process discovery only (unit tests, single-process demos)?
+  → LocalDiscovery   (BORGKIT_DISCOVERY_TYPE=local — no ports opened)
 
 Do you have a managed registry or are running in an enterprise network?
-  → HttpDiscovery   (set BORGKIT_DISCOVERY_URL)
-
-Are you running a production P2P mesh with untrusted peers?
-  → GossipDiscovery (coming)
+  → HttpDiscovery    (BORGKIT_DISCOVERY_TYPE=http + BORGKIT_DISCOVERY_URL=…)
 
 Do you need cryptoeconomic trust and on-chain verifiability?
   → OnChainDiscovery (coming)
 ```
 
 All four modes use the identical `IAgentDiscovery` interface — switching never requires changing agent logic.
+
+### Environment variable quick reference
+
+| Env var | Purpose | Example |
+|---|---|---|
+| `BORGKIT_DISCOVERY_TYPE` | Force a specific mode | `local` \| `http` \| `libp2p` |
+| `BORGKIT_DISCOVERY_URL` | HTTP registry URL (activates `http` if `TYPE` unset) | `https://registry.example.com` |
+| `BORGKIT_DISCOVERY_KEY` | API key for HTTP registry | `sk-…` |
+| `BORGKIT_AGENT_KEY` | 64-hex secp256k1 key for stable Peer ID | `openssl rand -hex 32` |
+| `BORGKIT_BOOTSTRAP_PEERS` | Comma-separated multiaddrs for libp2p | `/ip4/1.2.3.4/tcp/6174/p2p/12D3…` |
 
 ---
 

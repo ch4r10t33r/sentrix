@@ -3,12 +3,16 @@
  *
  * Priority order (highest → lowest):
  *   1. Explicit `type` in config
- *   2. BORGKIT_DISCOVERY_URL env var    → HttpDiscovery
- *   3. default                          → LocalDiscovery
+ *   2. BORGKIT_DISCOVERY_TYPE env var   → 'local' | 'http' | 'libp2p' | 'onchain'
+ *   3. BORGKIT_DISCOVERY_URL env var    → HttpDiscovery
+ *   4. default                          → Libp2pDiscovery (falls back to LocalDiscovery on bind failure)
  *
  * Usage:
  *   const registry = await DiscoveryFactory.create({ type: 'libp2p', libp2p: { privateKey } });
  *   await registry.register(entry);
+ *
+ * To opt out of libp2p and use in-process local discovery (dev/test):
+ *   BORGKIT_DISCOVERY_TYPE=local
  */
 
 import { IAgentDiscovery } from '../interfaces/IAgentDiscovery';
@@ -67,8 +71,9 @@ export class DiscoveryFactory {
    * Returns a Promise because the libp2p backend requires async initialisation.
    */
   static async create(config: DiscoveryConfig = {}): Promise<IAgentDiscovery> {
-    const type = config.type
-      ?? (process.env['BORGKIT_DISCOVERY_URL'] ? 'http' : 'local');
+    const type: DiscoveryType = config.type
+      ?? (process.env['BORGKIT_DISCOVERY_TYPE'] as DiscoveryType | undefined)
+      ?? (process.env['BORGKIT_DISCOVERY_URL'] ? 'http' : 'libp2p');
 
     switch (type) {
       case 'http': {
@@ -83,9 +88,21 @@ export class DiscoveryFactory {
       }
 
       case 'libp2p': {
-        // Lazy import so consumers that don't use libp2p don't pay the import cost
-        const { Libp2pDiscovery } = await import('./Libp2pDiscovery');
-        return Libp2pDiscovery.create(config.libp2p ?? {});
+        // Lazy import so consumers that don't use libp2p don't pay the import cost.
+        // Falls back to LocalDiscovery if libp2p fails to bind (e.g. port conflict in tests).
+        try {
+          const { Libp2pDiscovery } = await import('./Libp2pDiscovery');
+          return await Libp2pDiscovery.create(config.libp2p ?? {});
+        } catch (err) {
+          console.warn(
+            '[DiscoveryFactory] libp2p failed to start — falling back to LocalDiscovery.',
+            (err as Error).message,
+          );
+          console.warn(
+            '[DiscoveryFactory] Set BORGKIT_DISCOVERY_TYPE=local to suppress this warning in dev/test.',
+          );
+          return LocalDiscovery.getInstance();
+        }
       }
 
       case 'onchain': {

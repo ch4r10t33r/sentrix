@@ -158,27 +158,9 @@ cd my-agent
 zig build examples   # optional: builds did:key + gossip fan-out demo binaries
 ```
 
-Once running, the agent prints its full startup banner. The banner looks different depending on whether libp2p is enabled:
+Once running, the agent prints its full startup banner. **libp2p is the default** — a Peer ID is shown out of the box:
 
-**Local mode (default — no `BORGKIT_DISCOVERY_TYPE` set):**
-```
-────────────────────────────────────────────────────────────
-  Borgkit Agent Online  v0.1.0
-────────────────────────────────────────────────────────────
-  Name         ExampleAgent
-  Agent ID     borgkit://agent/example
-  Peer ID      (none — set BORGKIT_DISCOVERY_TYPE=libp2p to enable P2P)
-  Endpoint     http://0.0.0.0:6174
-  Discovery    local
-  ANR          {"agentId":"borgkit://agent/example","name":"ExampleAgent",...}
-  ANR JSON     curl -s http://localhost:6174/anr
-  Capabilities (2)
-           • echo
-           • ping
-────────────────────────────────────────────────────────────
-```
-
-**libp2p mode (`BORGKIT_DISCOVERY_TYPE=libp2p`):**
+**libp2p mode (default — no config needed):**
 ```
 ────────────────────────────────────────────────────────────
   Borgkit Agent Online  v0.1.0
@@ -197,6 +179,24 @@ Once running, the agent prints its full startup banner. The banner looks differe
 ────────────────────────────────────────────────────────────
 ```
 
+**Local mode (`BORGKIT_DISCOVERY_TYPE=local` — dev/test, zero ports opened):**
+```
+────────────────────────────────────────────────────────────
+  Borgkit Agent Online  v0.1.0
+────────────────────────────────────────────────────────────
+  Name         ExampleAgent
+  Agent ID     borgkit://agent/example
+  Peer ID      (none — local discovery mode)
+  Endpoint     http://0.0.0.0:6174
+  Discovery    local
+  ANR          {"agentId":"borgkit://agent/example","name":"ExampleAgent",...}
+  ANR JSON     curl -s http://localhost:6174/anr
+  Capabilities (2)
+           • echo
+           • ping
+────────────────────────────────────────────────────────────
+```
+
 > **Default port: 6174** ([Kaprekar's constant](https://en.wikipedia.org/wiki/6174)). Override with `BORGKIT_PORT=<n>` or `--port <n>`.
 
 ---
@@ -206,15 +206,16 @@ Once running, the agent prints its full startup banner. The banner looks differe
 ### Why is Peer ID missing from the banner?
 
 ```
-Peer ID      (none — set BORGKIT_DISCOVERY_TYPE=libp2p to enable P2P)
+Peer ID      (none — local discovery mode)
 ```
 
-This is **not a bug**. A Peer ID only exists when the agent runs a libp2p host. In the default `local` discovery mode there is no libp2p host, so there is nothing to show. The agent is fully functional — it just uses in-process discovery.
+This means `BORGKIT_DISCOVERY_TYPE=local` is set (or the libp2p host failed to bind and fell back to local). In local mode there is no libp2p host, so no Peer ID exists. The agent is fully functional — it just uses in-process discovery.
 
-To get a real Peer ID (plus Kademlia DHT and P2P invocation), add these two lines to your `.env`:
+libp2p is the **default**. If you see this line unexpectedly, check that your `.env` does not have `BORGKIT_DISCOVERY_TYPE=local` set, or that no other process is occupying the libp2p port.
+
+To ensure a stable Peer ID across restarts, set a persistent key:
 
 ```env
-BORGKIT_DISCOVERY_TYPE=libp2p
 BORGKIT_AGENT_KEY=<your 64-hex-char secp256k1 private key>
 ```
 
@@ -256,21 +257,23 @@ The ANR is **always present** regardless of discovery mode. It is not dependent 
 
 | Mode | When to use | PeerId | Central server |
 |---|---|---|---|
-| `local` (default) | Dev / tests / single process | ✗ | ✗ |
+| `libp2p` **(default)** | All environments — production P2P mesh | ✓ | ✗ |
+| `local` | Unit tests / single-process demos | ✗ | ✗ |
 | `http` | Staging / enterprise / managed registry | ✗ | ✓ |
-| `libp2p` | Production P2P mesh | ✓ | ✗ |
 
 Switch modes with a single env var — no code changes required:
 
 ```env
-# local (default — nothing to set)
-# http
+# libp2p (default — nothing to set, or explicitly):
+BORGKIT_DISCOVERY_TYPE=libp2p
+BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>   # optional but recommended
+
+# local (dev/test — zero ports):
+BORGKIT_DISCOVERY_TYPE=local
+
+# http (centralised registry):
 BORGKIT_DISCOVERY_TYPE=http
 BORGKIT_DISCOVERY_URL=https://registry.example.com
-
-# libp2p
-BORGKIT_DISCOVERY_TYPE=libp2p
-BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>
 ```
 
 ---
