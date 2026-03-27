@@ -154,7 +154,51 @@ fn pascal_case(s: &str) -> String {
 
 // ── TypeScript generators ─────────────────────────────────────────────────────
 
-fn gen_ts_package_json(name: &str) -> String {
+fn gen_ts_package_json(
+    name: &str,
+    plugins: &[String],
+    discovery: &Discovery,
+    did: bool,
+    x402: bool,
+) -> String {
+    let mut deps: Vec<(&str, &str)> = vec![
+        ("borgkit-sdk", "^0.1.0"),
+        ("express", "^4.18.2"),
+        ("dotenv", "^16.4.5"),
+    ];
+
+    // Discovery
+    if *discovery == Discovery::Libp2p {
+        deps.push(("@borgkit/libp2p-discovery", "^0.1.0"));
+    }
+
+    // DID key generation
+    if did {
+        deps.push(("@noble/ed25519", "^2.1.0"));
+        deps.push(("@noble/curves", "^1.4.0"));
+    }
+
+    // x402 micropayments
+    if x402 {
+        deps.push(("x402-express", "^0.1.0"));
+    }
+
+    // Plugin-specific npm packages
+    for plugin in plugins {
+        match plugin.as_str() {
+            "openai" => deps.push(("openai", "^4.0.0")),
+            "mcp" => deps.push(("@modelcontextprotocol/sdk", "^1.10.0")),
+            "langgraph" => deps.push(("@langchain/langgraph", "^0.2.0")),
+            _ => {} // agno, crewai, llamaindex, smolagents, google_adk are Python-only
+        }
+    }
+
+    let deps_str = deps
+        .iter()
+        .map(|(k, v)| format!("    \"{k}\": \"{v}\""))
+        .collect::<Vec<_>>()
+        .join(",\n");
+
     format!(
         r#"{{
   "name": "{name}",
@@ -166,18 +210,18 @@ fn gen_ts_package_json(name: &str) -> String {
     "start": "node dist/index.js"
   }},
   "dependencies": {{
-    "borgkit-sdk": "^0.1.0",
-    "express":     "^4.18.2",
-    "dotenv":      "^16.4.5"
+{deps_str}
   }},
   "devDependencies": {{
-    "typescript":  "^5.4.5",
-    "@types/node": "^20.12.7",
-    "ts-node":     "^10.9.2"
+    "typescript":        "^5.4.5",
+    "@types/node":       "^20.12.7",
+    "@types/express":    "^4.17.21",
+    "ts-node":           "^10.9.2"
   }}
 }}
 "#,
-        name = name
+        name = name,
+        deps_str = deps_str,
     )
 }
 
@@ -592,8 +636,47 @@ npm start
 
 // ── Rust generators ───────────────────────────────────────────────────────────
 
-fn gen_rust_cargo_toml(name: &str) -> String {
+fn gen_rust_cargo_toml(
+    name: &str,
+    plugins: &[String],
+    discovery: &Discovery,
+    did: bool,
+) -> String {
     let lib_name = name.replace('-', "_");
+
+    let mut extra: Vec<String> = Vec::new();
+
+    // Discovery
+    if *discovery == Discovery::Libp2p {
+        extra.push(
+            "libp2p  = { version = \"0.54\", features = [\"tcp\", \"noise\", \"yamux\", \"kad\", \"tokio\"] }"
+                .into(),
+        );
+    }
+
+    // DID key generation
+    if did {
+        extra.push("ed25519-dalek = { version = \"2\", features = [\"rand_core\"] }".into());
+        extra.push("rand = \"0.8\"".into());
+    }
+
+    // Plugin-specific crates
+    for plugin in plugins {
+        match plugin.as_str() {
+            "openai" => extra.push("async-openai = \"0.28\"".into()),
+            "mcp" => extra.push(
+                "rmcp = { version = \"0.1\", features = [\"server\", \"transport-io\"] }".into(),
+            ),
+            _ => {}
+        }
+    }
+
+    let extra_str = if extra.is_empty() {
+        String::new()
+    } else {
+        format!("\n# Optional feature deps\n{}\n", extra.join("\n"))
+    };
+
     format!(
         r#"[package]
 name    = "{lib_name}"
@@ -605,15 +688,16 @@ name = "{lib_name}"
 path = "src/main.rs"
 
 [dependencies]
-tokio   = {{ version = "1",    features = ["full"] }}
-serde   = {{ version = "1",    features = ["derive"] }}
+tokio      = {{ version = "1",    features = ["full"] }}
+serde      = {{ version = "1",    features = ["derive"] }}
 serde_json = "1"
-reqwest = {{ version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }}
-clap    = {{ version = "4",    features = ["derive"] }}
-anyhow  = "1"
-dotenvy = "0.15"
-"#,
+reqwest    = {{ version = "0.12", default-features = false, features = ["json", "rustls-tls"] }}
+anyhow     = "1"
+dotenvy    = "0.15"
+uuid       = {{ version = "1",    features = ["v4"] }}
+{extra_str}"#,
         lib_name = lib_name,
+        extra_str = extra_str,
     )
 }
 
@@ -949,6 +1033,64 @@ cargo build --release
 }
 
 // ── Zig generators ────────────────────────────────────────────────────────────
+
+/// build.zig.zon — Zig package manifest (zig 0.12+).
+/// External deps are listed here; pure-std builds omit the `.dependencies` section.
+fn gen_zig_build_zon(name: &str, discovery: &Discovery, did: bool) -> String {
+    let lib_name = name.replace('-', "_");
+    let needs_deps = *discovery == Discovery::Libp2p || did;
+
+    if !needs_deps {
+        // Minimal manifest with no external deps
+        return format!(
+            r#".{{
+    .name    = "{lib_name}",
+    .version = "0.1.0",
+    .minimum_zig_version = "0.13.0",
+    .paths   = .{{""}},
+}}
+"#,
+            lib_name = lib_name,
+        );
+    }
+
+    let mut dep_entries = String::new();
+    if *discovery == Discovery::Libp2p {
+        // borgkit's pure-Zig Kademlia DHT (ships inside borgkit templates)
+        dep_entries.push_str(
+            r#"        .borgkit_discovery = .{
+            .url  = "https://github.com/ch4r10t33r/borgkit/archive/refs/heads/main.tar.gz",
+            .hash = "1220000000000000000000000000000000000000000000000000000000000000000000000000",
+            // Run `zig fetch --save <url>` to auto-fill the hash above.
+        },
+"#,
+        );
+    }
+    if did {
+        dep_entries.push_str(
+            r#"        .zig_curve25519 = .{
+            .url  = "https://github.com/allyourcodebase/curve25519/archive/refs/heads/main.tar.gz",
+            .hash = "1220000000000000000000000000000000000000000000000000000000000000000000000000",
+            // Run `zig fetch --save <url>` to auto-fill the hash above.
+        },
+"#,
+        );
+    }
+
+    format!(
+        r#".{{
+    .name    = "{lib_name}",
+    .version = "0.1.0",
+    .minimum_zig_version = "0.13.0",
+    .paths   = .{{""}},
+    .dependencies = .{{
+{dep_entries}    }},
+}}
+"#,
+        lib_name = lib_name,
+        dep_entries = dep_entries,
+    )
+}
 
 fn gen_zig_build(name: &str) -> String {
     let lib = name.replace('-', "_");
@@ -1302,7 +1444,10 @@ fn collect_files(
 
     match lang {
         Lang::TypeScript => {
-            files.push(GenFile::new("package.json", gen_ts_package_json(name)));
+            files.push(GenFile::new(
+                "package.json",
+                gen_ts_package_json(name, plugins, discovery, did, x402),
+            ));
             files.push(GenFile::new("tsconfig.json", gen_ts_tsconfig()));
             files.push(GenFile::new("src/index.ts", gen_ts_index(&agent_class)));
             files.push(GenFile::new(
@@ -1325,7 +1470,10 @@ fn collect_files(
             }
         }
         Lang::Rust => {
-            files.push(GenFile::new("Cargo.toml", gen_rust_cargo_toml(name)));
+            files.push(GenFile::new(
+                "Cargo.toml",
+                gen_rust_cargo_toml(name, plugins, discovery, did),
+            ));
             files.push(GenFile::new("src/main.rs", gen_rust_main(&agent_class)));
             files.push(GenFile::new(
                 "src/agent.rs",
@@ -1350,6 +1498,10 @@ fn collect_files(
             }
         }
         Lang::Zig => {
+            files.push(GenFile::new(
+                "build.zig.zon",
+                gen_zig_build_zon(name, discovery, did),
+            ));
             files.push(GenFile::new("build.zig", gen_zig_build(name)));
             files.push(GenFile::new("src/main.zig", gen_zig_main(&agent_class)));
             files.push(GenFile::new(
