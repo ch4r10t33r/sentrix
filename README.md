@@ -179,11 +179,57 @@ Once running, the agent prints its full startup banner:
 
 | Command | Description |
 |---|---|
-| `sentrix init <name> [--lang ts\|python\|rust\|zig]` | Scaffold a new Sentrix project |
+| `sentrix scaffold <name> [OPTIONS]` | Generate a new agent project (see below) |
+| `sentrix init <name> [--lang ts\|python\|rust\|zig]` | Initialise a Sentrix project in-place |
 | `sentrix create agent <name> [-c cap1,cap2] [--framework X]` | Add an agent to an existing project |
 | `sentrix run <AgentName> [--port 6174]` | Start an agent's HTTP server |
 | `sentrix discover [-c capability] [--host h] [--port p]` | Query the discovery layer |
 | `sentrix version` | Show CLI version and build info |
+
+### `sentrix scaffold` — project generator
+
+```bash
+sentrix scaffold <name> [OPTIONS]
+
+Options:
+  -l, --lang <LANG>           typescript | rust | zig          [default: typescript]
+  -p, --plugins <PLUGINS>     openai,agno,langgraph,google_adk,crewai,
+                              llamaindex,smolagents,mcp        [default: none]
+  -o, --output <DIR>          output directory                 [default: cwd]
+  -d, --did                   include DID key generation example
+  -s, --stream                include SSE streaming endpoint
+  -x, --x402                  include x402 micropayments middleware
+      --discovery <BACKEND>   http | libp2p                    [default: http]
+      --dry-run               print file tree without writing
+```
+
+**Examples:**
+
+```bash
+# TypeScript agent with LangGraph + OpenAI, SSE streaming, libp2p discovery
+sentrix scaffold my-agent --lang typescript --plugins langgraph,openai --stream --discovery libp2p
+
+# Rust agent with MCP bridge and x402 micropayments
+sentrix scaffold payments-agent --lang rust --plugins mcp --x402
+
+# Zig agent with DID examples — preview first, then generate
+sentrix scaffold did-agent --lang zig --did --dry-run
+sentrix scaffold did-agent --lang zig --did
+```
+
+Generated structure (TypeScript example):
+```
+my-agent/
+├── package.json
+├── tsconfig.json
+├── src/
+│   ├── agent.ts        ← discovery registration, /invoke handler, selected plugins
+│   ├── index.ts        ← entry point
+│   └── plugins/        ← only created when --plugins is set
+│       └── LangGraphPlugin.ts
+├── .env.example
+└── README.md
+```
 
 ### `sentrix run` — HTTP endpoints
 
@@ -455,6 +501,81 @@ resp = await client.call_capability("web_search", {"query": "latest AI news"})
 ```
 
 → Full guide: **[docs/interfaces.md](docs/interfaces.md)**
+
+---
+
+## DIDComm v2 — Encrypted Agent Messaging
+
+Sentrix includes a full DIDComm v2 implementation for end-to-end encrypted, authenticated messages between agents. No external key infrastructure required — each agent's `did:key` is derived from its identity keypair.
+
+**Crypto stack:** X25519 ECDH key agreement + ChaCha20-Poly1305 AEAD.
+**Wire format:** JWE JSON serialization with per-recipient key wrapping.
+**Modes:** `authcrypt` (sender-authenticated) and `anoncrypt` (anonymous).
+
+### TypeScript
+
+```typescript
+import { DidcommClient, MessageTypes } from './didcomm';
+
+const alice = DidcommClient.generateKeyPair();
+const bob   = DidcommClient.generateKeyPair();
+
+const aliceClient = new DidcommClient(alice);
+const bobClient   = new DidcommClient(bob);
+
+// Alice encrypts an INVOKE message to Bob (authcrypt)
+const encrypted = await aliceClient.invoke(bob.did, 'translate', { text: 'hello' });
+
+// Bob decrypts it
+const { message, senderDid } = await bobClient.unpack(encrypted);
+console.log(message.body);   // { text: 'hello' }
+console.log(senderDid);      // alice's did:key
+```
+
+### Rust
+
+```rust
+use crate::didcomm::DidcommClient;
+
+let alice = DidcommClient::generate()?;
+let bob   = DidcommClient::generate()?;
+
+// Encrypt (authcrypt)
+let packed = alice.invoke(&bob.did, "translate", json!({"text": "hello"}), false)?;
+
+// Decrypt
+let (msg, sender_did) = bob.unpack(&packed)?;
+println!("{}", msg.body);           // {"text":"hello"}
+println!("{:?}", sender_did);       // Some("did:key:z6Mk...")
+
+// Anonymous — sender is not revealed
+let anon = alice.invoke(&bob.did, "translate", json!({"text": "hi"}), true)?;
+let (msg2, none_sender) = bob.unpack(&anon)?;
+assert!(none_sender.is_none());
+```
+
+### Zig
+
+```zig
+const didcomm = @import("didcomm.zig");
+
+var alice = try didcomm.DidcommClient.generate(allocator);
+defer alice.deinit();
+var bob = try didcomm.DidcommClient.generate(allocator);
+defer bob.deinit();
+
+// Encrypt
+const packed = try alice.invoke(allocator, bob.did, "translate", "{\"text\":\"hello\"}", false);
+defer allocator.free(packed);
+
+// Decrypt
+const result = try bob.unpack(allocator, packed);
+defer result.deinit(allocator);
+std.debug.print("body: {s}\n", .{result.message.body_json});
+std.debug.print("from: {?s}\n", .{result.sender_did});
+```
+
+Source: [`templates/typescript/didcomm.ts`](templates/typescript/didcomm.ts) · [`templates/rust/src/didcomm.rs`](templates/rust/src/didcomm.rs) · [`templates/zig/src/didcomm.zig`](templates/zig/src/didcomm.zig)
 
 ---
 
