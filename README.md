@@ -63,7 +63,7 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 | **HTTP server (`sentrix run`)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — local (in-memory)** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — HTTP** | ✅ | ✅ | ✅ | ✅ |
-| **Discovery — libp2p + Kademlia DHT** | ✅ | ✅ | ✅ | 🔜 |
+| **Discovery — libp2p + Kademlia DHT** | ✅ | ✅ | ✅ | ✅ |
 | **Discovery — gossip fan-out** | ✅ | ✅ | ✅ | ✅ |
 | **AgentClient (mesh protocols)** | ✅ | ✅ | ✅ | ✅ |
 | **Example agent** | ✅ | ✅ | ✅ | ✅ |
@@ -84,7 +84,7 @@ Sentrix operates primarily at **L2** and **L3**, bridging L1 identity to L4 fram
 
 **Rust / Zig — framework plugins:** LangGraph, Google ADK, and CrewAI are Python/JS frameworks with no native Rust or Zig SDKs. The Rust and Zig plugins are **HTTP bridge adapters** that call a running service endpoint (e.g. `adk web`, a LangServe app, or a FastAPI-wrapped CrewAI crew) so the agent participates in the Sentrix mesh without embedding a Python interpreter.
 
-**Zig — discovery:** `HttpDiscovery` (`discovery_http.zig`) is a REST client for the discovery service (`SENTRIX_DISCOVERY_URL`, `SENTRIX_DISCOVERY_KEY`). `Libp2pDiscovery` (`discovery_libp2p.zig`) keeps an in-memory registry and builds JSON for gossip publish / ingest; it does not run an in-process Kademlia DHT (see 🔜 above).
+**Zig — discovery:** `HttpDiscovery` (`discovery_http.zig`) is a REST client for the discovery service. `Libp2pDiscovery` (`discovery_libp2p.zig`) is a full Kademlia DHT implementation in pure Zig (UDP/JSON transport, 256-bucket XOR routing table, k=20). Key derivation matches the Rust implementation (`SHA-256("sentrix:cap:<cap>")` / `SHA-256("sentrix:anr:<agentId>")`). Note: uses a Sentrix-native JSON wire format rather than libp2p protobuf — interoperates with other Zig Sentrix nodes.
 
 ---
 
