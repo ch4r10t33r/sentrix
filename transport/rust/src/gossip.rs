@@ -1,6 +1,6 @@
 //! Gossip helpers — topic name and message serialisation.
 
-pub const GOSSIP_TOPIC: &str = "/borgkit/gossip/1.0.0";
+pub const GOSSIP_TOPIC: &str = "/inai/gossip/1.0.0";
 
 use serde::{Deserialize, Serialize};
 

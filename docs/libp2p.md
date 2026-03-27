@@ -1,6 +1,6 @@
 # libp2p Integration
 
-Borgkit uses **libp2p** as its P2P discovery and transport layer — the same
+Inai uses **libp2p** as its P2P discovery and transport layer — the same
 networking stack that powers Ethereum, Filecoin, and Polkadot.
 
 > **Future path:** [iroh](https://iroh.computer) (QUIC-native, dial-by-NodeId)
@@ -28,7 +28,7 @@ networking stack that powers Ethereum, Filecoin, and Polkadot.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        Borgkit Application                          │
+│                        Inai Application                          │
 │  IAgent.register()  →  IAgentDiscovery.register(DiscoveryEntry)    │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
@@ -42,7 +42,7 @@ networking stack that powers Ethereum, Filecoin, and Polkadot.
    ┌──────▼──────┐    ┌────────▼───────┐    ┌────────▼──────┐
    │  Kademlia   │    │     mDNS       │    │  Circuit      │
    │  DHT        │    │  (LAN only)    │    │  Relay v2     │
-   │  /borgkit/  │    │                │    │  (NAT fallback│
+   │  /inai/  │    │                │    │  (NAT fallback│
    │  kad/1.0.0  │    └────────────────┘    └───────────────┘
    └──────┬──────┘
           │
@@ -53,21 +53,21 @@ networking stack that powers Ethereum, Filecoin, and Polkadot.
    └─────────────┘
 ```
 
-The Borgkit DHT is **isolated** from the public IPFS DHT via the custom
-protocol string `/borgkit/kad/1.0.0`.  Borgkit agents only peer with other
-Borgkit agents; they do not participate in IPFS routing.
+The Inai DHT is **isolated** from the public IPFS DHT via the custom
+protocol string `/inai/kad/1.0.0`.  Inai agents only peer with other
+Inai agents; they do not participate in IPFS routing.
 
 ---
 
 ## DHT Key Schema
 
-All DHT keys are namespaced with `borgkit:` to avoid collisions.
+All DHT keys are namespaced with `inai:` to avoid collisions.
 
 | Record type | Key | Value | Purpose |
 |---|---|---|---|
-| Provider record | `SHA256("borgkit:cap:<capability>")` → CIDv1 | PeerId list (managed by libp2p) | Capability advertisement |
-| Value record | `SHA256("borgkit:anr:<agentId>")` | Signed JSON envelope | Full DiscoveryEntry |
-| Reverse map | `/borgkit/pid/<peerId>` | UTF-8 agentId | PeerId → agentId lookup |
+| Provider record | `SHA256("inai:cap:<capability>")` → CIDv1 | PeerId list (managed by libp2p) | Capability advertisement |
+| Value record | `SHA256("inai:anr:<agentId>")` | Signed JSON envelope | Full DiscoveryEntry |
+| Reverse map | `/inai/pid/<peerId>` | UTF-8 agentId | PeerId → agentId lookup |
 
 ### Capability CID (cross-language)
 
@@ -75,7 +75,7 @@ The same input string is used in all languages, ensuring TypeScript and Rust
 peers find each other's provider records:
 
 ```
-input  = UTF-8("borgkit:cap:" + capability)
+input  = UTF-8("inai:cap:" + capability)
 hash   = SHA2-256(input)
 cid    = CIDv1(codec=0x55/raw, hash)
 ```
@@ -93,7 +93,7 @@ The full `DiscoveryEntry` is wrapped in a signed envelope before being stored:
 }
 ```
 
-Signed bytes: `keccak256(UTF-8("borgkit:anr:v1:") + JSON.stringify(entry))`
+Signed bytes: `keccak256(UTF-8("inai:anr:v1:") + JSON.stringify(entry))`
 
 Consumers **must** verify the signature and reject envelopes with `seq` lower
 than a previously seen value for the same `agentId`.
@@ -153,11 +153,11 @@ Scenario 2 — One peer behind NAT:
 
 Scenario 3 — Both peers behind strict NAT / symmetric firewall:
   Agent A  ──[QUIC via circuit relay]──►  Relay  ──[QUIC]──►  Agent B
-  (relay server must be reachable by both; Borgkit bootstrap peers can serve as relays)
+  (relay server must be reachable by both; Inai bootstrap peers can serve as relays)
 ```
 
 Note: Circuit relay connections are TCP under the hood (libp2p relay v2 uses
-TCP + Noise + Yamux).  The Borgkit peer itself never opens a TCP *listener*,
+TCP + Noise + Yamux).  The Inai peer itself never opens a TCP *listener*,
 but it may open outbound TCP connections to relay servers.
 
 ---
@@ -167,8 +167,8 @@ but it may open outbound TCP connections to relay servers.
 Bootstrap peers seed the Kademlia routing table on startup.  Resolution order:
 
 1. `bootstrapPeers` / `bootstrap_peers` in config
-2. `BORGKIT_BOOTSTRAP_PEERS` env var (comma-separated multiaddrs)
-3. Built-in Borgkit public bootstrap nodes (added when deployed)
+2. `INAI_BOOTSTRAP_PEERS` env var (comma-separated multiaddrs)
+3. Built-in Inai public bootstrap nodes (added when deployed)
 4. mDNS peers on the local network (automatic, no config needed)
 
 Multiaddr format for QUIC:
@@ -181,7 +181,7 @@ Always use `/quic-v1` (not the older `/quic` draft variant).
 ### Peer cache
 
 After 10 minutes of uptime, the node persists newly discovered stable peers to
-`~/.borgkit/peer-cache.json`.  On restart, these cached peers are tried before
+`~/.inai/peer-cache.json`.  On restart, these cached peers are tried before
 the fallback bootstrap list, improving resilience if bootstrap nodes change.
 
 ---
@@ -214,8 +214,8 @@ const discovery = await DiscoveryFactory.create({
 
 Or via environment:
 ```bash
-export BORGKIT_P2P=true
-export BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/udp/4001/quic-v1/p2p/12D3KooW...
+export INAI_P2P=true
+export INAI_BOOTSTRAP_PEERS=/ip4/1.2.3.4/udp/4001/quic-v1/p2p/12D3KooW...
 ```
 
 ### Python
@@ -233,13 +233,13 @@ cfg = Libp2pDiscoveryConfig(
 discovery = await Libp2pDiscovery.start(cfg)
 ```
 
-Python requires the `borgkit-libp2p-sidecar` binary or Node.js in PATH.
+Python requires the `inai-libp2p-sidecar` binary or Node.js in PATH.
 See the [sidecar section](#python-sidecar) below.
 
 ### Rust
 
 ```rust
-use borgkit::discovery_libp2p::{Libp2pDiscovery, Libp2pDiscoveryConfig};
+use inai::discovery_libp2p::{Libp2pDiscovery, Libp2pDiscoveryConfig};
 
 let cfg = Libp2pDiscoveryConfig {
     private_key_bytes: my_anr_key,
@@ -267,18 +267,18 @@ Python ◄─[stdout]── sidecar
 **Build the Rust sidecar:**
 ```bash
 cd templates/rust
-cargo build --release --bin borgkit-libp2p-sidecar
-export BORGKIT_LIBP2P_SIDECAR=$(pwd)/target/release/borgkit-libp2p-sidecar
+cargo build --release --bin inai-libp2p-sidecar
+export INAI_LIBP2P_SIDECAR=$(pwd)/target/release/inai-libp2p-sidecar
 ```
 
 **Use the TypeScript sidecar (requires Node >= 20):**
 ```bash
-export BORGKIT_LIBP2P_NODE=templates/typescript/discovery/libp2p-sidecar.js
+export INAI_LIBP2P_NODE=templates/typescript/discovery/libp2p-sidecar.js
 ```
 
 **HTTP gateway fallback** (if neither is available):
 ```bash
-export BORGKIT_LIBP2P_GATEWAY=http://localhost:7731
+export INAI_LIBP2P_GATEWAY=http://localhost:7731
 ```
 The gateway is an HTTP server that bridges to the libp2p DHT.
 

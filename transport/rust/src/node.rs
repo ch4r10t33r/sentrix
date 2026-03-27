@@ -1,4 +1,4 @@
-//! BorgkitNode — owns the libp2p Swarm and drives its event loop.
+//! InaiNode — owns the libp2p Swarm and drives its event loop.
 
 use std::{
     collections::HashMap,
@@ -21,8 +21,8 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::invoke::InvokeCodec;
 
-pub const INVOKE_PROTO:  &str = "/borgkit/invoke/1.0.0";
-pub const GOSSIP_TOPIC:  &str = "/borgkit/gossip/1.0.0";
+pub const INVOKE_PROTO:  &str = "/inai/invoke/1.0.0";
+pub const GOSSIP_TOPIC:  &str = "/inai/gossip/1.0.0";
 
 // ── message types ─────────────────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ pub fn unix_ms() -> u64 {
 // ── behaviour ─────────────────────────────────────────────────────────────────
 
 #[derive(NetworkBehaviour)]
-pub struct BorgkitBehaviour {
+pub struct InaiBehaviour {
     pub invoke:    request_response::Behaviour<InvokeCodec>,
     pub gossipsub: gossipsub::Behaviour,
     pub identify:  identify::Behaviour,
@@ -77,11 +77,11 @@ pub struct BorgkitBehaviour {
 
 // ── node config ───────────────────────────────────────────────────────────────
 
-pub struct BorgkitNodeConfig {
+pub struct InaiNodeConfig {
     pub listen_addrs: Vec<Multiaddr>,
 }
 
-impl Default for BorgkitNodeConfig {
+impl Default for InaiNodeConfig {
     fn default() -> Self {
         Self {
             listen_addrs: vec!["/ip4/0.0.0.0/tcp/0".parse().unwrap()],
@@ -110,13 +110,13 @@ enum SwarmCmd {
     },
 }
 
-// ── BorgkitNode ───────────────────────────────────────────────────────────────
+// ── InaiNode ───────────────────────────────────────────────────────────────
 
-/// A running libp2p node for the Borgkit mesh.
+/// A running libp2p node for the Inai mesh.
 ///
 /// Owns the Tokio runtime + Swarm event loop.
 /// All operations are sent via an mpsc channel and executed on the loop thread.
-pub struct BorgkitNode {
+pub struct InaiNode {
     cmd_tx:       mpsc::Sender<SwarmCmd>,
     peer_id:      PeerId,
     listen_addrs: Vec<Multiaddr>,
@@ -126,9 +126,9 @@ pub struct BorgkitNode {
     _rt:          tokio::runtime::Runtime,
 }
 
-impl BorgkitNode {
-    /// Build and start a new BorgkitNode, registering an optional request handler.
-    pub fn new<F>(config: BorgkitNodeConfig, handler: Option<F>) -> anyhow::Result<Self>
+impl InaiNode {
+    /// Build and start a new InaiNode, registering an optional request handler.
+    pub fn new<F>(config: InaiNodeConfig, handler: Option<F>) -> anyhow::Result<Self>
     where
         F: Fn(AgentRequest) -> AgentResponse + Send + Sync + 'static,
     {
@@ -173,7 +173,7 @@ impl BorgkitNode {
         rx.blocking_recv().map_err(|e| e.to_string())?
     }
 
-    /// Publish a gossip message on the Borgkit topic.
+    /// Publish a gossip message on the Inai topic.
     pub fn publish(&self, data: Vec<u8>) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.cmd_tx.blocking_send(SwarmCmd::Publish { data, result: tx }).map_err(|e| e.to_string())?;
@@ -183,7 +183,7 @@ impl BorgkitNode {
 
 // ── swarm construction ────────────────────────────────────────────────────────
 
-async fn build_swarm() -> anyhow::Result<(Swarm<BorgkitBehaviour>, PeerId)> {
+async fn build_swarm() -> anyhow::Result<(Swarm<InaiBehaviour>, PeerId)> {
     let swarm = libp2p::SwarmBuilder::with_new_identity()
         .with_tokio()
         .with_tcp(tcp::Config::default(), noise::Config::new, yamux::Config::default)?
@@ -208,11 +208,11 @@ async fn build_swarm() -> anyhow::Result<(Swarm<BorgkitBehaviour>, PeerId)> {
 
             // Identify
             let identify = identify::Behaviour::new(identify::Config::new(
-                "/borgkit/1.0.0".into(),
+                "/inai/1.0.0".into(),
                 key.public(),
             ));
 
-            Ok(BorgkitBehaviour { invoke, gossipsub, identify })
+            Ok(InaiBehaviour { invoke, gossipsub, identify })
         })?
         .build();
 
@@ -223,7 +223,7 @@ async fn build_swarm() -> anyhow::Result<(Swarm<BorgkitBehaviour>, PeerId)> {
 // ── swarm event loop ──────────────────────────────────────────────────────────
 
 async fn swarm_loop(
-    mut swarm:      Swarm<BorgkitBehaviour>,
+    mut swarm:      Swarm<InaiBehaviour>,
     mut cmd_rx:     mpsc::Receiver<SwarmCmd>,
     handler:        Option<Arc<dyn Fn(AgentRequest) -> AgentResponse + Send + Sync>>,
     listen_addrs:   Vec<Multiaddr>,
@@ -266,7 +266,7 @@ async fn swarm_loop(
 
             event = swarm.select_next_some() => {
                 match event {
-                    SwarmEvent::Behaviour(BorgkitBehaviourEvent::Invoke(
+                    SwarmEvent::Behaviour(InaiBehaviourEvent::Invoke(
                         request_response::Event::Message {
                             peer,
                             message: request_response::Message::Request { request, channel, .. },
@@ -280,7 +280,7 @@ async fn swarm_loop(
                         let _ = swarm.behaviour_mut().invoke.send_response(channel, resp);
                     }
 
-                    SwarmEvent::Behaviour(BorgkitBehaviourEvent::Invoke(
+                    SwarmEvent::Behaviour(InaiBehaviourEvent::Invoke(
                         request_response::Event::Message {
                             message: request_response::Message::Response { request_id, response },
                             ..
@@ -291,7 +291,7 @@ async fn swarm_loop(
                         }
                     }
 
-                    SwarmEvent::Behaviour(BorgkitBehaviourEvent::Invoke(
+                    SwarmEvent::Behaviour(InaiBehaviourEvent::Invoke(
                         request_response::Event::OutboundFailure { request_id, error, .. }
                     )) => {
                         if let Some(tx) = pending.lock().unwrap().remove(&request_id.0) {

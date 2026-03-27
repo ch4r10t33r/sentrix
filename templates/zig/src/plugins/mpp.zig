@@ -1,6 +1,6 @@
-//! Machine Payments Protocol (MPP) → Borgkit Plugin (Zig)
+//! Machine Payments Protocol (MPP) → Inai Plugin (Zig)
 //!
-//! Implements HTTP 402 payment gating for Borgkit agents using the MPP
+//! Implements HTTP 402 payment gating for Inai agents using the MPP
 //! challenge–credential–receipt flow (https://mpp.dev).
 //!
 //! This implementation covers the server (gating) and client (paying) sides

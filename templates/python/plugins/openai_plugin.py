@@ -1,7 +1,7 @@
 """
-OpenAI Agents SDK → Borgkit Plugin
+OpenAI Agents SDK → Inai Plugin
 ──────────────────────────────────────────────────────────────────────────────
-Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Borgkit IAgent
+Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Inai IAgent
 on the mesh — discoverable, callable by other agents, and serveable over HTTP.
 
 Capability extraction strategy (priority order)
@@ -40,7 +40,7 @@ Usage
   )
 
   config = OpenAIPluginConfig(
-      agent_id="borgkit://agent/web-search",
+      agent_id="inai://agent/web-search",
       name="WebSearchAgent",
       owner="0xYourWallet",
       port=8082,
@@ -50,7 +50,7 @@ Usage
 
   # One-liner shortcut:
   # from plugins.openai_plugin import wrap_openai
-  # agent = wrap_openai(oai_agent, name="WebSearchAgent", agent_id="borgkit://agent/web-search", owner="0xWallet")
+  # agent = wrap_openai(oai_agent, name="WebSearchAgent", agent_id="inai://agent/web-search", owner="0xWallet")
 
   await agent.serve(port=8082)
 """
@@ -62,7 +62,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from interfaces import AgentRequest, AgentResponse
-from plugins.base import BorgkitPlugin, CapabilityDescriptor, PluginConfig, WrappedAgent
+from plugins.base import InaiPlugin, CapabilityDescriptor, PluginConfig, WrappedAgent
 
 
 # ── extended config ────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ from plugins.base import BorgkitPlugin, CapabilityDescriptor, PluginConfig, Wrap
 class OpenAIPluginConfig(PluginConfig):
     """OpenAI Agents SDK-specific configuration (extends PluginConfig)."""
 
-    # Expose each @function_tool as a separate Borgkit capability.
+    # Expose each @function_tool as a separate Inai capability.
     # When False, a single "invoke" capability wraps the whole agent.
     expose_tools_as_capabilities: bool = True
 
@@ -86,7 +86,7 @@ class OpenAIPluginConfig(PluginConfig):
     model_override: Optional[str] = None
 
     # Tracing / context name shown in OpenAI traces dashboard.
-    trace_name: str = "borgkit"
+    trace_name: str = "inai"
 
 
 # ── native I/O types ───────────────────────────────────────────────────────────
@@ -100,11 +100,11 @@ class _OpenAINativeInput:
 
 # ── plugin ─────────────────────────────────────────────────────────────────────
 
-class OpenAIPlugin(BorgkitPlugin):
+class OpenAIPlugin(InaiPlugin):
     """
-    Borgkit plugin for the OpenAI Agents SDK.
+    Inai plugin for the OpenAI Agents SDK.
 
-    Wraps any ``agents.Agent`` and bridges it into the Borgkit mesh.
+    Wraps any ``agents.Agent`` and bridges it into the Inai mesh.
     Each tool and handoff target becomes a discoverable capability.
     """
 
@@ -122,9 +122,9 @@ class OpenAIPlugin(BorgkitPlugin):
 
         # 1. Explicit capability_map overrides everything
         if self.config.capability_map:
-            for borgkit_name, native_name in self.config.capability_map.items():
+            for inai_name, native_name in self.config.capability_map.items():
                 caps.append(CapabilityDescriptor(
-                    name=borgkit_name,
+                    name=inai_name,
                     description=f"Mapped capability → {native_name}",
                     native_name=native_name,
                 ))
@@ -372,7 +372,7 @@ def _safe_serialize(obj: Any) -> Any:
 
 
 def _sanitize(name: str) -> str:
-    """Normalize to a valid Borgkit capability name."""
+    """Normalize to a valid Inai capability name."""
     return name.replace(" ", "_").replace("-", "_").lower()
 
 
@@ -392,7 +392,7 @@ def wrap_openai(
     **kwargs,
 ) -> WrappedAgent:
     """
-    Wrap an OpenAI Agents SDK Agent for the Borgkit mesh in one line.
+    Wrap an OpenAI Agents SDK Agent for the Inai mesh in one line.
 
     Example::
 
@@ -410,19 +410,19 @@ def wrap_openai(
             tools=[get_weather],
         )
 
-        borgkit_agent = wrap_openai(
+        inai_agent = wrap_openai(
             agent    = oai_agent,
             name     = "WeatherBot",
-            agent_id = "borgkit://agent/weather",
+            agent_id = "inai://agent/weather",
             owner    = "0xYourWallet",
             tags     = ["weather", "openai"],
         )
-        await borgkit_agent.serve(port=8082)
+        await inai_agent.serve(port=8082)
 
     Args:
         agent:           The ``agents.Agent`` instance to wrap.
         name:            Human-readable name shown in discovery.
-        agent_id:        Unique Borgkit URI, e.g. ``"borgkit://agent/my-bot"``.
+        agent_id:        Unique Inai URI, e.g. ``"inai://agent/my-bot"``.
         owner:           Wallet address or identifier of the agent owner.
         version:         Semantic version string.
         port:            HTTP port for ``agent.serve()``.

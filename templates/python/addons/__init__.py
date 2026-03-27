@@ -1,5 +1,5 @@
 """
-Borgkit Add-ons
+Inai Add-ons
 ───────────────
 Optional extensions that augment core agent functionality.
 

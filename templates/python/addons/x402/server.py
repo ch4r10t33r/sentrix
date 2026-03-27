@@ -1,7 +1,7 @@
 """
 x402 Server Mixin
 ─────────────────────────────────────────────────────────────────────────────
-Adds payment enforcement to any Borgkit IAgent.
+Adds payment enforcement to any Inai IAgent.
 
 Usage
 -----
@@ -9,7 +9,7 @@ Usage
     from interfaces  import IAgent, AgentRequest, AgentResponse
 
     class MyPaidAgent(X402ServerMixin, IAgent):
-        agent_id = "borgkit://agent/my-paid-agent"
+        agent_id = "inai://agent/my-paid-agent"
         owner    = "0xMyWalletAddress"
 
         # ── pricing table ──────────────────────────────────────────────────

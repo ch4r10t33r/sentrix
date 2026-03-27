@@ -1,0 +1,40 @@
+{
+  "name": "@ch4r10teer41/inai-cli",
+  "version": "0.3.0",
+  "description": "Scaffold P2P-discoverable, DID-native AI agents across any framework",
+  "keywords": [
+    "inai",
+    "agents",
+    "p2p",
+    "libp2p",
+    "did",
+    "ai"
+  ],
+  "bin": {
+    "inai": "./bin/inai"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "optionalDependencies": {
+    "@ch4r10teer41/inai-cli-linux-x64": "0.3.0",
+    "@ch4r10teer41/inai-cli-linux-arm64": "0.3.0",
+    "@ch4r10teer41/inai-cli-darwin-x64": "0.3.0",
+    "@ch4r10teer41/inai-cli-darwin-arm64": "0.3.0",
+    "@ch4r10teer41/inai-cli-win32-x64": "0.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ch4r10t33r/inai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ch4r10t33r/inai.git",
+    "directory": "npm/inai-cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -297,7 +297,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "borgkit-cli"
+name = "inai-cli"
 version = "0.3.0"
 dependencies = [
  "anyhow",
@@ -315,7 +315,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "borgkit-libp2p"
+name = "inai-libp2p"
 version = "0.1.0"
 dependencies = [
  "async-trait",

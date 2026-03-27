@@ -3,8 +3,8 @@
  *
  * Priority order (highest → lowest):
  *   1. Explicit `type` in config
- *   2. BORGKIT_DISCOVERY_TYPE env var   → 'local' | 'http' | 'libp2p' | 'onchain'
- *   3. BORGKIT_DISCOVERY_URL env var    → HttpDiscovery
+ *   2. INAI_DISCOVERY_TYPE env var   → 'local' | 'http' | 'libp2p' | 'onchain'
+ *   3. INAI_DISCOVERY_URL env var    → HttpDiscovery
  *   4. default                          → Libp2pDiscovery (falls back to LocalDiscovery on bind failure)
  *
  * Usage:
@@ -12,7 +12,7 @@
  *   await registry.register(entry);
  *
  * To opt out of libp2p and use in-process local discovery (dev/test):
- *   BORGKIT_DISCOVERY_TYPE=local
+ *   INAI_DISCOVERY_TYPE=local
  */
 
 import { IAgentDiscovery } from '../interfaces/IAgentDiscovery';
@@ -50,7 +50,7 @@ export interface DiscoveryConfig {
     listenAddresses?: string[];
     /**
      * Known bootstrap peer multiaddrs.
-     * Also read from BORGKIT_BOOTSTRAP_PEERS env var (comma-separated).
+     * Also read from INAI_BOOTSTRAP_PEERS env var (comma-separated).
      */
     bootstrapPeers?: string[];
     /** DHT record re-publish interval in ms. Default: 30_000 */
@@ -72,16 +72,16 @@ export class DiscoveryFactory {
    */
   static async create(config: DiscoveryConfig = {}): Promise<IAgentDiscovery> {
     const type: DiscoveryType = config.type
-      ?? (process.env['BORGKIT_DISCOVERY_TYPE'] as DiscoveryType | undefined)
-      ?? (process.env['BORGKIT_DISCOVERY_URL'] ? 'http' : 'libp2p');
+      ?? (process.env['INAI_DISCOVERY_TYPE'] as DiscoveryType | undefined)
+      ?? (process.env['INAI_DISCOVERY_URL'] ? 'http' : 'libp2p');
 
     switch (type) {
       case 'http': {
-        const url = config.http?.baseUrl ?? process.env['BORGKIT_DISCOVERY_URL'];
-        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl or BORGKIT_DISCOVERY_URL');
+        const url = config.http?.baseUrl ?? process.env['INAI_DISCOVERY_URL'];
+        if (!url) throw new Error('[DiscoveryFactory] http type requires baseUrl or INAI_DISCOVERY_URL');
         return new HttpDiscovery({
           baseUrl:              url,
-          apiKey:               config.http?.apiKey              ?? process.env['BORGKIT_DISCOVERY_KEY'],
+          apiKey:               config.http?.apiKey              ?? process.env['INAI_DISCOVERY_KEY'],
           timeoutMs:            config.http?.timeoutMs,
           heartbeatIntervalMs:  config.http?.heartbeatIntervalMs,
         });
@@ -99,7 +99,7 @@ export class DiscoveryFactory {
             (err as Error).message,
           );
           console.warn(
-            '[DiscoveryFactory] Set BORGKIT_DISCOVERY_TYPE=local to suppress this warning in dev/test.',
+            '[DiscoveryFactory] Set INAI_DISCOVERY_TYPE=local to suppress this warning in dev/test.',
           );
           return LocalDiscovery.getInstance();
         }

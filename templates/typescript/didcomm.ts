@@ -1,5 +1,5 @@
 /**
- * DIDComm v2 encrypted messaging for Borgkit agents.
+ * DIDComm v2 encrypted messaging for Inai agents.
  *
  * Implements authenticated (authcrypt) and anonymous (anoncrypt) encryption
  * between DID-identified agents using X25519 ECDH + XSalsa20-Poly1305.
@@ -112,13 +112,13 @@ export interface Recipient {
 
 // ── Message type constants ─────────────────────────────────────────────────────
 
-/** Well-known DIDComm v2 message type URIs for Borgkit. */
+/** Well-known DIDComm v2 message type URIs for Inai. */
 export const MessageTypes = {
-  INVOKE:   'https://borgkit.dev/didcomm/1.0/invoke',
-  RESPONSE: 'https://borgkit.dev/didcomm/1.0/response',
-  FORWARD:  'https://borgkit.dev/didcomm/1.0/forward',
-  PING:     'https://borgkit.dev/didcomm/1.0/ping',
-  PONG:     'https://borgkit.dev/didcomm/1.0/pong',
+  INVOKE:   'https://inai.dev/didcomm/1.0/invoke',
+  RESPONSE: 'https://inai.dev/didcomm/1.0/response',
+  FORWARD:  'https://inai.dev/didcomm/1.0/forward',
+  PING:     'https://inai.dev/didcomm/1.0/ping',
+  PONG:     'https://inai.dev/didcomm/1.0/pong',
 } as const;
 
 // ── Crypto / encoding helpers ─────────────────────────────────────────────────

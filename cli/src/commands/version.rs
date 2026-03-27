@@ -2,11 +2,11 @@ use anyhow::Result;
 use owo_colors::OwoColorize;
 
 pub fn run() -> Result<()> {
-    println!("{}", format!("borgkit v{}", env!("BORGKIT_VERSION")).bold());
+    println!("{}", format!("inai v{}", env!("INAI_VERSION")).bold());
     println!(
         "  {:20} {}",
         "Build date:".bright_black(),
-        env!("BORGKIT_BUILD_DATE")
+        env!("INAI_BUILD_DATE")
     );
     println!(
         "  {:20} {}",

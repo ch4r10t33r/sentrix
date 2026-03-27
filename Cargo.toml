@@ -7,8 +7,8 @@ version     = "0.3.0"
 edition     = "2021"
 authors     = ["ch4r10t33r <ch4r10t33r@users.noreply.github.com>"]
 license     = "Apache-2.0"
-repository  = "https://github.com/ch4r10t33r/borgkit"
-homepage    = "https://github.com/ch4r10t33r/borgkit"
+repository  = "https://github.com/ch4r10t33r/inai"
+homepage    = "https://github.com/ch4r10t33r/inai"
 description = "Scaffold P2P-discoverable, DID-native AI agents across any framework"
 
 [workspace.dependencies]

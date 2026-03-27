@@ -1,7 +1,7 @@
-//! LangGraph → Borgkit Plugin (Rust) — HTTP Bridge
+//! LangGraph → Inai Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps a LangServe / LangGraph Platform endpoint so it participates in the
-//! Borgkit mesh as a standard `IAgent`.
+//! Inai mesh as a standard `IAgent`.
 //!
 //! ── LangServe API contract ────────────────────────────────────────────────────
 //!
@@ -17,8 +17,8 @@
 //!
 //! ── Usage ──────────────────────────────────────────────────────────────────────
 //!
-//!   use borgkit::plugins::langgraph::{LangGraphPlugin, LangGraphService};
-//!   use borgkit::plugins::base::PluginConfig;
+//!   use inai::plugins::langgraph::{LangGraphPlugin, LangGraphService};
+//!   use inai::plugins::base::PluginConfig;
 //!
 //!   let service = LangGraphService {
 //!       base_url:    "http://localhost:8000".to_string(),
@@ -28,7 +28,7 @@
 //!
 //!   let plugin = LangGraphPlugin::with_timeout(60);
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "borgkit://agent/researcher".to_string(),
+//!       agent_id:     "inai://agent/researcher".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -38,7 +38,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
+use crate::plugins::base::{CapabilityDescriptor, InaiPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -107,10 +107,10 @@ impl Default for LangGraphPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
+// ── InaiPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl BorgkitPlugin<LangGraphService> for LangGraphPlugin {
+impl InaiPlugin<LangGraphService> for LangGraphPlugin {
     fn extract_capabilities(&self, service: &LangGraphService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {

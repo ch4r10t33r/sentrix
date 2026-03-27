@@ -1,6 +1,6 @@
-//! LlamaIndex → Borgkit Plugin (Rust) — HTTP Bridge
+//! LlamaIndex → Inai Plugin (Rust) — HTTP Bridge
 //!
-//! Wraps a LlamaIndex server so it participates in the Borgkit mesh as a
+//! Wraps a LlamaIndex server so it participates in the Inai mesh as a
 //! standard `IAgent`.  LlamaIndex agents and query engines can be served via
 //! `llamaindex serve` or by using `llama_index.server` (FastAPI); this plugin
 //! bridges both the `/chat` and `/query` endpoints.
@@ -29,8 +29,8 @@
 //!
 //! ── Usage ─────────────────────────────────────────────────────────────────────
 //!
-//!   use borgkit::plugins::llamaindex::{LlamaIndexPlugin, LlamaIndexService};
-//!   use borgkit::plugins::base::PluginConfig;
+//!   use inai::plugins::llamaindex::{LlamaIndexPlugin, LlamaIndexService};
+//!   use inai::plugins::base::PluginConfig;
 //!
 //!   let service = LlamaIndexService {
 //!       base_url:     "http://localhost:8080".to_string(),
@@ -41,7 +41,7 @@
 //!
 //!   let plugin = LlamaIndexPlugin::with_timeout(60);
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "borgkit://agent/llamaindex-rag".to_string(),
+//!       agent_id:     "inai://agent/llamaindex-rag".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -51,7 +51,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
+use crate::plugins::base::{CapabilityDescriptor, InaiPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -114,10 +114,10 @@ impl Default for LlamaIndexPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
+// ── InaiPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl BorgkitPlugin<LlamaIndexService> for LlamaIndexPlugin {
+impl InaiPlugin<LlamaIndexService> for LlamaIndexPlugin {
     fn extract_capabilities(&self, service: &LlamaIndexService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -141,7 +141,7 @@ impl BorgkitPlugin<LlamaIndexService> for LlamaIndexPlugin {
     ///
     /// For the `/chat` route the body is `{ "message": ..., "chat_history": [] }`.
     /// For the `/query` route the body is `{ "query": ... }`.
-    /// The route is not available here so the sentinel field `"__borgkit_content"`
+    /// The route is not available here so the sentinel field `"__inai_content"`
     /// is stored; final body assembly happens in `invoke_native`.
     fn translate_request(&self, request: &AgentRequest) -> Result<Value, String> {
         let content = request.payload.get("message")
@@ -154,7 +154,7 @@ impl BorgkitPlugin<LlamaIndexService> for LlamaIndexPlugin {
             })
             .unwrap_or_else(|| request.payload.to_string());
 
-        Ok(json!({ "__borgkit_content": content }))
+        Ok(json!({ "__inai_content": content }))
     }
 
     /// Extract the `response` field from the LlamaIndex response JSON.
@@ -191,7 +191,7 @@ impl BorgkitPlugin<LlamaIndexService> for LlamaIndexPlugin {
         );
 
         let content = input
-            .get("__borgkit_content")
+            .get("__inai_content")
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string();

@@ -1,5 +1,5 @@
 /**
- * Libp2PNode — creates and manages a js-libp2p host for Borgkit.
+ * Libp2PNode — creates and manages a js-libp2p host for Inai.
  *
  * Wraps libp2p node lifecycle: start, stop, peer info.
  * Used by both Libp2PListener (server side) and Libp2PAgentClient (client side).

@@ -35,12 +35,12 @@ async function replaceTokensInDir(
 }
 
 /**
- * Write a borgkit.config.json to the project root.
+ * Write a inai.config.json to the project root.
  */
 export async function writeConfig(
   projectDir: string,
   config: Record<string, unknown>
 ): Promise<void> {
-  const configPath = path.join(projectDir, 'borgkit.config.json');
+  const configPath = path.join(projectDir, 'inai.config.json');
   await fs.writeJson(configPath, config, { spaces: 2 });
 }

@@ -1,6 +1,6 @@
-//! Machine Payments Protocol (MPP) → Borgkit Plugin (Rust)
+//! Machine Payments Protocol (MPP) → Inai Plugin (Rust)
 //!
-//! Adds MPP HTTP 402 payment gating to any Borgkit agent.  The plugin
+//! Adds MPP HTTP 402 payment gating to any Inai agent.  The plugin
 //! intercepts incoming `/invoke` requests, issues challenges when no valid
 //! credential is present, and attaches a `Payment-Receipt` to successful
 //! responses.
@@ -20,7 +20,7 @@
 //!
 //! Dependencies (add to Cargo.toml)
 //! ─────────────────────────────────
-//!   # Core dependencies (already in most Borgkit Rust agents)
+//!   # Core dependencies (already in most Inai Rust agents)
 //!   reqwest    = { version = "0.12", default-features = false, features = ["blocking","json","rustls-tls"] }
 //!   serde      = { version = "1",    features = ["derive"] }
 //!   serde_json = "1"
@@ -36,7 +36,7 @@
 //!
 //! Usage — server middleware (axum)
 //! ────────────────────────────────
-//!   use borgkit::plugins::mpp::{MppPlugin, MppConfig, TempoConfig, MppPricing};
+//!   use inai::plugins::mpp::{MppPlugin, MppConfig, TempoConfig, MppPricing};
 //!
 //!   let plugin = MppPlugin::new(MppConfig {
 //!       method: MppMethod::Tempo,
@@ -67,7 +67,7 @@
 //!
 //! Usage — MPP client (paying agent)
 //! ─────────────────────────────────
-//!   use borgkit::plugins::mpp::{MppClient, MppClientConfig, TempoClientConfig};
+//!   use inai::plugins::mpp::{MppClient, MppClientConfig, TempoClientConfig};
 //!
 //!   let client = MppClient::new(MppClientConfig {
 //!       tempo: Some(TempoClientConfig {
@@ -276,7 +276,7 @@ pub fn extract_credential(header: &str) -> Option<&str> {
 
 // ── MppPlugin — server side ───────────────────────────────────────────────────
 
-/// MPP payment middleware for Borgkit agents.
+/// MPP payment middleware for Inai agents.
 ///
 /// See module docs for usage examples.
 pub struct MppPlugin {

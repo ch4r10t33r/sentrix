@@ -2,8 +2,8 @@ use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 use std::process::Command;
 
-const NPM_PACKAGE: &str = "@ch4r10teer41/borgkit-cli";
-const CURRENT_VERSION: &str = env!("BORGKIT_VERSION");
+const NPM_PACKAGE: &str = "@ch4r10teer41/inai-cli";
+const CURRENT_VERSION: &str = env!("INAI_VERSION");
 
 pub fn run() -> Result<()> {
     println!("Checking for updates…");

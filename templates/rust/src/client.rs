@@ -1,4 +1,4 @@
-//! AgentClient — HTTP transport client for calling other Borgkit agents.
+//! AgentClient — HTTP transport client for calling other Inai agents.
 //!
 //! Combines lookup (IAgentDiscovery) with invocation (HTTP POST /invoke).
 //! Optional x402 payment handling built in.
@@ -12,7 +12,7 @@
 //! let resp = client.call_capability("weather_forecast", json!({"city": "NYC"})).await?;
 //!
 //! // Call a specific agent:
-//! let resp = client.call("borgkit://agent/0xABC", "weather_forecast", json!({"city": "NYC"})).await?;
+//! let resp = client.call("inai://agent/0xABC", "weather_forecast", json!({"city": "NYC"})).await?;
 //! ```
 
 use crate::discovery::{DiscoveryEntry, IAgentDiscovery};

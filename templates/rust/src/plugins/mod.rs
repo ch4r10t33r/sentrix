@@ -1,5 +1,5 @@
 pub mod base;
-pub use base::{BorgkitPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent};
+pub use base::{InaiPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent};
 
 pub mod langgraph;
 pub mod google_adk;

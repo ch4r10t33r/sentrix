@@ -1,7 +1,7 @@
 {
-  "name": "@ch4r10teer41/borgkit-cli-win32-x64",
+  "name": "@ch4r10teer41/inai-cli-win32-x64",
   "version": "1.12.0",
-  "description": "win32 x64 native binary for @ch4r10teer41/borgkit-cli",
+  "description": "win32 x64 native binary for @ch4r10teer41/inai-cli",
   "os": ["win32"],
   "cpu": ["x64"],
   "bin": {},
@@ -9,8 +9,8 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ch4r10t33r/borgkit.git",
-    "directory": "npm/borgkit-cli-win32-x64"
+    "url": "https://github.com/ch4r10t33r/inai.git",
+    "directory": "npm/inai-cli-win32-x64"
   },
   "publishConfig": {
     "access": "public"

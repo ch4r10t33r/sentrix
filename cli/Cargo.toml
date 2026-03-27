@@ -1,14 +1,14 @@
 [package]
-name        = "borgkit-cli"
+name        = "inai-cli"
 version.workspace    = true
 edition.workspace    = true
 authors.workspace    = true
 license.workspace    = true
 repository.workspace = true
-description = "The Borgkit CLI — scaffold, run, discover and inspect P2P AI agents"
+description = "The Inai CLI — scaffold, run, discover and inspect P2P AI agents"
 
 [[bin]]
-name = "borgkit"
+name = "inai"
 path = "src/main.rs"
 
 [dependencies]

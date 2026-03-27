@@ -1,8 +1,8 @@
 """
-Borgkit Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
+Inai Mesh Protocol — Heartbeat, Capability Exchange, Gossip, and Streaming
 ──────────────────────────────────────────────────────────────────────────────
 Defines the message types and interfaces for the four built-in agent-to-agent
-protocols that every Borgkit agent understands:
+protocols that every Inai agent understands:
 
   1. Heartbeat          — liveness ping with status payload
   2. Capability Exchange — direct capability query (bypasses discovery layer)

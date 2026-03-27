@@ -1,7 +1,7 @@
-//! OpenAI → Borgkit Plugin (Zig) — HTTP Bridge
+//! OpenAI → Inai Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps an OpenAI-compatible chat completions endpoint so it participates in
-//! the Borgkit mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
+//! the Inai mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
 //!
 //! ── OpenAI API contract ────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(openai.OpenAIService, openai.OpenAIPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "borgkit://agent/openai",
+//!       .agent_id = "inai://agent/openai",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

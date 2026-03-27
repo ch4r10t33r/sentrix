@@ -1,4 +1,4 @@
-//! InvokeCodec — request_response::Codec for /borgkit/invoke/1.0.0
+//! InvokeCodec — request_response::Codec for /inai/invoke/1.0.0
 //!
 //! Wire format: 4-byte big-endian length prefix + UTF-8 JSON body.
 

@@ -1,15 +1,15 @@
 """
-CrewAIPlugin — Borgkit adapter for CrewAI agents.
+CrewAIPlugin — Inai adapter for CrewAI agents.
 
 Wraps a CrewAI Agent so it becomes fully discoverable and callable on the
-Borgkit mesh without any changes to the original agent code.
+Inai mesh without any changes to the original agent code.
 
 How it works
 ────────────
 1. At wrap time, capabilities are extracted from the agent's tool list.
-   Each @tool-decorated function becomes one Borgkit capability.
+   Each @tool-decorated function becomes one Inai capability.
 
-2. When an AgentRequest arrives, translate_request() maps the Borgkit
+2. When an AgentRequest arrives, translate_request() maps the Inai
    payload into a CrewAI Task description.
 
 3. invoke_native() runs the task using a single-agent Crew, capturing
@@ -35,10 +35,10 @@ Usage:
         tools=[web_search],
     )
 
-    borgkit_agent = wrap_crewai(
+    inai_agent = wrap_crewai(
         agent    = agent,
         name     = "ResearchAgent",
-        agent_id = "borgkit://agent/researcher",
+        agent_id = "inai://agent/researcher",
         owner    = "0xYourWallet",
         tags     = ["research", "crewai"],
     )
@@ -49,7 +49,7 @@ from __future__ import annotations
 from typing import Any, List, Optional
 
 from plugins.base import (
-    BorgkitPlugin,
+    InaiPlugin,
     PluginConfig,
     CapabilityDescriptor,
     WrappedAgent,
@@ -94,12 +94,12 @@ class CrewAIPluginConfig(PluginConfig):
 
 # ── Plugin ────────────────────────────────────────────────────────────────────
 
-class CrewAIPlugin(BorgkitPlugin):
+class CrewAIPlugin(InaiPlugin):
     """
-    Borgkit ↔ CrewAI bridge.
+    Inai ↔ CrewAI bridge.
 
-    Each CrewAI tool decorated with @tool becomes one Borgkit capability.
-    Borgkit AgentRequests are translated into CrewAI Tasks and run via a
+    Each CrewAI tool decorated with @tool becomes one Inai capability.
+    Inai AgentRequests are translated into CrewAI Tasks and run via a
     single-agent Crew.  Results are mapped back to AgentResponse.
     """
 
@@ -111,7 +111,7 @@ class CrewAIPlugin(BorgkitPlugin):
         super().__init__(config)
         self._cfg: CrewAIPluginConfig = config
 
-    # ── BorgkitPlugin abstract methods ────────────────────────────────────────
+    # ── InaiPlugin abstract methods ────────────────────────────────────────
 
     def extract_capabilities(self, agent: CrewAgent) -> List[CapabilityDescriptor]:
         """
@@ -134,7 +134,7 @@ class CrewAIPlugin(BorgkitPlugin):
 
     def translate_request(self, req: AgentRequest, agent: CrewAgent) -> dict:
         """
-        Map a Borgkit AgentRequest to a CrewAI task description dict.
+        Map a Inai AgentRequest to a CrewAI task description dict.
 
         The task description is built from:
         - A system prompt prefix (if configured)
@@ -186,7 +186,7 @@ class CrewAIPlugin(BorgkitPlugin):
 
     def translate_response(self, native_output: Any, req: AgentRequest) -> AgentResponse:
         """
-        Map a CrewOutput (or plain string) back to a Borgkit AgentResponse.
+        Map a CrewOutput (or plain string) back to a Inai AgentResponse.
         """
         # CrewOutput has .raw (str) and .tasks_output (list) attributes
         if hasattr(native_output, "raw"):
@@ -256,18 +256,18 @@ def wrap_crewai(
     **kwargs: Any,
 ) -> WrappedAgent:
     """
-    Wrap a CrewAI Agent for the Borgkit mesh.
+    Wrap a CrewAI Agent for the Inai mesh.
 
     After wrapping, the agent:
-      - exposes each @tool-decorated function as a Borgkit capability
+      - exposes each @tool-decorated function as a Inai capability
       - registers with LocalDiscovery (or whichever backend is configured)
       - handles AgentRequest / AgentResponse translation automatically
-      - can be discovered by any other Borgkit agent via capability query
+      - can be discovered by any other Inai agent via capability query
 
     Args:
         agent:         The CrewAI Agent instance to wrap.
         name:          Human-readable name shown in discovery results.
-        agent_id:      Unique Borgkit URI, e.g. "borgkit://agent/researcher".
+        agent_id:      Unique Inai URI, e.g. "inai://agent/researcher".
         owner:         Wallet or contract address of the agent owner.
         tags:          Optional list of search tags for discovery.
         process:       CrewAI Process type ("sequential" or "hierarchical").
@@ -296,7 +296,7 @@ def wrap_crewai(
         wrapped = wrap_crewai(
             agent    = agent,
             name     = "SummaryAgent",
-            agent_id = "borgkit://agent/summariser",
+            agent_id = "inai://agent/summariser",
             owner    = "0xYourWallet",
             tags     = ["summarise", "nlp", "crewai"],
         )

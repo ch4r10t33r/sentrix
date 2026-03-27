@@ -1,7 +1,7 @@
-//! smolagents → Borgkit Plugin (Rust) — HTTP Bridge
+//! smolagents → Inai Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps a deployed HuggingFace smolagents server so it participates in the
-//! Borgkit mesh as a standard `IAgent`.  smolagents can be served in two modes:
+//! Inai mesh as a standard `IAgent`.  smolagents can be served in two modes:
 //!
 //!   • Gradio UI  — `GradioUI(agent).launch()` exposes a Gradio `/run/predict`
 //!                  endpoint (default; `use_gradio: true`).
@@ -37,8 +37,8 @@
 //!
 //! ── Usage ─────────────────────────────────────────────────────────────────────
 //!
-//!   use borgkit::plugins::smolagents::{SmolagentsPlugin, SmolagentsService};
-//!   use borgkit::plugins::base::PluginConfig;
+//!   use inai::plugins::smolagents::{SmolagentsPlugin, SmolagentsService};
+//!   use inai::plugins::base::PluginConfig;
 //!
 //!   // Gradio mode (default)
 //!   let service = SmolagentsService {
@@ -49,7 +49,7 @@
 //!
 //!   let plugin = SmolagentsPlugin::with_timeout(120);
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "borgkit://agent/smolagent".to_string(),
+//!       agent_id:     "inai://agent/smolagent".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -59,7 +59,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
+use crate::plugins::base::{CapabilityDescriptor, InaiPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -129,10 +129,10 @@ impl Default for SmolagentsPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
+// ── InaiPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl BorgkitPlugin<SmolagentsService> for SmolagentsPlugin {
+impl InaiPlugin<SmolagentsService> for SmolagentsPlugin {
     fn extract_capabilities(&self, service: &SmolagentsService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -170,7 +170,7 @@ impl BorgkitPlugin<SmolagentsService> for SmolagentsPlugin {
             })
             .unwrap_or_else(|| request.payload.to_string());
 
-        Ok(json!({ "__borgkit_content": content }))
+        Ok(json!({ "__inai_content": content }))
     }
 
     /// Extract the agent output from the smolagents response.
@@ -220,7 +220,7 @@ impl BorgkitPlugin<SmolagentsService> for SmolagentsPlugin {
         );
 
         let content = input
-            .get("__borgkit_content")
+            .get("__inai_content")
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string();

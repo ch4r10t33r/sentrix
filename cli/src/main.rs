@@ -5,11 +5,11 @@ mod templates;
 
 use clap::{Parser, Subcommand};
 
-/// Borgkit — scaffold, run, and connect P2P AI agents.
+/// Inai — scaffold, run, and connect P2P AI agents.
 #[derive(Parser)]
 #[command(
-    name    = "borgkit",
-    version = env!("BORGKIT_VERSION"),
+    name    = "inai",
+    version = env!("INAI_VERSION"),
     about   = "Scaffold P2P-discoverable, DID-native AI agents across any framework",
     long_about = None,
     propagate_version = true,
@@ -21,7 +21,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Scaffold a new Borgkit agent project
+    /// Scaffold a new Inai agent project
     Init(commands::init::InitArgs),
 
     /// Generate agent source files inside an existing project

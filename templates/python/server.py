@@ -1,7 +1,7 @@
 """
-Borgkit HTTP Server
+Inai HTTP Server
 ──────────────────────────────────────────────────────────────────────────────
-Starts an HTTP server for a WrappedAgent, exposing the standard Borgkit
+Starts an HTTP server for a WrappedAgent, exposing the standard Inai
 endpoints so agents can discover and call each other over the network.
 
 Endpoints
@@ -22,8 +22,8 @@ Usage
   agent  = plugin.wrap(my_adk_agent)
   asyncio.run(serve(agent, host="0.0.0.0", port=6174))
 
-  # or via borgkit-cli:
-  #   borgkit run MyAgent --port 6174
+  # or via inai-cli:
+  #   inai run MyAgent --port 6174
 """
 
 from __future__ import annotations
@@ -71,9 +71,9 @@ async def serve(
         agent:  A WrappedAgent instance (from plugin.wrap(native_agent)).
         host:   Bind address.  Use "0.0.0.0" to accept connections from
                 any interface (default); "127.0.0.1" for local-only.
-        port:   TCP port.  Overridden by BORGKIT_PORT env var if set.
+        port:   TCP port.  Overridden by INAI_PORT env var if set.
     """
-    port = int(os.environ.get("BORGKIT_PORT", port))
+    port = int(os.environ.get("INAI_PORT", port))
 
     try:
         import aiohttp  # noqa: F401
@@ -84,7 +84,7 @@ async def serve(
             await _serve_uvicorn(agent, host, port)
         except ImportError:
             raise RuntimeError(
-                "\n[Borgkit] No async HTTP backend found.\n"
+                "\n[Inai] No async HTTP backend found.\n"
                 "Install one of:\n"
                 "  pip install aiohttp\n"
                 "  pip install fastapi uvicorn\n"
@@ -127,7 +127,7 @@ async def _serve_aiohttp(agent: "WrappedAgent", host: str, port: int) -> None:
     except asyncio.CancelledError:
         pass
     finally:
-        print("\n[Borgkit] Shutting down gracefully…")
+        print("\n[Inai] Shutting down gracefully…")
         try:
             await agent.unregister_discovery()
         except Exception:

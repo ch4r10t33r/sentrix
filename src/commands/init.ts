@@ -29,7 +29,7 @@ export async function initCommand(
     process.exit(1);
   }
 
-  logger.title(`Borgkit — Initialising project "${projectName}" [${lang}]`);
+  logger.title(`Inai — Initialising project "${projectName}" [${lang}]`);
 
   const spinner = ora('Scaffolding project structure...').start();
 
@@ -72,7 +72,7 @@ export async function initCommand(
       }
     }
 
-    // Write borgkit.config.json
+    // Write inai.config.json
     await writeConfig(projectDir, {
       projectName,
       lang,
@@ -89,7 +89,7 @@ export async function initCommand(
     logger.tree('├── interfaces/        # ERC-8004 core interfaces');
     if (example)   logger.tree('├── agents/            # Agent implementations');
     if (discovery) logger.tree('├── discovery/         # Discovery adapter');
-    logger.tree('└── borgkit.config.json # Project configuration');
+    logger.tree('└── inai.config.json # Project configuration');
 
     logger.title('Next steps:');
     logger.info(`  cd ${projectName}`);
@@ -108,8 +108,8 @@ export async function initCommand(
       logger.info('  zig build run');
     }
 
-    logger.info(`\n  borgkit create agent <name>   # add more agents`);
-    logger.info('  borgkit discover              # query discovery layer\n');
+    logger.info(`\n  inai create agent <name>   # add more agents`);
+    logger.info('  inai discover              # query discovery layer\n');
   } catch (err) {
     spinner.fail('Scaffolding failed.');
     logger.error(String(err));

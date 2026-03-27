@@ -1,8 +1,8 @@
 /**
- * Borgkit Plugin Interface (TypeScript)
+ * Inai Plugin Interface (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Defines the contract every framework adapter must satisfy.
- * Implement this to bring any TypeScript agent framework into Borgkit.
+ * Implement this to bring any TypeScript agent framework into Inai.
  */
 
 import { IAgent }         from '../interfaces/IAgent';
@@ -37,7 +37,7 @@ export interface PluginConfig {
   signingKey?: string;
 
   /**
-   * Map Borgkit capability names → framework-native tool/function names.
+   * Map Inai capability names → framework-native tool/function names.
    * e.g. { "getWeather": "weather_tool" }
    */
   capabilityMap?: Record<string, string>;
@@ -46,7 +46,7 @@ export interface PluginConfig {
 // ── capability descriptor ─────────────────────────────────────────────────────
 
 export interface CapabilityDescriptor {
-  /** Borgkit capability name (what callers use) */
+  /** Inai capability name (what callers use) */
   name:          string;
   description:   string;
   inputSchema?:  Record<string, unknown>;
@@ -58,7 +58,7 @@ export interface CapabilityDescriptor {
 
 // ── plugin interface ──────────────────────────────────────────────────────────
 
-export interface IBorgkitPlugin<TAgent = unknown, TNativeInput = unknown, TNativeOutput = unknown> {
+export interface IInaiPlugin<TAgent = unknown, TNativeInput = unknown, TNativeOutput = unknown> {
   readonly config: PluginConfig;
 
   /** Inspect the framework agent and return its capabilities. */
@@ -89,8 +89,8 @@ export interface IBorgkitPlugin<TAgent = unknown, TNativeInput = unknown, TNativ
 
 // ── base class (abstract) ─────────────────────────────────────────────────────
 
-export abstract class BorgkitPlugin<TAgent, TNativeInput, TNativeOutput>
-  implements IBorgkitPlugin<TAgent, TNativeInput, TNativeOutput>
+export abstract class InaiPlugin<TAgent, TNativeInput, TNativeOutput>
+  implements IInaiPlugin<TAgent, TNativeInput, TNativeOutput>
 {
   constructor(readonly config: PluginConfig) {}
 
@@ -130,7 +130,7 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
 
   constructor(
     private readonly agent:   TAgent,
-    private readonly plugin:  BorgkitPlugin<TAgent, TNativeInput, TNativeOutput>,
+    private readonly plugin:  InaiPlugin<TAgent, TNativeInput, TNativeOutput>,
     capabilities:             CapabilityDescriptor[],
     config:                   PluginConfig,
   ) {
@@ -292,7 +292,7 @@ export class WrappedAgent<TAgent, TNativeInput, TNativeOutput> implements IAgent
    * cleanly on SIGINT / SIGTERM.
    *
    * @param options.host - Bind address. Default: '0.0.0.0'
-   * @param options.port - TCP port. Overridden by BORGKIT_PORT env var. Default: 6174
+   * @param options.port - TCP port. Overridden by INAI_PORT env var. Default: 6174
    *
    * @example
    * ```ts
@@ -326,7 +326,7 @@ function printStartupBanner(agent: WrappedAgent<unknown, unknown, unknown>): voi
   const lines: string[] = [
     '',
     line,
-    `  ${B}${C}Borgkit Agent Online${R}  ${DIM}v${cfg.version ?? '?'}${R}`,
+    `  ${B}${C}Inai Agent Online${R}  ${DIM}v${cfg.version ?? '?'}${R}`,
     line,
     `  ${B}Name       ${R}  ${cfg.name}`,
     `  ${B}Agent ID   ${R}  ${G}${agent.agentId}${R}`,

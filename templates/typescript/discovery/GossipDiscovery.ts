@@ -6,8 +6,8 @@
  * the local registry and is re-forwarded with ttl-1.
  *
  * @example
- * const registry = new GossipDiscovery('borgkit://agent/me');
- * await registry.addPeer('borgkit://agent/peer-a', 'http://peer-a:6174');
+ * const registry = new GossipDiscovery('inai://agent/me');
+ * await registry.addPeer('inai://agent/peer-a', 'http://peer-a:6174');
  * await registry.register(myEntry);  // auto-gossips to peers
  */
 

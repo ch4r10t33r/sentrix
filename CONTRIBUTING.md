@@ -1,8 +1,8 @@
-# Contributing to Borgkit
+# Contributing to Inai
 
 ## Commit message convention
 
-Borgkit uses **[Conventional Commits](https://www.conventionalcommits.org/)**.
+Inai uses **[Conventional Commits](https://www.conventionalcommits.org/)**.
 Every commit message must follow this format:
 
 ```
@@ -56,7 +56,7 @@ Releases are **fully automated** — no manual tagging or npm publish needed.
    - Bumps the version in `package.json`
    - Generates / prepends to `CHANGELOG.md`
    - Creates a GitHub Release with release notes
-   - Publishes to [npmjs.com](https://www.npmjs.com/package/borgkit-cli)
+   - Publishes to [npmjs.com](https://www.npmjs.com/package/inai-cli)
    - Commits `package.json` + `CHANGELOG.md` back to `main`
 
 ## Setup (first time)

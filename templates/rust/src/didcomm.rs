@@ -1,4 +1,4 @@
-//! DIDComm v2 encrypted messaging for Borgkit agents.
+//! DIDComm v2 encrypted messaging for Inai agents.
 //!
 //! Implements authenticated encryption (authcrypt) and anonymous encryption
 //! (anoncrypt) between DID-identified agents using X25519 ECDH +
@@ -51,11 +51,11 @@ use x25519_dalek::{PublicKey, StaticSecret};
 
 // ── Message type URIs ─────────────────────────────────────────────────────────
 
-pub const MSG_INVOKE:   &str = "https://borgkit.dev/didcomm/1.0/invoke";
-pub const MSG_RESPONSE: &str = "https://borgkit.dev/didcomm/1.0/response";
-pub const MSG_FORWARD:  &str = "https://borgkit.dev/didcomm/1.0/forward";
-pub const MSG_PING:     &str = "https://borgkit.dev/didcomm/1.0/ping";
-pub const MSG_PONG:     &str = "https://borgkit.dev/didcomm/1.0/pong";
+pub const MSG_INVOKE:   &str = "https://inai.dev/didcomm/1.0/invoke";
+pub const MSG_RESPONSE: &str = "https://inai.dev/didcomm/1.0/response";
+pub const MSG_FORWARD:  &str = "https://inai.dev/didcomm/1.0/forward";
+pub const MSG_PING:     &str = "https://inai.dev/didcomm/1.0/ping";
+pub const MSG_PONG:     &str = "https://inai.dev/didcomm/1.0/pong";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

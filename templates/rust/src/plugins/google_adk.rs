@@ -1,14 +1,14 @@
-//! Google ADK → Borgkit Plugin (Rust) — HTTP Bridge
+//! Google ADK → Inai Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps a running Google ADK web service (`adk web`) so it is discoverable
-//! and callable on the Borgkit mesh as a standard `IAgent`.
+//! and callable on the Inai mesh as a standard `IAgent`.
 //!
 //! ── Google ADK HTTP API ───────────────────────────────────────────────────────
 //!
 //!   POST /run
 //!     Body: {
 //!       "app_name":   "my_app",
-//!       "user_id":    "borgkit-user",
+//!       "user_id":    "inai-user",
 //!       "session_id": "<uuid>",
 //!       "new_message": {
 //!         "role":  "user",
@@ -25,8 +25,8 @@
 //!
 //! ── Usage ──────────────────────────────────────────────────────────────────────
 //!
-//!   use borgkit::plugins::google_adk::{GoogleADKPlugin, GoogleADKService};
-//!   use borgkit::plugins::base::PluginConfig;
+//!   use inai::plugins::google_adk::{GoogleADKPlugin, GoogleADKService};
+//!   use inai::plugins::base::PluginConfig;
 //!
 //!   let service = GoogleADKService {
 //!       base_url: "http://localhost:8080".to_string(),
@@ -37,7 +37,7 @@
 //!
 //!   let plugin = GoogleADKPlugin::new();
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "borgkit://agent/gemini-support".to_string(),
+//!       agent_id:     "inai://agent/gemini-support".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -48,7 +48,7 @@ use async_trait::async_trait;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
+use crate::plugins::base::{CapabilityDescriptor, InaiPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -62,7 +62,7 @@ pub struct GoogleADKService {
     /// ADK application name (must match the `agent.py` agent name).
     pub app_name: String,
 
-    /// User ID passed to every ADK session (default: `"borgkit-user"`).
+    /// User ID passed to every ADK session (default: `"inai-user"`).
     pub user_id: String,
 
     /// POST path for running the agent (default: `"/run"`).
@@ -79,7 +79,7 @@ impl Default for GoogleADKService {
         Self {
             base_url:     "http://localhost:8080".to_string(),
             app_name:     "agent".to_string(),
-            user_id:      "borgkit-user".to_string(),
+            user_id:      "inai-user".to_string(),
             run_route:    "/run".to_string(),
             capabilities: vec![],
         }
@@ -109,10 +109,10 @@ impl Default for GoogleADKPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
+// ── InaiPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl BorgkitPlugin<GoogleADKService> for GoogleADKPlugin {
+impl InaiPlugin<GoogleADKService> for GoogleADKPlugin {
     fn extract_capabilities(&self, service: &GoogleADKService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -134,7 +134,7 @@ impl BorgkitPlugin<GoogleADKService> for GoogleADKPlugin {
 
     /// Build the ADK `/run` request body from an `AgentRequest`.
     ///
-    /// A fresh session ID is generated per call so that each Borgkit request
+    /// A fresh session ID is generated per call so that each Inai request
     /// is independently stateless.
     fn translate_request(&self, request: &AgentRequest) -> Result<Value, String> {
         let message = request.payload.get("message")
@@ -157,8 +157,8 @@ impl BorgkitPlugin<GoogleADKService> for GoogleADKPlugin {
                 "role":  "user",
                 "parts": [{ "text": message }]
             },
-            "__borgkit_request_id__": request.request_id,
-            "__borgkit_capability__": request.capability,
+            "__inai_request_id__": request.request_id,
+            "__inai_capability__": request.capability,
         }))
     }
 
@@ -183,10 +183,10 @@ impl BorgkitPlugin<GoogleADKService> for GoogleADKPlugin {
         // Fill in the placeholders set by translate_request
         input["app_name"] = json!(service.app_name);
         input["user_id"]  = json!(service.user_id);
-        // Remove internal Borgkit tracking keys before sending
+        // Remove internal Inai tracking keys before sending
         let obj = input.as_object_mut().ok_or("invalid request body")?;
-        obj.remove("__borgkit_request_id__");
-        obj.remove("__borgkit_capability__");
+        obj.remove("__inai_request_id__");
+        obj.remove("__inai_capability__");
 
         let url = format!(
             "{}{}",

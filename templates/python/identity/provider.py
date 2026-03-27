@@ -1,5 +1,5 @@
 """
-Borgkit Identity Providers
+Inai Identity Providers
 ──────────────────────────────────────────────────────────────────────────────
 Provides flexible agent identity without requiring ERC-8004 on-chain
 registration or a wallet. On-chain identity (ERC-8004) remains available as
@@ -163,7 +163,7 @@ def _eth_address_from_pub(pub64: bytes) -> str:
 
 class IdentityProvider(ABC):
     """
-    Abstract base for all Borgkit identity providers.
+    Abstract base for all Inai identity providers.
 
     Usage pattern:
         identity = LocalKeystoreIdentity("my-agent")
@@ -174,7 +174,7 @@ class IdentityProvider(ABC):
 
     @abstractmethod
     def agent_id(self) -> str:
-        """Return the Borgkit agent URI (e.g. borgkit://agent/0xABC…)."""
+        """Return the Inai agent URI (e.g. inai://agent/0xABC…)."""
         ...
 
     @abstractmethod
@@ -228,7 +228,7 @@ class AnonymousIdentity(IdentityProvider):
     name: str = "unnamed"
 
     def agent_id(self) -> str:
-        return f"borgkit://agent/{self.name}"
+        return f"inai://agent/{self.name}"
 
     def owner(self) -> str:
         return "anonymous"
@@ -276,14 +276,14 @@ class EnvKeyIdentity(IdentityProvider):
     """
     Identity from an environment variable (12-factor / container-friendly).
 
-    Reads the private key from BORGKIT_AGENT_KEY (default) or a custom env var.
+    Reads the private key from INAI_AGENT_KEY (default) or a custom env var.
     Falls back to AnonymousIdentity if the env var is not set.
 
     Example:
-        export BORGKIT_AGENT_KEY=0xdeadbeef...  # 32-byte hex
+        export INAI_AGENT_KEY=0xdeadbeef...  # 32-byte hex
         identity = EnvKeyIdentity()
     """
-    env_var: str = "BORGKIT_AGENT_KEY"
+    env_var: str = "INAI_AGENT_KEY"
     name_override: Optional[str] = None
     _delegate: Optional[IdentityProvider] = field(default=None, init=False, repr=False)
 
@@ -293,7 +293,7 @@ class EnvKeyIdentity(IdentityProvider):
             self._delegate = RawKeyIdentity(val, name_override=self.name_override)
         else:
             warnings.warn(
-                f"[Borgkit] {self.env_var} not set — using anonymous identity. "
+                f"[Inai] {self.env_var} not set — using anonymous identity. "
                 "Set the env var or use LocalKeystoreIdentity for persistent identity."
             )
             self._delegate = AnonymousIdentity(name=self.name_override or "unnamed")
@@ -313,25 +313,25 @@ class EnvKeyIdentity(IdentityProvider):
 @dataclass
 class LocalKeystoreIdentity(IdentityProvider):
     """
-    Persistent identity stored as a plain-text hex key in ~/.borgkit/keystore/.
+    Persistent identity stored as a plain-text hex key in ~/.inai/keystore/.
 
     The key file is created on first use.  The same key is reused on every
     subsequent run, giving the agent a stable identity across restarts without
     requiring a wallet or on-chain registration.
 
-    File: ~/.borgkit/keystore/<name>.key   (mode 0600)
+    File: ~/.inai/keystore/<name>.key   (mode 0600)
 
     Args:
         name:         Unique name for this agent (used as filename).
-        keystore_dir: Override the keystore directory (default: ~/.borgkit/keystore).
+        keystore_dir: Override the keystore directory (default: ~/.inai/keystore).
 
     Example:
         identity = LocalKeystoreIdentity(name="research-agent")
-        # Key auto-created at ~/.borgkit/keystore/research-agent.key
-        print(identity.agent_id())   # borgkit://agent/0x...
+        # Key auto-created at ~/.inai/keystore/research-agent.key
+        print(identity.agent_id())   # inai://agent/0x...
     """
     name: str
-    keystore_dir: str = field(default_factory=lambda: os.path.expanduser("~/.borgkit/keystore"))
+    keystore_dir: str = field(default_factory=lambda: os.path.expanduser("~/.inai/keystore"))
     _key: bytes = field(default=None, init=False, repr=False)          # type: ignore[assignment]
     _pub64: bytes = field(default=None, init=False, repr=False)        # type: ignore[assignment]
     _address: str = field(default="", init=False, repr=False)
@@ -352,7 +352,7 @@ class LocalKeystoreIdentity(IdentityProvider):
         with open(keyfile, "w") as f:
             f.write(key.hex())
         os.chmod(keyfile, stat.S_IRUSR | stat.S_IWUSR)   # 0o600
-        print(f"[Borgkit] New identity created: {keyfile}")
+        print(f"[Inai] New identity created: {keyfile}")
         return key
 
     def agent_id(self) -> str:
@@ -373,7 +373,7 @@ class ERC8004Identity(IdentityProvider):
 
     This mode anchors the agent's ANR record on a smart contract, providing
     verifiable on-chain ownership.  It requires a wallet private key and gas
-    to register.  All other Borgkit features work identically whether you use
+    to register.  All other Inai features work identically whether you use
     this mode or an off-chain mode.
 
     Args:
@@ -480,7 +480,7 @@ def identity_from_config(
     mode: str = "local",
     name: str = "unnamed-agent",
     private_key_hex: Optional[str] = None,
-    env_var: str = "BORGKIT_AGENT_KEY",
+    env_var: str = "INAI_AGENT_KEY",
     keystore_dir: Optional[str] = None,
     chain_id: int = 8453,
     contract_address: Optional[str] = None,

@@ -1,5 +1,5 @@
 /**
- * Borgkit version — single source of truth.
+ * Inai version — single source of truth.
  * Bump this before every release; the CLI, templates, and docs all read from here.
  */
 

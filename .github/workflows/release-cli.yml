@@ -21,32 +21,32 @@ jobs:
           - target:    x86_64-unknown-linux-gnu
             os:        ubuntu-latest
             use_cross: true
-            npm_pkg:   borgkit-cli-linux-x64
-            bin_name:  borgkit
+            npm_pkg:   inai-cli-linux-x64
+            bin_name:  inai
 
           - target:    aarch64-unknown-linux-gnu
             os:        ubuntu-latest
             use_cross: true
-            npm_pkg:   borgkit-cli-linux-arm64
-            bin_name:  borgkit
+            npm_pkg:   inai-cli-linux-arm64
+            bin_name:  inai
 
           - target:    x86_64-apple-darwin
             os:        macos-15-intel
             use_cross: false
-            npm_pkg:   borgkit-cli-darwin-x64
-            bin_name:  borgkit
+            npm_pkg:   inai-cli-darwin-x64
+            bin_name:  inai
 
           - target:    aarch64-apple-darwin
             os:        macos-latest
             use_cross: false
-            npm_pkg:   borgkit-cli-darwin-arm64
-            bin_name:  borgkit
+            npm_pkg:   inai-cli-darwin-arm64
+            bin_name:  inai
 
           - target:    x86_64-pc-windows-msvc
             os:        windows-latest
             use_cross: false
-            npm_pkg:   borgkit-cli-win32-x64
-            bin_name:  borgkit.exe
+            npm_pkg:   inai-cli-win32-x64
+            bin_name:  inai.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -79,11 +79,11 @@ jobs:
 
       - name: Build (cross)
         if: matrix.use_cross
-        run: cross build --release --target ${{ matrix.target }} --package borgkit-cli
+        run: cross build --release --target ${{ matrix.target }} --package inai-cli
 
       - name: Build (native)
         if: "!matrix.use_cross"
-        run: cargo build --release --target ${{ matrix.target }} --package borgkit-cli
+        run: cargo build --release --target ${{ matrix.target }} --package inai-cli
 
       - name: Install binutils for Linux cross strip
         if: matrix.target == 'aarch64-unknown-linux-gnu'
@@ -147,11 +147,11 @@ jobs:
         shell: bash
         run: |
           declare -A MAP=(
-            [binary-borgkit-cli-linux-x64]=borgkit-cli-linux-x64
-            [binary-borgkit-cli-linux-arm64]=borgkit-cli-linux-arm64
-            [binary-borgkit-cli-darwin-x64]=borgkit-cli-darwin-x64
-            [binary-borgkit-cli-darwin-arm64]=borgkit-cli-darwin-arm64
-            [binary-borgkit-cli-win32-x64]=borgkit-cli-win32-x64
+            [binary-inai-cli-linux-x64]=inai-cli-linux-x64
+            [binary-inai-cli-linux-arm64]=inai-cli-linux-arm64
+            [binary-inai-cli-darwin-x64]=inai-cli-darwin-x64
+            [binary-inai-cli-darwin-arm64]=inai-cli-darwin-arm64
+            [binary-inai-cli-win32-x64]=inai-cli-win32-x64
           )
           for artifact in "${!MAP[@]}"; do
             pkg="${MAP[$artifact]}"
@@ -166,29 +166,29 @@ jobs:
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          for pkg in npm/borgkit-cli npm/borgkit-cli-linux-x64 npm/borgkit-cli-linux-arm64 \
-                     npm/borgkit-cli-darwin-x64 npm/borgkit-cli-darwin-arm64 npm/borgkit-cli-win32-x64; do
+          for pkg in npm/inai-cli npm/inai-cli-linux-x64 npm/inai-cli-linux-arm64 \
+                     npm/inai-cli-darwin-x64 npm/inai-cli-darwin-arm64 npm/inai-cli-win32-x64; do
             jq --arg v "$VERSION" '.version = $v' "$pkg/package.json" > /tmp/pkg.json
             mv /tmp/pkg.json "$pkg/package.json"
           done
           # Update optionalDependency versions in wrapper
           jq --arg v "$VERSION" \
             '.optionalDependencies |= with_entries(.value = $v)' \
-            npm/borgkit-cli/package.json > /tmp/pkg.json
-          mv /tmp/pkg.json npm/borgkit-cli/package.json
+            npm/inai-cli/package.json > /tmp/pkg.json
+          mv /tmp/pkg.json npm/inai-cli/package.json
 
       - name: Copy README into wrapper package
-        run: cp README.md npm/borgkit-cli/README.md
+        run: cp README.md npm/inai-cli/README.md
 
       - name: Stage release binaries with platform names
         shell: bash
         run: |
           mkdir -p dist/
-          cp npm/borgkit-cli-linux-x64/bin/borgkit    dist/borgkit-linux-x64
-          cp npm/borgkit-cli-linux-arm64/bin/borgkit  dist/borgkit-linux-arm64
-          cp npm/borgkit-cli-darwin-x64/bin/borgkit   dist/borgkit-darwin-x64
-          cp npm/borgkit-cli-darwin-arm64/bin/borgkit dist/borgkit-darwin-arm64
-          cp npm/borgkit-cli-win32-x64/bin/borgkit.exe dist/borgkit-win32-x64.exe
+          cp npm/inai-cli-linux-x64/bin/inai    dist/inai-linux-x64
+          cp npm/inai-cli-linux-arm64/bin/inai  dist/inai-linux-arm64
+          cp npm/inai-cli-darwin-x64/bin/inai   dist/inai-darwin-x64
+          cp npm/inai-cli-darwin-arm64/bin/inai dist/inai-darwin-arm64
+          cp npm/inai-cli-win32-x64/bin/inai.exe dist/inai-win32-x64.exe
 
       - name: Create or refresh GitHub release
         env:
@@ -199,11 +199,11 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           TAG="v$VERSION"
           FILES=(
-            dist/borgkit-linux-x64
-            dist/borgkit-linux-arm64
-            dist/borgkit-darwin-x64
-            dist/borgkit-darwin-arm64
-            dist/borgkit-win32-x64.exe
+            dist/inai-linux-x64
+            dist/inai-linux-arm64
+            dist/inai-darwin-x64
+            dist/inai-darwin-arm64
+            dist/inai-win32-x64.exe
             install.sh
           )
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -221,9 +221,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          for pkg in borgkit-cli-linux-x64 borgkit-cli-linux-arm64 \
-                     borgkit-cli-darwin-x64 borgkit-cli-darwin-arm64 \
-                     borgkit-cli-win32-x64; do
+          for pkg in inai-cli-linux-x64 inai-cli-linux-arm64 \
+                     inai-cli-darwin-x64 inai-cli-darwin-arm64 \
+                     inai-cli-win32-x64; do
             cd npm/$pkg
             if npm view "@ch4r10teer41/$pkg@$VERSION" version >/dev/null 2>&1; then
               echo "@ch4r10teer41/$pkg@$VERSION already published — skipping"
@@ -239,9 +239,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if npm view "@ch4r10teer41/borgkit-cli@$VERSION" version >/dev/null 2>&1; then
-            echo "@ch4r10teer41/borgkit-cli@$VERSION already published — skipping"
+          if npm view "@ch4r10teer41/inai-cli@$VERSION" version >/dev/null 2>&1; then
+            echo "@ch4r10teer41/inai-cli@$VERSION already published — skipping"
           else
-            cd npm/borgkit-cli
+            cd npm/inai-cli
             npm publish --access public
           fi

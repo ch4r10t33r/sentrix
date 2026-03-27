@@ -1,6 +1,6 @@
 # Example 01 — Hello, Agent
 
-This example shows the minimal code needed to define a Borgkit agent from scratch in each supported language.
+This example shows the minimal code needed to define a Inai agent from scratch in each supported language.
 
 ---
 
@@ -19,7 +19,7 @@ import { AgentRequest }          from '../interfaces/IAgentRequest';
 import { AgentResponse }         from '../interfaces/IAgentResponse';
 
 export class GreetingAgent implements IAgent {
-  readonly agentId  = 'borgkit://agent/greeter';
+  readonly agentId  = 'inai://agent/greeter';
   readonly owner    = '0xYourWalletAddress';
   readonly metadata: AgentMetadata = {
     name:    'GreetingAgent',
@@ -72,7 +72,7 @@ console.log(resp.result); // { message: "Hello, Alice!" }
 from interfaces import IAgent, AgentRequest, AgentResponse
 
 class GreetingAgent(IAgent):
-    agent_id = 'borgkit://agent/greeter'
+    agent_id = 'inai://agent/greeter'
     owner    = '0xYourWalletAddress'
     metadata = {'name': 'GreetingAgent', 'version': '0.1.0', 'tags': ['demo']}
 
@@ -115,7 +115,7 @@ pub struct GreetingAgent;
 
 #[async_trait]
 impl IAgent for GreetingAgent {
-    fn agent_id(&self) -> &str { "borgkit://agent/greeter" }
+    fn agent_id(&self) -> &str { "inai://agent/greeter" }
     fn owner(&self)    -> &str { "0xYourWalletAddress" }
 
     fn get_capabilities(&self) -> Vec<String> {
@@ -144,7 +144,7 @@ const std   = @import("std");
 const types = @import("interfaces/types.zig");
 
 pub const GreetingAgent = struct {
-    pub fn agentId(_: *const GreetingAgent) []const u8 { return "borgkit://agent/greeter"; }
+    pub fn agentId(_: *const GreetingAgent) []const u8 { return "inai://agent/greeter"; }
     pub fn owner  (_: *const GreetingAgent) []const u8 { return "0xYourWalletAddress"; }
 
     pub fn getCapabilities(_: *const GreetingAgent) []const []const u8 {
@@ -167,9 +167,9 @@ pub const GreetingAgent = struct {
 Instead of writing the boilerplate manually:
 
 ```bash
-borgkit init my-project --lang python
+inai init my-project --lang python
 cd my-project
-borgkit create agent GreetingAgent --capabilities greet
+inai create agent GreetingAgent --capabilities greet
 ```
 
 This generates the file, wires the capability, and drops it into `agents/`.

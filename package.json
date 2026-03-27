@@ -1,9 +1,9 @@
 {
-  "name": "@ch4r10teer41/borgkit-cli",
+  "name": "@ch4r10teer41/inai-cli",
   "version": "0.3.0",
   "description": "Scaffold P2P-discoverable, DID-native AI agents that interoperate across any framework",
   "bin": {
-    "borgkit": "bin/borgkit.js"
+    "inai": "bin/inai.js"
   },
   "main": "./dist/cli.js",
   "files": [
@@ -45,7 +45,7 @@
     "node": ">=18.0.0"
   },
   "keywords": [
-    "borgkit",
+    "inai",
     "agent",
     "agent-mesh",
     "interoperability",
@@ -61,12 +61,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ch4r10t33r/borgkit.git"
+    "url": "git+https://github.com/ch4r10t33r/inai.git"
   },
   "bugs": {
-    "url": "https://github.com/ch4r10t33r/borgkit/issues"
+    "url": "https://github.com/ch4r10t33r/inai/issues"
   },
-  "homepage": "https://github.com/ch4r10t33r/borgkit#readme",
+  "homepage": "https://github.com/ch4r10t33r/inai#readme",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"

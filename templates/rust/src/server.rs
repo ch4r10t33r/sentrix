@@ -192,17 +192,17 @@ async fn shutdown_signal() {
 
     tokio::select! {
         _ = ctrl_c => {
-            println!("[borgkit] Received SIGINT — shutting down");
+            println!("[inai] Received SIGINT — shutting down");
         }
         _ = terminate => {
-            println!("[borgkit] Received SIGTERM — shutting down");
+            println!("[inai] Received SIGTERM — shutting down");
         }
     }
 }
 
 // ── Public entry point ────────────────────────────────────────────────────────
 
-/// Start the Borgkit HTTP server and serve the given agent on the specified port.
+/// Start the Inai HTTP server and serve the given agent on the specified port.
 /// Blocks until a SIGINT or SIGTERM is received, then shuts down gracefully.
 pub async fn serve<A>(agent: A, port: u16) -> Result<(), Box<dyn std::error::Error>>
 where
@@ -224,7 +224,7 @@ where
 
     let addr = format!("0.0.0.0:{}", port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    println!("[borgkit] Listening on http://{}", addr);
+    println!("[inai] Listening on http://{}", addr);
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())

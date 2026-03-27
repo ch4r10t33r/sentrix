@@ -12,8 +12,8 @@ import type {
 } from './IAgentMesh';
 
 /**
- * Borgkit agent interface.
- * Every Borgkit agent must implement this contract.
+ * Inai agent interface.
+ * Every Inai agent must implement this contract.
  *
  * Identity note
  * ─────────────
@@ -24,7 +24,7 @@ import type {
  */
 export interface IAgent {
   // ─── Identity ─────────────────────────────────────────────────────────────
-  /** Borgkit agent URI, e.g. "borgkit://agent/0xABC..." */
+  /** Inai agent URI, e.g. "inai://agent/0xABC..." */
   readonly agentId: string;
   /**
    * Owner identifier — Ethereum address when using ERC-8004 or key-derived

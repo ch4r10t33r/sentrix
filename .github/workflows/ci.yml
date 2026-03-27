@@ -42,4 +42,4 @@ jobs:
         run: npm run build
 
       - name: Verify CLI entry point
-        run: node bin/borgkit.js --version
+        run: node bin/inai.js --version

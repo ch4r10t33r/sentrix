@@ -2,7 +2,7 @@
 //!
 //! All functions are `extern "C"` and `#[no_mangle]`.
 //! Strings are null-terminated UTF-8.
-//! Ownership: strings returned by borgkit_* must be freed with borgkit_free_string().
+//! Ownership: strings returned by inai_* must be freed with inai_free_string().
 
 use std::{
     ffi::{CStr, CString},
@@ -10,38 +10,38 @@ use std::{
     ptr,
 };
 
-use crate::node::{AgentRequest, AgentResponse, BorgkitNode, BorgkitNodeConfig};
+use crate::node::{AgentRequest, AgentResponse, InaiNode, InaiNodeConfig};
 
-/// Opaque handle to a running BorgkitNode.
-pub struct BorgkitHandle {
-    node: BorgkitNode,
+/// Opaque handle to a running InaiNode.
+pub struct InaiHandle {
+    node: InaiNode,
 }
 
 /// Callback type for incoming AgentRequests.
 /// Called with a null-terminated JSON string, must return a null-terminated JSON string.
 /// The returned string is freed by the Rust side after the callback returns.
-pub type BorgkitRequestCallback =
+pub type InaiRequestCallback =
     extern "C" fn(request_json: *const c_char) -> *mut c_char;
 
-/// Create and start a new BorgkitNode.
+/// Create and start a new InaiNode.
 ///
 /// `listen_addr` — multiaddr string, e.g. `/ip4/0.0.0.0/tcp/0`. NULL for default.
 /// `handler`     — callback invoked for every incoming AgentRequest. NULL for no handler.
 ///
 /// Returns an opaque handle, or NULL on error.
-/// Free with `borgkit_node_destroy`.
+/// Free with `inai_node_destroy`.
 #[no_mangle]
-pub extern "C" fn borgkit_node_create(
+pub extern "C" fn inai_node_create(
     listen_addr: *const c_char,
-    handler:     Option<BorgkitRequestCallback>,
-) -> *mut BorgkitHandle {
+    handler:     Option<InaiRequestCallback>,
+) -> *mut InaiHandle {
     let addr_str = if listen_addr.is_null() {
         "/ip4/0.0.0.0/tcp/0".to_string()
     } else {
         unsafe { CStr::from_ptr(listen_addr) }.to_string_lossy().into_owned()
     };
 
-    let config = BorgkitNodeConfig {
+    let config = InaiNodeConfig {
         listen_addrs: vec![addr_str.parse().unwrap_or_else(|_| "/ip4/0.0.0.0/tcp/0".parse().unwrap())],
     };
 
@@ -70,33 +70,33 @@ pub extern "C" fn borgkit_node_create(
             f
         });
 
-    match BorgkitNode::new(config, cb) {
-        Ok(node) => Box::into_raw(Box::new(BorgkitHandle { node })),
+    match InaiNode::new(config, cb) {
+        Ok(node) => Box::into_raw(Box::new(InaiHandle { node })),
         Err(_)   => ptr::null_mut(),
     }
 }
 
-/// Stop and destroy a BorgkitNode.
+/// Stop and destroy a InaiNode.
 #[no_mangle]
-pub extern "C" fn borgkit_node_destroy(handle: *mut BorgkitHandle) {
+pub extern "C" fn inai_node_destroy(handle: *mut InaiHandle) {
     if !handle.is_null() {
         unsafe { drop(Box::from_raw(handle)); }
     }
 }
 
 /// Return the node's PeerId as a null-terminated string.
-/// Caller must free with `borgkit_free_string`.
+/// Caller must free with `inai_free_string`.
 #[no_mangle]
-pub extern "C" fn borgkit_node_peer_id(handle: *const BorgkitHandle) -> *mut c_char {
+pub extern "C" fn inai_node_peer_id(handle: *const InaiHandle) -> *mut c_char {
     if handle.is_null() { return ptr::null_mut(); }
     let s = unsafe { &*handle }.node.peer_id().to_string();
     CString::new(s).map(CString::into_raw).unwrap_or(ptr::null_mut())
 }
 
 /// Return the node's first listen multiaddr as a null-terminated string.
-/// Caller must free with `borgkit_free_string`.
+/// Caller must free with `inai_free_string`.
 #[no_mangle]
-pub extern "C" fn borgkit_node_multiaddr(handle: *const BorgkitHandle) -> *mut c_char {
+pub extern "C" fn inai_node_multiaddr(handle: *const InaiHandle) -> *mut c_char {
     if handle.is_null() { return ptr::null_mut(); }
     let addrs = unsafe { &*handle }.node.listen_addrs();
     let s = addrs.first().map(|a| a.to_string()).unwrap_or_default();
@@ -106,8 +106,8 @@ pub extern "C" fn borgkit_node_multiaddr(handle: *const BorgkitHandle) -> *mut c
 /// Dial a remote peer by multiaddr.
 /// Returns 0 on success, -1 on error.
 #[no_mangle]
-pub extern "C" fn borgkit_dial(
-    handle: *mut BorgkitHandle,
+pub extern "C" fn inai_dial(
+    handle: *mut InaiHandle,
     multiaddr: *const c_char,
 ) -> c_int {
     if handle.is_null() || multiaddr.is_null() { return -1; }
@@ -131,8 +131,8 @@ pub extern "C" fn borgkit_dial(
 ///
 /// Returns bytes written (excluding null terminator), or -1 on error.
 #[no_mangle]
-pub extern "C" fn borgkit_send(
-    handle:       *mut BorgkitHandle,
+pub extern "C" fn inai_send(
+    handle:       *mut InaiHandle,
     peer_id:      *const c_char,
     request_json: *const c_char,
     response_buf: *mut c_char,
@@ -175,8 +175,8 @@ pub extern "C" fn borgkit_send(
 /// Publish a gossip message JSON to the mesh.
 /// Returns 0 on success, -1 on error.
 #[no_mangle]
-pub extern "C" fn borgkit_gossip_publish(
-    handle:       *mut BorgkitHandle,
+pub extern "C" fn inai_gossip_publish(
+    handle:       *mut InaiHandle,
     message_json: *const c_char,
 ) -> c_int {
     if handle.is_null() || message_json.is_null() { return -1; }
@@ -188,9 +188,9 @@ pub extern "C" fn borgkit_gossip_publish(
     }
 }
 
-/// Free a string returned by a borgkit_* function.
+/// Free a string returned by a inai_* function.
 #[no_mangle]
-pub extern "C" fn borgkit_free_string(s: *mut c_char) {
+pub extern "C" fn inai_free_string(s: *mut c_char) {
     if !s.is_null() {
         unsafe { drop(CString::from_raw(s)); }
     }

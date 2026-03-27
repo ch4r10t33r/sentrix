@@ -1,7 +1,7 @@
-//! LangGraph → Borgkit Plugin (Zig) — HTTP Bridge
+//! LangGraph → Inai Plugin (Zig) — HTTP Bridge
 //!
 //! Wraps a LangServe / LangGraph Platform endpoint so it participates in the
-//! Borgkit mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
+//! Inai mesh as a standard IAgent.  Uses `std.http.Client` for all HTTP
 //! communication — no external dependencies required.
 //!
 //! ── LangServe API contract ─────────────────────────────────────────────────────
@@ -31,7 +31,7 @@
 //!
 //!   const Wrapped = wrapped_agent.WrappedAgent(lg.LangGraphService, lg.LangGraphPlugin);
 //!   var agent = Wrapped.init(&service, &plugin, .{
-//!       .agent_id = "borgkit://agent/researcher",
+//!       .agent_id = "inai://agent/researcher",
 //!       .owner    = "0xYourWallet",
 //!   }, allocator);
 //!

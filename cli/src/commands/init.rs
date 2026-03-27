@@ -189,7 +189,7 @@ pub fn run(args: InitArgs) -> Result<()> {
         created_files.push(rel_dest);
     }
 
-    // 6. Write borgkit.config.json
+    // 6. Write inai.config.json
     let now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
@@ -204,11 +204,11 @@ pub fn run(args: InitArgs) -> Result<()> {
         "createdAt": created_at
     });
 
-    let config_path = project_path.join("borgkit.config.json");
+    let config_path = project_path.join("inai.config.json");
     let config_file =
-        std::fs::File::create(&config_path).context("Failed to create borgkit.config.json")?;
+        std::fs::File::create(&config_path).context("Failed to create inai.config.json")?;
     serde_json::to_writer_pretty(config_file, &config)
-        .context("Failed to write borgkit.config.json")?;
+        .context("Failed to write inai.config.json")?;
 
     // 7. Print summary
     spinner.finish_and_clear();
@@ -223,10 +223,10 @@ pub fn run(args: InitArgs) -> Result<()> {
         };
         logger::tree(prefix_sym, name);
     }
-    logger::tree("└──", "borgkit.config.json");
+    logger::tree("└──", "inai.config.json");
 
     logger::title("Next steps:");
-    logger::dim(&format!("  cd {} && borgkit run {}", args.name, agent_name));
+    logger::dim(&format!("  cd {} && inai run {}", args.name, agent_name));
 
     Ok(())
 }

@@ -162,14 +162,14 @@ fn gen_ts_package_json(
     x402: bool,
 ) -> String {
     let mut deps: Vec<(&str, &str)> = vec![
-        ("borgkit-sdk", "^0.1.0"),
+        ("inai-sdk", "^0.1.0"),
         ("express", "^4.18.2"),
         ("dotenv", "^16.4.5"),
     ];
 
     // Discovery
     if *discovery == Discovery::Libp2p {
-        deps.push(("@borgkit/libp2p-discovery", "^0.1.0"));
+        deps.push(("@inai/libp2p-discovery", "^0.1.0"));
     }
 
     // DID key generation
@@ -316,7 +316,7 @@ fn gen_ts_agent(
     lines.push(String::new());
     lines.push("  constructor() {".into());
     lines.push(format!(
-        "    this.agentId = `borgkit://agent/{name}/${{crypto.randomUUID()}}`;",
+        "    this.agentId = `inai://agent/{name}/${{crypto.randomUUID()}}`;",
         name = name
     ));
 
@@ -329,8 +329,8 @@ fn gen_ts_agent(
       name:          '{name}',
       version:       '0.1.0',
       discoveryType: '{disc_type}',
-      discoveryUrl:  process.env['BORGKIT_DISCOVERY_URL'],
-      discoveryKey:  process.env['BORGKIT_DISCOVERY_KEY'],
+      discoveryUrl:  process.env['INAI_DISCOVERY_URL'],
+      discoveryKey:  process.env['INAI_DISCOVERY_KEY'],
     }}));"#,
             class = class,
             name = name,
@@ -438,20 +438,20 @@ fn gen_ts_agent(
 
     // registerDiscovery
     let discovery_comment = if *discovery == Discovery::Libp2p {
-        "// Libp2p discovery — requires @borgkit/libp2p-discovery"
+        "// Libp2p discovery — requires @inai/libp2p-discovery"
     } else {
         "// HTTP discovery registry"
     };
     lines.push("  private async registerDiscovery(): Promise<void> {".into());
     lines.push(format!("    {}", discovery_comment));
-    lines.push("    const url = process.env['BORGKIT_DISCOVERY_URL'];".into());
-    lines.push("    if (!url) { console.warn('[discovery] BORGKIT_DISCOVERY_URL not set — skipping registration'); return; }".into());
+    lines.push("    const url = process.env['INAI_DISCOVERY_URL'];".into());
+    lines.push("    if (!url) { console.warn('[discovery] INAI_DISCOVERY_URL not set — skipping registration'); return; }".into());
     lines.push("    try {".into());
     lines.push("      const resp = await fetch(`${url}/agents`, {".into());
     lines.push("        method:  'POST',".into());
-    lines.push("        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env['BORGKIT_DISCOVERY_KEY'] ?? ''}` },".into());
+    lines.push("        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env['INAI_DISCOVERY_KEY'] ?? ''}` },".into());
     lines.push(format!(
-        "        body: JSON.stringify({{ agentId: this.agentId, name: '{name}', capabilities: ['{cap}'], network: {{ protocol: '{proto}', host: process.env['BORGKIT_HOST'] ?? 'localhost', port: parseInt(process.env['PORT'] ?? '6174', 10) }} }}),",
+        "        body: JSON.stringify({{ agentId: this.agentId, name: '{name}', capabilities: ['{cap}'], network: {{ protocol: '{proto}', host: process.env['INAI_HOST'] ?? 'localhost', port: parseInt(process.env['PORT'] ?? '6174', 10) }} }}),",
         name = name,
         cap  = name,
         proto = if *discovery == Discovery::Libp2p { "libp2p" } else { "http" },
@@ -530,34 +530,34 @@ export class {class} {{
 fn gen_ts_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_block = if *discovery == Discovery::Libp2p {
         r#"# Discovery — libp2p P2P mesh (default)
-BORGKIT_DISCOVERY_TYPE=libp2p
+INAI_DISCOVERY_TYPE=libp2p
 
 # Persistent agent key — keeps your Peer ID stable across restarts.
 # Generate: node -e "const {secp256k1}=require('ethereum-cryptography/secp256k1'); \
 #   console.log(Buffer.from(secp256k1.utils.randomPrivateKey()).toString('hex'));"
 # Leave blank to use an ephemeral key (Peer ID changes on each restart).
-BORGKIT_AGENT_KEY=
+INAI_AGENT_KEY=
 
 # Bootstrap peers — comma-separated multiaddrs of known peers.
 # Leave blank to rely on mDNS (LAN only) or run isolated.
-# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
+# INAI_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
 
 # To switch to local (dev/test, no ports opened):
-# BORGKIT_DISCOVERY_TYPE=local
+# INAI_DISCOVERY_TYPE=local
 
 # To switch to centralised HTTP registry:
-# BORGKIT_DISCOVERY_TYPE=http
-# BORGKIT_DISCOVERY_URL=https://registry.example.com
-# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
+# INAI_DISCOVERY_TYPE=http
+# INAI_DISCOVERY_URL=https://registry.example.com
+# INAI_DISCOVERY_KEY=your-api-key-here"#
     } else {
         r#"# Discovery — centralised HTTP registry
-BORGKIT_DISCOVERY_TYPE=http
-BORGKIT_DISCOVERY_URL=http://localhost:8080
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+INAI_DISCOVERY_TYPE=http
+INAI_DISCOVERY_URL=http://localhost:8080
+INAI_DISCOVERY_KEY=your-api-key-here
 
 # To switch to libp2p P2P mesh (recommended for production):
-# BORGKIT_DISCOVERY_TYPE=libp2p
-# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
+# INAI_DISCOVERY_TYPE=libp2p
+# INAI_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
@@ -566,13 +566,13 @@ BORGKIT_DISCOVERY_KEY=your-api-key-here
 {disc_block}
 
 # Agent network
-BORGKIT_HOST=localhost
+INAI_HOST=localhost
 PORT=6174
-BORGKIT_TLS=false
+INAI_TLS=false
 
 # Optional: ERC-8004 on-chain registry
-# BORGKIT_REGISTRY_ADDRESS=0xYourContractAddress
-# BORGKIT_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
+# INAI_REGISTRY_ADDRESS=0xYourContractAddress
+# INAI_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
 "#,
         name = name,
         disc_block = disc_block,
@@ -603,7 +603,7 @@ fn gen_ts_readme(name: &str, discovery: &Discovery, did: bool, stream: bool, x40
     format!(
         r#"# {name}
 
-A Borgkit P2P-discoverable agent scaffolded with `borgkit scaffold`.
+A Inai P2P-discoverable agent scaffolded with `inai scaffold`.
 
 {disc_note}
 {extras_section}
@@ -616,7 +616,7 @@ A Borgkit P2P-discoverable agent scaffolded with `borgkit scaffold`.
 
 ```bash
 cp .env.example .env
-# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
+# Edit .env and set INAI_DISCOVERY_URL, INAI_DISCOVERY_KEY, etc.
 
 npm install
 npm run dev
@@ -801,7 +801,7 @@ fn gen_rust_agent(
     lines.push("        Self {".into());
     lines.push("            info: AgentInfo {".into());
     lines.push(format!(
-        "                agent_id: format!(\"borgkit://agent/{name}/{{uuid}}\", uuid = uuid_v4()),",
+        "                agent_id: format!(\"inai://agent/{name}/{{uuid}}\", uuid = uuid_v4()),",
         name = name
     ));
     lines.push(format!(
@@ -835,20 +835,20 @@ fn gen_rust_agent(
         "        let disc_type = \"{disc_type}\";",
         disc_type = disc_type
     ));
-    lines.push("        let url = match std::env::var(\"BORGKIT_DISCOVERY_URL\") {".into());
+    lines.push("        let url = match std::env::var(\"INAI_DISCOVERY_URL\") {".into());
     lines.push("            Ok(u) => u,".into());
     lines.push("            Err(_) => {".into());
     lines.push(
-        "                eprintln!(\"[discovery] BORGKIT_DISCOVERY_URL not set — skipping\");"
+        "                eprintln!(\"[discovery] INAI_DISCOVERY_URL not set — skipping\");"
             .into(),
     );
     lines.push("                return;".into());
     lines.push("            }".into());
     lines.push("        };".into());
     lines.push(
-        "        let key  = std::env::var(\"BORGKIT_DISCOVERY_KEY\").unwrap_or_default();".into(),
+        "        let key  = std::env::var(\"INAI_DISCOVERY_KEY\").unwrap_or_default();".into(),
     );
-    lines.push("        let host = std::env::var(\"BORGKIT_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
+    lines.push("        let host = std::env::var(\"INAI_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
     lines.push("        let port: u16 = std::env::var(\"PORT\").ok().and_then(|p| p.parse().ok()).unwrap_or(6174);".into());
     lines.push("        let body = json!({".into());
     lines.push("            \"agentId\":      &self.info.agent_id,".into());
@@ -990,31 +990,31 @@ impl {plugin_upper}Plugin {{
 fn gen_rust_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_block = if *discovery == Discovery::Libp2p {
         r#"# Discovery — libp2p P2P mesh (default)
-BORGKIT_DISCOVERY_TYPE=libp2p
+INAI_DISCOVERY_TYPE=libp2p
 
 # Persistent secp256k1 key — keeps your Peer ID stable across restarts.
 # Generate: openssl rand -hex 32
-BORGKIT_AGENT_KEY=
+INAI_AGENT_KEY=
 
 # Bootstrap peers (comma-separated multiaddrs); leave blank for mDNS / isolated.
-# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
+# INAI_BOOTSTRAP_PEERS=/ip4/1.2.3.4/tcp/6174/p2p/12D3KooW...
 
 # To use local in-process discovery (dev/test, no ports):
-# BORGKIT_DISCOVERY_TYPE=local
+# INAI_DISCOVERY_TYPE=local
 
 # To use centralised HTTP registry:
-# BORGKIT_DISCOVERY_TYPE=http
-# BORGKIT_DISCOVERY_URL=https://registry.example.com
-# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
+# INAI_DISCOVERY_TYPE=http
+# INAI_DISCOVERY_URL=https://registry.example.com
+# INAI_DISCOVERY_KEY=your-api-key-here"#
     } else {
         r#"# Discovery — centralised HTTP registry
-BORGKIT_DISCOVERY_TYPE=http
-BORGKIT_DISCOVERY_URL=http://localhost:8080
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+INAI_DISCOVERY_TYPE=http
+INAI_DISCOVERY_URL=http://localhost:8080
+INAI_DISCOVERY_KEY=your-api-key-here
 
 # To switch to libp2p P2P mesh (recommended for production):
-# BORGKIT_DISCOVERY_TYPE=libp2p
-# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
+# INAI_DISCOVERY_TYPE=libp2p
+# INAI_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
@@ -1022,7 +1022,7 @@ BORGKIT_DISCOVERY_KEY=your-api-key-here
 
 {disc_block}
 
-BORGKIT_HOST=localhost
+INAI_HOST=localhost
 PORT=6174
 "#,
         name = name,
@@ -1035,7 +1035,7 @@ fn gen_rust_readme(name: &str) -> String {
     format!(
         r#"# {name}
 
-A Borgkit P2P-discoverable agent written in Rust, scaffolded with `borgkit scaffold`.
+A Inai P2P-discoverable agent written in Rust, scaffolded with `inai scaffold`.
 
 ## Prerequisites
 
@@ -1046,7 +1046,7 @@ A Borgkit P2P-discoverable agent written in Rust, scaffolded with `borgkit scaff
 
 ```bash
 cp .env.example .env
-# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
+# Edit .env and set INAI_DISCOVERY_URL, INAI_DISCOVERY_KEY, etc.
 
 cargo run
 ```
@@ -1095,10 +1095,10 @@ fn gen_zig_build_zon(name: &str, discovery: &Discovery, did: bool) -> String {
 
     let mut dep_entries = String::new();
     if *discovery == Discovery::Libp2p {
-        // borgkit's pure-Zig Kademlia DHT (ships inside borgkit templates)
+        // inai's pure-Zig Kademlia DHT (ships inside inai templates)
         dep_entries.push_str(
-            r#"        .borgkit_discovery = .{
-            .url  = "https://github.com/ch4r10t33r/borgkit/archive/refs/heads/main.tar.gz",
+            r#"        .inai_discovery = .{
+            .url  = "https://github.com/ch4r10t33r/inai/archive/refs/heads/main.tar.gz",
             .hash = "1220000000000000000000000000000000000000000000000000000000000000000000000000",
             // Run `zig fetch --save <url>` to auto-fill the hash above.
         },
@@ -1238,7 +1238,7 @@ fn gen_zig_agent(
         agent_struct = agent_struct
     ));
     lines.push(format!(
-        "        _ = std.fmt.bufPrint(&self.agent_id, \"borgkit://agent/{name}/{{d}}\", .{{std.time.milliTimestamp()}}) catch {{}};",
+        "        _ = std.fmt.bufPrint(&self.agent_id, \"inai://agent/{name}/{{d}}\", .{{std.time.milliTimestamp()}}) catch {{}};",
         name = name
     ));
     lines.push("        return self;".into());
@@ -1275,9 +1275,9 @@ fn gen_zig_agent(
         disc_type = disc_type
     ));
     lines.push("        _ = disc_type;".into());
-    lines.push("        const url = std.posix.getenv(\"BORGKIT_DISCOVERY_URL\") orelse {".into());
+    lines.push("        const url = std.posix.getenv(\"INAI_DISCOVERY_URL\") orelse {".into());
     lines.push(
-        "            std.debug.print(\"[discovery] BORGKIT_DISCOVERY_URL not set\\n\", .{});"
+        "            std.debug.print(\"[discovery] INAI_DISCOVERY_URL not set\\n\", .{});"
             .into(),
     );
     lines.push("            return;".into());
@@ -1412,31 +1412,31 @@ pub const {class}Plugin = struct {{
 fn gen_zig_env_example(name: &str, discovery: &Discovery) -> String {
     let disc_block = if *discovery == Discovery::Libp2p {
         r#"# Discovery — libp2p / pure-Zig Kademlia DHT (default)
-BORGKIT_DISCOVERY_TYPE=libp2p
+INAI_DISCOVERY_TYPE=libp2p
 
 # Persistent secp256k1 key — keeps your Peer ID stable across restarts.
 # Generate: openssl rand -hex 32
-BORGKIT_AGENT_KEY=
+INAI_AGENT_KEY=
 
 # Bootstrap peers (comma-separated multiaddrs); leave blank for mDNS / isolated.
-# BORGKIT_BOOTSTRAP_PEERS=/ip4/1.2.3.4/udp/6174/p2p/...
+# INAI_BOOTSTRAP_PEERS=/ip4/1.2.3.4/udp/6174/p2p/...
 
 # To use local in-process discovery (dev/test, no ports):
-# BORGKIT_DISCOVERY_TYPE=local
+# INAI_DISCOVERY_TYPE=local
 
 # To use centralised HTTP registry:
-# BORGKIT_DISCOVERY_TYPE=http
-# BORGKIT_DISCOVERY_URL=https://registry.example.com
-# BORGKIT_DISCOVERY_KEY=your-api-key-here"#
+# INAI_DISCOVERY_TYPE=http
+# INAI_DISCOVERY_URL=https://registry.example.com
+# INAI_DISCOVERY_KEY=your-api-key-here"#
     } else {
         r#"# Discovery — centralised HTTP registry
-BORGKIT_DISCOVERY_TYPE=http
-BORGKIT_DISCOVERY_URL=http://localhost:8080
-BORGKIT_DISCOVERY_KEY=your-api-key-here
+INAI_DISCOVERY_TYPE=http
+INAI_DISCOVERY_URL=http://localhost:8080
+INAI_DISCOVERY_KEY=your-api-key-here
 
 # To switch to libp2p Kademlia DHT (recommended for production):
-# BORGKIT_DISCOVERY_TYPE=libp2p
-# BORGKIT_AGENT_KEY=<64-hex secp256k1 private key>"#
+# INAI_DISCOVERY_TYPE=libp2p
+# INAI_AGENT_KEY=<64-hex secp256k1 private key>"#
     };
     format!(
         r#"# {name} — environment variables
@@ -1444,7 +1444,7 @@ BORGKIT_DISCOVERY_KEY=your-api-key-here
 
 {disc_block}
 
-BORGKIT_HOST=localhost
+INAI_HOST=localhost
 PORT=6174
 "#,
         name = name,
@@ -1456,7 +1456,7 @@ fn gen_zig_readme(name: &str) -> String {
     format!(
         r#"# {name}
 
-A Borgkit P2P-discoverable agent written in Zig, scaffolded with `borgkit scaffold`.
+A Inai P2P-discoverable agent written in Zig, scaffolded with `inai scaffold`.
 
 ## Prerequisites
 
@@ -1466,7 +1466,7 @@ A Borgkit P2P-discoverable agent written in Zig, scaffolded with `borgkit scaffo
 
 ```bash
 cp .env.example .env
-# Edit .env and set BORGKIT_DISCOVERY_URL, BORGKIT_DISCOVERY_KEY, etc.
+# Edit .env and set INAI_DISCOVERY_URL, INAI_DISCOVERY_KEY, etc.
 
 zig build run
 ```

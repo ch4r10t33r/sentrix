@@ -1,4 +1,4 @@
-//! Borgkit Rust template — dev runner
+//! Inai Rust template — dev runner
 //!
 //! Demonstrates:
 //!   1. Building and registering an agent.
@@ -86,7 +86,7 @@ async fn main() {
     let client = AgentClient::new(
         shared_discovery.clone(),
         AgentClientOptions {
-            caller_id:  "borgkit://agent/caller".into(),
+            caller_id:  "inai://agent/caller".into(),
             timeout_ms: 5_000,
         },
     );
@@ -99,7 +99,7 @@ async fn main() {
 
     // 5b. Call a specific agent by ID
     match client.call(
-        "borgkit://agent/example",
+        "inai://agent/example",
         "ping",
         json!({}),
         CallOptions::default(),

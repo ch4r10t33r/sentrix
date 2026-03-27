@@ -1,4 +1,4 @@
-//! AgentClient — HTTP transport client for calling other Borgkit agents.
+//! AgentClient — HTTP transport client for calling other Inai agents.
 //!
 //! Combines discovery (`LocalDiscovery`, `HttpDiscovery`, or `Libp2pDiscovery`) with
 //! HTTP POST /invoke dispatch.

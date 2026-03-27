@@ -36,13 +36,13 @@ jobs:
           key: ubuntu-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: cargo fmt
-        run: cargo fmt --package borgkit-cli -- --check
+        run: cargo fmt --package inai-cli -- --check
 
       - name: cargo clippy
-        run: cargo clippy --package borgkit-cli -- -D warnings
+        run: cargo clippy --package inai-cli -- -D warnings
 
       - name: cargo test
-        run: cargo test --package borgkit-cli
+        run: cargo test --package inai-cli
 
       - name: cargo build (release, host target)
-        run: cargo build --release --package borgkit-cli
+        run: cargo build --release --package inai-cli

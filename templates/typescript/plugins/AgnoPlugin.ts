@@ -1,26 +1,26 @@
 /**
- * Agno → Borgkit Plugin (TypeScript)
+ * Agno → Inai Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
- * Wraps an Agno `Agent` so its tools become Borgkit capabilities.
+ * Wraps an Agno `Agent` so its tools become Inai capabilities.
  *
  * Usage:
  *   import { wrapAgno } from './plugins/AgnoPlugin';
  *   import { Agent }    from 'agno';
  *
  *   const agent = new Agent({ model: ..., tools: [webSearch], description: '...' });
- *   const borgkit = wrapAgno(agent, {
- *     agentId: 'borgkit://agent/researcher',
+ *   const inai = wrapAgno(agent, {
+ *     agentId: 'inai://agent/researcher',
  *     name:    'ResearchAgent',
  *     owner:   '0xYourWallet',
  *   });
- *   await borgkit.registerDiscovery();
+ *   await inai.registerDiscovery();
  *
  * Install: npm install agno
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { InaiPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 export interface AgnoPluginConfig extends PluginConfig {
   /** Stream Agno response (default: false — collect full output) */
@@ -34,7 +34,7 @@ interface AgnoNativeInput {
   payload:  Record<string, unknown>;
 }
 
-export class AgnoPlugin extends BorgkitPlugin<unknown, AgnoNativeInput, string> {
+export class AgnoPlugin extends InaiPlugin<unknown, AgnoNativeInput, string> {
   private readonly agnoConfig: Required<Pick<AgnoPluginConfig, 'stream' | 'markdown'>>;
 
   constructor(config: AgnoPluginConfig) {

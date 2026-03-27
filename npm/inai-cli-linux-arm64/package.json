@@ -1,7 +1,7 @@
 {
-  "name": "@ch4r10teer41/borgkit-cli-linux-arm64",
+  "name": "@ch4r10teer41/inai-cli-linux-arm64",
   "version": "0.3.0",
-  "description": "Prebuilt borgkit CLI binary for Linux arm64",
+  "description": "Prebuilt inai CLI binary for Linux arm64",
   "license": "Apache-2.0",
   "os": [
     "linux"
@@ -14,8 +14,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ch4r10t33r/borgkit.git",
-    "directory": "npm/borgkit-cli-linux-arm64"
+    "url": "https://github.com/ch4r10t33r/inai.git",
+    "directory": "npm/inai-cli-linux-arm64"
   },
   "publishConfig": {
     "access": "public"

@@ -1,7 +1,7 @@
 /*!
 HttpDiscovery — centralised discovery adapter (optional extension).
 
-Connects to any REST-based agent registry that implements the Borgkit
+Connects to any REST-based agent registry that implements the Inai
 centralised discovery API. This is NOT the default; LocalDiscovery and
 GossipDiscovery are preferred.
 
@@ -61,10 +61,10 @@ impl HttpDiscovery {
         }
     }
 
-    /// Create from the BORGKIT_DISCOVERY_URL environment variable.
+    /// Create from the INAI_DISCOVERY_URL environment variable.
     pub fn from_env() -> Option<Self> {
-        std::env::var("BORGKIT_DISCOVERY_URL").ok().map(|url| {
-            let key = std::env::var("BORGKIT_DISCOVERY_KEY").ok();
+        std::env::var("INAI_DISCOVERY_URL").ok().map(|url| {
+            let key = std::env::var("INAI_DISCOVERY_KEY").ok();
             Self::with_options(url, key.as_deref(), 5_000, 30_000)
         })
     }
@@ -210,7 +210,7 @@ impl DiscoveryFactory {
         AnyDiscovery::Http(HttpDiscovery::new(base_url))
     }
 
-    /// Auto-select: HTTP if BORGKIT_DISCOVERY_URL is set, else Local.
+    /// Auto-select: HTTP if INAI_DISCOVERY_URL is set, else Local.
     /// Prefer `from_env_async` for new code — it defaults to libp2p.
     pub fn from_env() -> AnyDiscovery {
         HttpDiscovery::from_env()
@@ -226,11 +226,11 @@ impl DiscoveryFactory {
     /// Auto-select from environment (recommended).
     ///
     /// Priority:
-    ///   1. `BORGKIT_DISCOVERY_TYPE` = "local" | "http" | "libp2p"
-    ///   2. `BORGKIT_DISCOVERY_URL` set → http
+    ///   1. `INAI_DISCOVERY_TYPE` = "local" | "http" | "libp2p"
+    ///   2. `INAI_DISCOVERY_URL` set → http
     ///   3. default → libp2p (falls back to local if libp2p fails to bind)
     pub async fn from_env_async() -> AnyDiscovery {
-        let dtype = std::env::var("BORGKIT_DISCOVERY_TYPE").unwrap_or_default();
+        let dtype = std::env::var("INAI_DISCOVERY_TYPE").unwrap_or_default();
         match dtype.as_str() {
             "local" => return AnyDiscovery::Local(LocalDiscovery::default()),
             "http"  => return Self::from_env(),
@@ -239,13 +239,13 @@ impl DiscoveryFactory {
             }
             _ => {
                 eprintln!(
-                    "[DiscoveryFactory] Unknown BORGKIT_DISCOVERY_TYPE '{}', defaulting to libp2p",
+                    "[DiscoveryFactory] Unknown INAI_DISCOVERY_TYPE '{}', defaulting to libp2p",
                     dtype
                 );
             }
         }
 
-        // Honour legacy BORGKIT_DISCOVERY_URL shorthand
+        // Honour legacy INAI_DISCOVERY_URL shorthand
         if dtype.is_empty() {
             if let Some(d) = HttpDiscovery::from_env() {
                 return AnyDiscovery::Http(d);
@@ -260,7 +260,7 @@ impl DiscoveryFactory {
                 eprintln!(
                     "[DiscoveryFactory] libp2p failed to start ({e}); \
                      falling back to LocalDiscovery. \
-                     Set BORGKIT_DISCOVERY_TYPE=local to suppress this warning."
+                     Set INAI_DISCOVERY_TYPE=local to suppress this warning."
                 );
                 AnyDiscovery::Local(LocalDiscovery::default())
             }

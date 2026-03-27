@@ -1,5 +1,5 @@
 /**
- * Borgkit Identity Providers
+ * Inai Identity Providers
  * ─────────────────────────────────────────────────────────────────────────────
  * Flexible identity options — ERC-8004 on-chain registration is optional.
  *
@@ -9,7 +9,7 @@
  *
  * With environment variable:
  *   import { EnvKeyIdentity } from './identity';
- *   const identity = new EnvKeyIdentity(); // reads BORGKIT_AGENT_KEY
+ *   const identity = new EnvKeyIdentity(); // reads INAI_AGENT_KEY
  *
  * On-chain (optional, requires wallet + gas):
  *   import { ERC8004Identity } from './identity';

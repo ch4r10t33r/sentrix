@@ -1,7 +1,7 @@
 /**
- * OpenAI Agents SDK → Borgkit Plugin (TypeScript)
+ * OpenAI Agents SDK → Inai Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
- * Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Borgkit
+ * Wraps any OpenAI Agents SDK `Agent` so it appears as a standard Inai
  * IAgent on the mesh — discoverable, callable by other agents, and serveable
  * over HTTP via the built-in server.
  *
@@ -39,11 +39,11 @@
  * });
  *
  * // Verbose:
- * const plugin = new OpenAIPlugin({ agentId: 'borgkit://agent/weather', name: 'WeatherBot', ... });
+ * const plugin = new OpenAIPlugin({ agentId: 'inai://agent/weather', name: 'WeatherBot', ... });
  * const agent  = plugin.wrap(oaiAgent);
  *
  * // One-liner:
- * const agent = wrapOpenAI(oaiAgent, { agentId: 'borgkit://agent/weather', name: 'WeatherBot', ... });
+ * const agent = wrapOpenAI(oaiAgent, { agentId: 'inai://agent/weather', name: 'WeatherBot', ... });
  *
  * await agent.serve({ port: 8082 });
  * ```
@@ -51,12 +51,12 @@
 
 import { AgentRequest }  from '../interfaces/IAgentRequest';
 import { AgentResponse } from '../interfaces/IAgentResponse';
-import { BorgkitPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
+import { InaiPlugin, PluginConfig, CapabilityDescriptor, WrappedAgent } from './IPlugin';
 
 // ── extended config ────────────────────────────────────────────────────────────
 
 export interface OpenAIPluginConfig extends PluginConfig {
-  /** Expose each tool as a separate Borgkit capability (default: true). */
+  /** Expose each tool as a separate Inai capability (default: true). */
   exposeToolsAsCapabilities?:    boolean;
   /** Expose handoff targets as capabilities (default: true). */
   exposeHandoffsAsCapabilities?: boolean;
@@ -77,7 +77,7 @@ interface OpenAINativeInput {
 
 const HANDOFF_PREFIX = '__handoff__:';
 
-export class OpenAIPlugin extends BorgkitPlugin<unknown, OpenAINativeInput, unknown> {
+export class OpenAIPlugin extends InaiPlugin<unknown, OpenAINativeInput, unknown> {
   private readonly oaiConfig: Required<
     Pick<OpenAIPluginConfig,
       'exposeToolsAsCapabilities' |
@@ -104,8 +104,8 @@ export class OpenAIPlugin extends BorgkitPlugin<unknown, OpenAINativeInput, unkn
 
     // 1. Explicit capabilityMap
     if (this.config.capabilityMap && Object.keys(this.config.capabilityMap).length > 0) {
-      return Object.entries(this.config.capabilityMap).map(([borgkitName, nativeName]) => ({
-        name:        borgkitName,
+      return Object.entries(this.config.capabilityMap).map(([inaiName, nativeName]) => ({
+        name:        inaiName,
         description: `Mapped capability → ${nativeName}`,
         nativeName,
       }));
@@ -319,7 +319,7 @@ function safeSerialize(obj: unknown): unknown {
 // ── one-liner convenience wrapper ─────────────────────────────────────────────
 
 /**
- * Wrap an OpenAI Agents SDK Agent for the Borgkit mesh in one line.
+ * Wrap an OpenAI Agents SDK Agent for the Inai mesh in one line.
  *
  * @example
  * ```ts
@@ -328,7 +328,7 @@ function safeSerialize(obj: unknown): unknown {
  *
  * const agent = wrapOpenAI(
  *   new Agent({ name: 'WeatherBot', tools: [weatherTool] }),
- *   { agentId: 'borgkit://agent/weather', name: 'WeatherBot', owner: '0x...' },
+ *   { agentId: 'inai://agent/weather', name: 'WeatherBot', owner: '0x...' },
  * );
  * await agent.serve({ port: 8082 });
  * ```

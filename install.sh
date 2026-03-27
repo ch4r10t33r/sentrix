@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
-# Borgkit CLI installer — auto-detects platform and architecture.
-# Usage: curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/borgkit/main/install.sh | sh
+# Inai CLI installer — auto-detects platform and architecture.
+# Usage: curl -fsSL https://raw.githubusercontent.com/ch4r10t33r/inai/main/install.sh | sh
 set -e
 
-REPO="ch4r10t33r/borgkit"
-BIN="borgkit"
-INSTALL_DIR="${BORGKIT_INSTALL_DIR:-/usr/local/bin}"
+REPO="ch4r10t33r/inai"
+BIN="inai"
+INSTALL_DIR="${INAI_INSTALL_DIR:-/usr/local/bin}"
 
 # ── Detect OS ────────────────────────────────────────────────────────────────
 OS=$(uname -s 2>/dev/null || echo "unknown")
@@ -14,7 +14,7 @@ case "$OS" in
     Linux)  OS="linux"  ;;
     *)
         echo "Unsupported OS: $OS"
-        echo "Install via npm instead: npm install -g @ch4r10teer41/borgkit-cli"
+        echo "Install via npm instead: npm install -g @ch4r10teer41/inai-cli"
         exit 1
         ;;
 esac
@@ -26,7 +26,7 @@ case "$ARCH" in
     aarch64|arm64) ARCH="arm64" ;;
     *)
         echo "Unsupported architecture: $ARCH"
-        echo "Install via npm instead: npm install -g @ch4r10teer41/borgkit-cli"
+        echo "Install via npm instead: npm install -g @ch4r10teer41/inai-cli"
         exit 1
         ;;
 esac
@@ -34,7 +34,7 @@ esac
 ASSET="${BIN}-${OS}-${ARCH}"
 URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
 
-echo "Downloading borgkit (${OS}/${ARCH})..."
+echo "Downloading inai (${OS}/${ARCH})..."
 curl -fsSL "$URL" -o "/tmp/${BIN}"
 chmod +x "/tmp/${BIN}"
 
@@ -55,5 +55,5 @@ else
 fi
 
 echo ""
-echo "borgkit installed to ${INSTALL_DIR}/${BIN}"
+echo "inai installed to ${INSTALL_DIR}/${BIN}"
 "${INSTALL_DIR}/${BIN}" --version

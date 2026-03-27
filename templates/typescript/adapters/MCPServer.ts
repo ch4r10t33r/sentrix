@@ -1,11 +1,11 @@
 /**
- * Borgkit ↔ MCP Bridge — TypeScript (outbound direction)
+ * Inai ↔ MCP Bridge — TypeScript (outbound direction)
  * ─────────────────────────────────────────────────────────────────────────────
- * Exposes any Borgkit agent (IAgent) as an MCP server.
+ * Exposes any Inai agent (IAgent) as an MCP server.
  *
- * Every Borgkit capability becomes an MCP tool that any MCP-compatible
+ * Every Inai capability becomes an MCP tool that any MCP-compatible
  * client (Claude Desktop, Cursor, Continue, etc.) can call without knowing
- * anything about the Borgkit protocol.
+ * anything about the Inai protocol.
  *
  * Transports
  * ──────────
@@ -64,7 +64,7 @@ export interface ServeMcpOptions {
  * Blocks until the transport closes (stdio EOF) or SIGINT / SIGTERM
  * is received (network transports).
  *
- * @param agent    Any Borgkit IAgent instance.
+ * @param agent    Any Inai IAgent instance.
  * @param options  Transport and binding options.
  */
 export async function serveAsMcp(
@@ -191,7 +191,7 @@ async function runSse(
 
   await new Promise<void>((resolve, reject) => {
     app.listen(port, host, () => {
-      console.log(`[Borgkit→MCP] SSE server '${serverName}' on http://${host}:${port}/sse`);
+      console.log(`[Inai→MCP] SSE server '${serverName}' on http://${host}:${port}/sse`);
       resolve();
     }).once('error', reject);
   });
@@ -226,7 +226,7 @@ async function runHttp(
 
   await new Promise<void>((resolve, reject) => {
     app.listen(port, host, () => {
-      console.log(`[Borgkit→MCP] HTTP server '${serverName}' on http://${host}:${port}/mcp`);
+      console.log(`[Inai→MCP] HTTP server '${serverName}' on http://${host}:${port}/mcp`);
       resolve();
     }).once('error', reject);
   });
@@ -254,7 +254,7 @@ function capDescription(agent: IAgent, cap: string): string {
     const desc = caps?.get(cap)?.description;
     if (desc) return desc;
   } catch { /* no capMap */ }
-  return `Borgkit capability: ${cap}`;
+  return `Inai capability: ${cap}`;
 }
 
 function capSchema(agent: IAgent, cap: string): Record<string, unknown> {

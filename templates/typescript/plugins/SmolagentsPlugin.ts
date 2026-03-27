@@ -1,27 +1,27 @@
 /**
- * smolagents → Borgkit Plugin (TypeScript)
+ * smolagents → Inai Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a smolagents agent (CodeAgent or ToolCallingAgent) so its
- * tools become Borgkit capabilities.
+ * tools become Inai capabilities.
  *
  * Usage:
  *   import { wrapSmolagents } from './plugins/SmolagentsPlugin';
  *
  *   // smolagents JS (or Python via a bridge)
  *   const agent = new ToolCallingAgent({ tools: [webSearch], model });
- *   const borgkit = wrapSmolagents(agent, {
- *     agentId: 'borgkit://agent/researcher',
+ *   const inai = wrapSmolagents(agent, {
+ *     agentId: 'inai://agent/researcher',
  *     name:    'ResearchAgent',
  *     owner:   '0xYourWallet',
  *   });
- *   await borgkit.registerDiscovery();
+ *   await inai.registerDiscovery();
  *
  * Install: npm install smolagents  (or the JS equivalent)
  */
 
 import { AgentRequest }        from '../interfaces/IAgentRequest';
 import { AgentResponse }       from '../interfaces/IAgentResponse';
-import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { InaiPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 export interface SmolagentsPluginConfig extends PluginConfig {
   /** Additional kwargs forwarded to agent.run() */
@@ -35,7 +35,7 @@ interface SmolagentsNativeInput {
   payload: Record<string, unknown>;
 }
 
-export class SmolagentsPlugin extends BorgkitPlugin<unknown, SmolagentsNativeInput, string> {
+export class SmolagentsPlugin extends InaiPlugin<unknown, SmolagentsNativeInput, string> {
   private readonly smaConfig: Required<Pick<SmolagentsPluginConfig, 'runKwargs' | 'maxSteps'>>;
 
   constructor(config: SmolagentsPluginConfig) {

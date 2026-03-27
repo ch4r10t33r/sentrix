@@ -1,6 +1,6 @@
-//! MCP Plugin — Inbound bridge: MCP server → Borgkit agent
+//! MCP Plugin — Inbound bridge: MCP server → Inai agent
 //!
-//! Wraps any MCP-compatible server and exposes its tools as a Borgkit agent.
+//! Wraps any MCP-compatible server and exposes its tools as a Inai agent.
 //! Supports two transport modes:
 //!
 //!   • stdio  — spawn a subprocess and communicate over its stdin/stdout
@@ -26,7 +26,7 @@
 //!
 //!   const resp = try plugin.handleRequest(.{
 //!       .request_id = "r1",
-//!       .from       = "borgkit://me",
+//!       .from       = "inai://me",
 //!       .capability = "read_file",
 //!       .payload    = "{\"path\":\"/tmp/hello.txt\"}",
 //!   }, allocator);
@@ -159,7 +159,7 @@ pub const McpPlugin = struct {
         // ── initialize request ────────────────────────────────────────────────
         const init_req = try self.buildRequest(
             "initialize",
-            \\{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"borgkit","version":"1.0.0"}}
+            \\{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"inai","version":"1.0.0"}}
             ,
             self.allocator,
         );
@@ -195,7 +195,7 @@ pub const McpPlugin = struct {
         // ── initialize handshake ─────────────────────────────────────────────
         const init_req = try self.buildRequest(
             "initialize",
-            \\{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"borgkit","version":"1.0.0"}}
+            \\{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"inai","version":"1.0.0"}}
             ,
             self.allocator,
         );
@@ -319,7 +319,7 @@ pub const McpPlugin = struct {
         return caps;
     }
 
-    /// Dispatch a Borgkit request to the matching MCP tool and return a response.
+    /// Dispatch a Inai request to the matching MCP tool and return a response.
     ///
     /// Steps:
     ///   1. Find the tool by req.capability.

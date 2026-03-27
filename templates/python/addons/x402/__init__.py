@@ -1,5 +1,5 @@
 """
-Borgkit x402 Payment Add-on
+Inai x402 Payment Add-on
 ────────────────────────────────────────────────────────────────────────────
 Implements the x402 micropayment protocol (https://x402.org) for
 agent-to-agent capability pricing.

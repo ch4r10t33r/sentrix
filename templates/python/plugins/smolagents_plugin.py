@@ -1,13 +1,13 @@
 """
-SmolagentsPlugin — Borgkit adapter for smolagents agents.
+SmolagentsPlugin — Inai adapter for smolagents agents.
 
 Wraps a smolagents agent (CodeAgent or ToolCallingAgent) so it is fully
-discoverable and callable on the Borgkit mesh.
+discoverable and callable on the Inai mesh.
 
 How it works
 ────────────
 1. Capabilities are extracted from the agent's toolbox at wrap time.
-   Each @tool-decorated function becomes one Borgkit capability.
+   Each @tool-decorated function becomes one Inai capability.
 
 2. AgentRequest payloads are translated into a plain-text task string.
 
@@ -36,10 +36,10 @@ Usage:
         model=HfApiModel("Qwen/Qwen2.5-72B-Instruct"),
     )
 
-    borgkit_agent = wrap_smolagents(
+    inai_agent = wrap_smolagents(
         agent    = agent,
         name     = "ResearchAgent",
-        agent_id = "borgkit://agent/researcher",
+        agent_id = "inai://agent/researcher",
         owner    = "0xYourWallet",
         tags     = ["research", "smolagents"],
     )
@@ -52,7 +52,7 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
 from plugins.base import (
-    BorgkitPlugin,
+    InaiPlugin,
     PluginConfig,
     CapabilityDescriptor,
     WrappedAgent,
@@ -83,12 +83,12 @@ class SmolagentsPluginConfig(PluginConfig):
 
 # ── Plugin ────────────────────────────────────────────────────────────────────
 
-class SmolagentsPlugin(BorgkitPlugin):
+class SmolagentsPlugin(InaiPlugin):
     """
-    Borgkit ↔ smolagents bridge.
+    Inai ↔ smolagents bridge.
 
     Supports both CodeAgent and ToolCallingAgent.  Each @tool-decorated
-    function in the agent's toolbox becomes one Borgkit capability.
+    function in the agent's toolbox becomes one Inai capability.
     """
 
     def __init__(self, config: SmolagentsPluginConfig):
@@ -99,7 +99,7 @@ class SmolagentsPlugin(BorgkitPlugin):
         super().__init__(config)
         self._cfg: SmolagentsPluginConfig = config
 
-    # ── BorgkitPlugin abstract methods ────────────────────────────────────────
+    # ── InaiPlugin abstract methods ────────────────────────────────────────
 
     def extract_capabilities(self, agent: SmolagentsBaseAgent) -> List[CapabilityDescriptor]:
         """
@@ -198,12 +198,12 @@ def wrap_smolagents(
     **kwargs:   Any,
 ) -> WrappedAgent:
     """
-    Wrap a smolagents agent (CodeAgent or ToolCallingAgent) for the Borgkit mesh.
+    Wrap a smolagents agent (CodeAgent or ToolCallingAgent) for the Inai mesh.
 
     Args:
         agent:      The smolagents agent instance.
         name:       Human-readable display name.
-        agent_id:   Unique Borgkit URI, e.g. "borgkit://agent/researcher".
+        agent_id:   Unique Inai URI, e.g. "inai://agent/researcher".
         owner:      Wallet or contract address.
         tags:       Optional search tags for discovery.
         run_kwargs: Extra keyword arguments forwarded to agent.run().
@@ -231,7 +231,7 @@ def wrap_smolagents(
         wrapped = wrap_smolagents(
             agent    = agent,
             name     = "SummaryAgent",
-            agent_id = "borgkit://agent/summariser",
+            agent_id = "inai://agent/summariser",
             owner    = "0xYourWallet",
             tags     = ["summarise", "smolagents"],
         )

@@ -1,14 +1,14 @@
-//! WrappedAgent — adapts a foreign agent to the Borgkit IAgent interface.
+//! WrappedAgent — adapts a foreign agent to the Inai IAgent interface.
 //!
 //! Combines IPlugin's translation pipeline with a DiscoveryEntry so that any
-//! third-party model or service can participate in the Borgkit mesh without
+//! third-party model or service can participate in the Inai mesh without
 //! modification.
 //!
 //! Usage:
 //!   var wrapped = WrappedAgent(MyAgent, MyPlugin).init(
 //!       &my_agent, &my_plugin,
 //!       .{
-//!           .agent_id = "borgkit://agent/my-wrapped",
+//!           .agent_id = "inai://agent/my-wrapped",
 //!           .owner    = "0xABC",
 //!       },
 //!       allocator,
@@ -47,7 +47,7 @@ pub fn WrappedAgent(comptime TAgent: type, comptime TPlugin: type) type {
         // ── configuration ─────────────────────────────────────────────────────
 
         pub const WrappedAgentConfig = struct {
-            /// Borgkit agent URI, e.g. "borgkit://agent/my-wrapped"
+            /// Inai agent URI, e.g. "inai://agent/my-wrapped"
             agent_id: []const u8,
             /// Wallet address or DID of the agent owner.
             owner: []const u8,
@@ -84,7 +84,7 @@ pub fn WrappedAgent(comptime TAgent: type, comptime TPlugin: type) type {
 
         // ── IAgent interface ──────────────────────────────────────────────────
 
-        /// Return the agent's Borgkit URI.
+        /// Return the agent's Inai URI.
         pub fn agentId(self: *const Self) []const u8 {
             return self.config.agent_id;
         }

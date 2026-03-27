@@ -117,8 +117,8 @@ pub fn build(b: *std.Build) void {
 
     // ── MCP bridge modules ────────────────────────────────────────────────────
     //
-    // mcp_plugin.zig  — inbound bridge: wraps an MCP server as a Borgkit agent
-    // mcp_server.zig  — outbound bridge: exposes a Borgkit agent as an MCP server
+    // mcp_plugin.zig  — inbound bridge: wraps an MCP server as a Inai agent
+    // mcp_server.zig  — outbound bridge: exposes a Inai agent as an MCP server
 
     const mcp_plugin_mod = b.addModule("mcp_plugin", .{
         .root_source_file = b.path("src/mcp_plugin.zig"),
@@ -138,7 +138,7 @@ pub fn build(b: *std.Build) void {
     // ── main executable ───────────────────────────────────────────────────────
 
     const exe = b.addExecutable(.{
-        .name             = "borgkit-agent",
+        .name             = "inai-agent",
         .root_source_file = b.path("src/example_agent.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -164,7 +164,7 @@ pub fn build(b: *std.Build) void {
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
-    const run_step = b.step("run", "Run the Borgkit agent");
+    const run_step = b.step("run", "Run the Inai agent");
     run_step.dependOn(&run_cmd.step);
 
     // ── zig build server ──────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ pub fn build(b: *std.Build) void {
     // static library so the build system exercises every code path.
 
     const server_lib = b.addStaticLibrary(.{
-        .name             = "borgkit-server",
+        .name             = "inai-server",
         .root_source_file = b.path("src/server.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -182,7 +182,7 @@ pub fn build(b: *std.Build) void {
     server_lib.root_module.addImport("types",  types_mod);
     server_lib.root_module.addImport("iagent", iagent_mod);
 
-    const server_step = b.step("server", "Compile the Borgkit HTTP server module");
+    const server_step = b.step("server", "Compile the Inai HTTP server module");
     server_step.dependOn(&b.addInstallArtifact(server_lib, .{}).step);
 
     // ── zig build plugins ─────────────────────────────────────────────────────
@@ -191,7 +191,7 @@ pub fn build(b: *std.Build) void {
     // so `zig build plugins` validates them independently.
 
     const plugins_lib = b.addStaticLibrary(.{
-        .name             = "borgkit-plugins",
+        .name             = "inai-plugins",
         .root_source_file = b.path("src/plugins/iPlugin.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -200,7 +200,7 @@ pub fn build(b: *std.Build) void {
     plugins_lib.root_module.addImport("iagent",  iagent_mod);
     plugins_lib.root_module.addImport("iPlugin", iplugin_mod);
 
-    const plugins_step = b.step("plugins", "Compile the Borgkit plugins modules");
+    const plugins_step = b.step("plugins", "Compile the Inai plugins modules");
     plugins_step.dependOn(&b.addInstallArtifact(plugins_lib, .{}).step);
 
     // ── zig build mcp ─────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ pub fn build(b: *std.Build) void {
     // validates them independently of the main executable.
 
     const mcp_plugin_lib = b.addStaticLibrary(.{
-        .name             = "borgkit-mcp-plugin",
+        .name             = "inai-mcp-plugin",
         .root_source_file = b.path("src/mcp_plugin.zig"),
         .target           = target,
         .optimize         = optimize,
@@ -217,7 +217,7 @@ pub fn build(b: *std.Build) void {
     mcp_plugin_lib.root_module.addImport("types", types_mod);
 
     const mcp_server_lib = b.addStaticLibrary(.{
-        .name             = "borgkit-mcp-server",
+        .name             = "inai-mcp-server",
         .root_source_file = b.path("src/mcp_server.zig"),
         .target           = target,
         .optimize         = optimize,

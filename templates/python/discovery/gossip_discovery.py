@@ -11,8 +11,8 @@ Usage
 -----
     from discovery.gossip_discovery import GossipDiscovery
 
-    registry = GossipDiscovery(agent_id="borgkit://agent/me")
-    await registry.add_peer("borgkit://agent/peer-a", "http://peer-a:6174")
+    registry = GossipDiscovery(agent_id="inai://agent/me")
+    await registry.add_peer("inai://agent/peer-a", "http://peer-a:6174")
     await registry.register(my_entry)   # auto-gossips to peers
 """
 

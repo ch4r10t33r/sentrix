@@ -1,8 +1,8 @@
 /**
- * LangGraph.js → Borgkit Plugin (TypeScript)
+ * LangGraph.js → Inai Plugin (TypeScript)
  * ─────────────────────────────────────────────────────────────────────────────
  * Wraps a compiled LangGraph `CompiledGraph` (or any object with `.invoke()`)
- * so it appears as a standard Borgkit IAgent on the mesh.
+ * so it appears as a standard Inai IAgent on the mesh.
  *
  * Capability extraction strategy (priority order):
  *   1. Explicit `capabilityMap` in config
@@ -14,7 +14,7 @@
  *   import { LangGraphPlugin } from './plugins/LangGraphPlugin';
  *
  *   const plugin = new LangGraphPlugin({
- *     agentId: 'borgkit://agent/researcher',
+ *     agentId: 'inai://agent/researcher',
  *     name:    'ResearchAgent',
  *     version: '1.0.0',
  *     tags:    ['research', 'web'],
@@ -29,7 +29,7 @@
 
 import { AgentRequest }         from '../interfaces/IAgentRequest';
 import { AgentResponse }        from '../interfaces/IAgentResponse';
-import { BorgkitPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
+import { InaiPlugin, PluginConfig, CapabilityDescriptor } from './IPlugin';
 
 // ── extended config ───────────────────────────────────────────────────────────
 
@@ -52,8 +52,8 @@ export interface LangGraphPluginConfig extends PluginConfig {
 
 interface LangGraphInput {
   [key: string]: unknown;
-  __borgkitRequestId__: string;
-  __borgkitCapability__: string;
+  __inaiRequestId__: string;
+  __inaiCapability__: string;
 }
 
 interface LangGraphOutput {
@@ -62,7 +62,7 @@ interface LangGraphOutput {
 
 // ── plugin ────────────────────────────────────────────────────────────────────
 
-export class LangGraphPlugin extends BorgkitPlugin<unknown, LangGraphInput, LangGraphOutput> {
+export class LangGraphPlugin extends InaiPlugin<unknown, LangGraphInput, LangGraphOutput> {
   private readonly lgConfig: Required<LangGraphPluginConfig>;
   private readonly explicitTools: unknown[];
 
@@ -155,8 +155,8 @@ export class LangGraphPlugin extends BorgkitPlugin<unknown, LangGraphInput, Lang
       const content = (req.payload['message'] ?? req.payload['input'] ?? JSON.stringify(req.payload)) as string;
       return {
         [this.lgConfig.inputKey]: [{ role: 'human', content }],
-        __borgkitRequestId__:    req.requestId,
-        __borgkitCapability__:   req.capability,
+        __inaiRequestId__:    req.requestId,
+        __inaiCapability__:   req.capability,
       };
     }
 
@@ -167,9 +167,9 @@ export class LangGraphPlugin extends BorgkitPlugin<unknown, LangGraphInput, Lang
         role:    'human',
         content: `Call tool \`${native}\` with:\n${argsStr}`,
       }],
-      __borgkitRequestId__:  req.requestId,
-      __borgkitCapability__: req.capability,
-      __borgkitTool__:       native,
+      __inaiRequestId__:  req.requestId,
+      __inaiCapability__: req.capability,
+      __inaiTool__:       native,
     };
   }
 

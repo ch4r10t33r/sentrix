@@ -1,7 +1,7 @@
-//! CrewAI → Borgkit Plugin (Rust) — HTTP Bridge
+//! CrewAI → Inai Plugin (Rust) — HTTP Bridge
 //!
 //! Wraps a running CrewAI HTTP service so its crews are discoverable and
-//! callable on the Borgkit mesh as a standard `IAgent`.
+//! callable on the Inai mesh as a standard `IAgent`.
 //!
 //! CrewAI is Python-native; this plugin communicates over HTTP so Rust agents
 //! can invoke CrewAI crews without embedding a Python interpreter.
@@ -36,8 +36,8 @@
 //!
 //! ── Usage ──────────────────────────────────────────────────────────────────────
 //!
-//!   use borgkit::plugins::crewai::{CrewAIPlugin, CrewAIService};
-//!   use borgkit::plugins::base::PluginConfig;
+//!   use inai::plugins::crewai::{CrewAIPlugin, CrewAIService};
+//!   use inai::plugins::base::PluginConfig;
 //!
 //!   let service = CrewAIService {
 //!       base_url: "http://localhost:8000".to_string(),
@@ -46,7 +46,7 @@
 //!
 //!   let plugin = CrewAIPlugin::new();
 //!   let agent  = plugin.wrap(service, PluginConfig {
-//!       agent_id:     "borgkit://agent/writer-crew".to_string(),
+//!       agent_id:     "inai://agent/writer-crew".to_string(),
 //!       owner:        "0xYourWallet".to_string(),
 //!       network_host: "localhost".to_string(),
 //!       network_port: 6174,
@@ -56,7 +56,7 @@
 use async_trait::async_trait;
 use serde_json::{json, Value};
 
-use crate::plugins::base::{CapabilityDescriptor, BorgkitPlugin};
+use crate::plugins::base::{CapabilityDescriptor, InaiPlugin};
 use crate::request::AgentRequest;
 use crate::response::AgentResponse;
 
@@ -164,10 +164,10 @@ impl Default for CrewAIPlugin {
     fn default() -> Self { Self::new() }
 }
 
-// ── BorgkitPlugin impl ────────────────────────────────────────────────────────
+// ── InaiPlugin impl ────────────────────────────────────────────────────────
 
 #[async_trait]
-impl BorgkitPlugin<CrewAIService> for CrewAIPlugin {
+impl InaiPlugin<CrewAIService> for CrewAIPlugin {
     fn extract_capabilities(&self, service: &CrewAIService) -> Vec<CapabilityDescriptor> {
         if service.capabilities.is_empty() {
             return vec![CapabilityDescriptor {
@@ -187,7 +187,7 @@ impl BorgkitPlugin<CrewAIService> for CrewAIPlugin {
         }).collect()
     }
 
-    /// Map a Borgkit `AgentRequest` into a CrewAI kickoff body.
+    /// Map a Inai `AgentRequest` into a CrewAI kickoff body.
     ///
     /// The `"task"`, `"query"`, or `"input"` payload key (first found) becomes the
     /// task description; otherwise the whole payload is forwarded as `inputs`.
