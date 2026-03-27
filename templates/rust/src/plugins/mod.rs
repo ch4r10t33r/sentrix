@@ -8,3 +8,4 @@ pub mod openai;
 pub mod agno;
 pub mod llamaindex;
 pub mod smolagents;
+pub mod mpp;
