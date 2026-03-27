@@ -12,3 +12,4 @@ pub mod example_agent;
 pub mod anr;
 pub mod server;
 pub mod plugins;
+pub mod mcp;

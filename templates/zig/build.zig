@@ -115,6 +115,26 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // ── MCP bridge modules ────────────────────────────────────────────────────
+    //
+    // mcp_plugin.zig  — inbound bridge: wraps an MCP server as a Sentrix agent
+    // mcp_server.zig  — outbound bridge: exposes a Sentrix agent as an MCP server
+
+    const mcp_plugin_mod = b.addModule("mcp_plugin", .{
+        .root_source_file = b.path("src/mcp_plugin.zig"),
+        .imports = &.{
+            .{ .name = "types", .module = types_mod },
+        },
+    });
+
+    const mcp_server_mod = b.addModule("mcp_server", .{
+        .root_source_file = b.path("src/mcp_server.zig"),
+        .imports = &.{
+            .{ .name = "types",  .module = types_mod  },
+            .{ .name = "iagent", .module = iagent_mod },
+        },
+    });
+
     // ── main executable ───────────────────────────────────────────────────────
 
     const exe = b.addExecutable(.{
@@ -136,6 +156,8 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addImport("langgraph",    langgraph_mod);
     exe.root_module.addImport("google_adk",   google_adk_mod);
     exe.root_module.addImport("crewai",       crewai_mod);
+    exe.root_module.addImport("mcp_plugin",   mcp_plugin_mod);
+    exe.root_module.addImport("mcp_server",   mcp_server_mod);
 
     b.installArtifact(exe);
 
@@ -180,6 +202,32 @@ pub fn build(b: *std.Build) void {
 
     const plugins_step = b.step("plugins", "Compile the Sentrix plugins modules");
     plugins_step.dependOn(&b.addInstallArtifact(plugins_lib, .{}).step);
+
+    // ── zig build mcp ─────────────────────────────────────────────────────────
+    //
+    // Compile both MCP bridge modules as static libraries so `zig build mcp`
+    // validates them independently of the main executable.
+
+    const mcp_plugin_lib = b.addStaticLibrary(.{
+        .name             = "sentrix-mcp-plugin",
+        .root_source_file = b.path("src/mcp_plugin.zig"),
+        .target           = target,
+        .optimize         = optimize,
+    });
+    mcp_plugin_lib.root_module.addImport("types", types_mod);
+
+    const mcp_server_lib = b.addStaticLibrary(.{
+        .name             = "sentrix-mcp-server",
+        .root_source_file = b.path("src/mcp_server.zig"),
+        .target           = target,
+        .optimize         = optimize,
+    });
+    mcp_server_lib.root_module.addImport("types",  types_mod);
+    mcp_server_lib.root_module.addImport("iagent", iagent_mod);
+
+    const mcp_step = b.step("mcp", "Compile the MCP bridge modules (mcp_plugin + mcp_server)");
+    mcp_step.dependOn(&b.addInstallArtifact(mcp_plugin_lib, .{}).step);
+    mcp_step.dependOn(&b.addInstallArtifact(mcp_server_lib, .{}).step);
 
     // ── example programs: did:key + gossip fan-out ────────────────────────────
 
