@@ -59,17 +59,17 @@ impl Lang {
     fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "typescript" | "ts" => Some(Self::TypeScript),
-            "rust" | "rs"      => Some(Self::Rust),
-            "zig"              => Some(Self::Zig),
-            _                  => None,
+            "rust" | "rs" => Some(Self::Rust),
+            "zig" => Some(Self::Zig),
+            _ => None,
         }
     }
 
     fn as_str(&self) -> &'static str {
         match self {
             Self::TypeScript => "typescript",
-            Self::Rust       => "rust",
-            Self::Zig        => "zig",
+            Self::Rust => "rust",
+            Self::Zig => "zig",
         }
     }
 }
@@ -85,9 +85,9 @@ enum Discovery {
 impl Discovery {
     fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
-            "http"   => Some(Self::Http),
+            "http" => Some(Self::Http),
             "libp2p" => Some(Self::Libp2p),
-            _        => None,
+            _ => None,
         }
     }
 }
@@ -96,12 +96,15 @@ impl Discovery {
 
 struct GenFile {
     rel_path: String,
-    content:  String,
+    content: String,
 }
 
 impl GenFile {
     fn new(rel_path: impl Into<String>, content: impl Into<String>) -> Self {
-        Self { rel_path: rel_path.into(), content: content.into() }
+        Self {
+            rel_path: rel_path.into(),
+            content: content.into(),
+        }
     }
 }
 
@@ -119,15 +122,15 @@ fn parse_plugins(raw: &str) -> Vec<String> {
 
 fn plugin_class_name(plugin: &str) -> &'static str {
     match plugin {
-        "openai"     => "OpenAIPlugin",
-        "agno"       => "AgnoPlugin",
-        "langgraph"  => "LangGraphPlugin",
-        "googleadk"  => "GoogleADKPlugin",
-        "crewai"     => "CrewAIPlugin",
+        "openai" => "OpenAIPlugin",
+        "agno" => "AgnoPlugin",
+        "langgraph" => "LangGraphPlugin",
+        "googleadk" => "GoogleADKPlugin",
+        "crewai" => "CrewAIPlugin",
         "llamaindex" => "LlamaIndexPlugin",
         "smolagents" => "SmolagentsPlugin",
-        "mcp"        => "MCPPlugin",
-        _            => "UnknownPlugin",
+        "mcp" => "MCPPlugin",
+        _ => "UnknownPlugin",
     }
 }
 
@@ -142,7 +145,7 @@ fn pascal_case(s: &str) -> String {
         .map(|w| {
             let mut chars = w.chars();
             match chars.next() {
-                None        => String::new(),
+                None => String::new(),
                 Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
             }
         })
@@ -239,7 +242,7 @@ fn gen_ts_agent(
     // Plugin imports
     for plugin in plugins {
         let class = plugin_class_name(plugin);
-        let file  = format!("./plugins/{}", plugin_class_name(plugin));
+        let file = format!("./plugins/{}", plugin_class_name(plugin));
         lines.push(format!("import {{ {} }} from '{}';", class, file));
     }
     if !plugins.is_empty() {
@@ -285,9 +288,13 @@ fn gen_ts_agent(
       discoveryUrl:  process.env['SENTRIX_DISCOVERY_URL'],
       discoveryKey:  process.env['SENTRIX_DISCOVERY_KEY'],
     }}));"#,
-            class     = class,
-            name      = name,
-            disc_type = if *discovery == Discovery::Libp2p { "libp2p" } else { "http" },
+            class = class,
+            name = name,
+            disc_type = if *discovery == Discovery::Libp2p {
+                "libp2p"
+            } else {
+                "http"
+            },
         ));
     }
 
@@ -295,8 +302,13 @@ fn gen_ts_agent(
         lines.push(String::new());
         lines.push("    // Generate a DID key on startup (ed25519)".into());
         lines.push("    // Uncomment after installing @noble/ed25519:".into());
-        lines.push("    // this.didKey = Buffer.from(ed.utils.randomPrivateKey()).toString('hex');".into());
-        lines.push("    // console.log(`[DID] agent key: did:key:z6Mk${this.didKey.slice(0, 8)}...`);".into());
+        lines.push(
+            "    // this.didKey = Buffer.from(ed.utils.randomPrivateKey()).toString('hex');".into(),
+        );
+        lines.push(
+            "    // console.log(`[DID] agent key: did:key:z6Mk${this.didKey.slice(0, 8)}...`);"
+                .into(),
+        );
     }
 
     lines.push("  }".into());
@@ -335,7 +347,9 @@ fn gen_ts_agent(
     if stream {
         lines.push(String::new());
         lines.push("    // Streaming (SSE) invoke endpoint".into());
-        lines.push("    this.app.post('/invoke/stream', async (req: Request, res: Response) => {".into());
+        lines.push(
+            "    this.app.post('/invoke/stream', async (req: Request, res: Response) => {".into(),
+        );
         lines.push("      res.setHeader('Content-Type', 'text/event-stream');".into());
         lines.push("      res.setHeader('Cache-Control', 'no-cache');".into());
         lines.push("      res.setHeader('Connection', 'keep-alive');".into());
@@ -345,7 +359,10 @@ fn gen_ts_agent(
         lines.push("        res.write(`data: ${JSON.stringify({ type: 'end' })}\\n\\n`);".into());
         lines.push("      } catch (err: unknown) {".into());
         lines.push("        const msg = err instanceof Error ? err.message : String(err);".into());
-        lines.push("        res.write(`data: ${JSON.stringify({ type: 'end', error: msg })}\\n\\n`);".into());
+        lines.push(
+            "        res.write(`data: ${JSON.stringify({ type: 'end', error: msg })}\\n\\n`);"
+                .into(),
+        );
         lines.push("      } finally {".into());
         lines.push("        res.end();".into());
         lines.push("      }".into());
@@ -397,7 +414,8 @@ fn gen_ts_agent(
     ));
     lines.push("      });".into());
     lines.push("      if (resp.ok) console.log(`[discovery] registered ${this.agentId}`);".into());
-    lines.push("      else console.warn(`[discovery] registration failed: ${resp.status}`);".into());
+    lines
+        .push("      else console.warn(`[discovery] registration failed: ${resp.status}`);".into());
     lines.push("    } catch (err) {".into());
     lines.push("      console.warn('[discovery] registration error:', err);".into());
     lines.push("    }".into());
@@ -460,7 +478,7 @@ export class {class} {{
   }}
 }}
 "#,
-        class  = class,
+        class = class,
         plugin = plugin,
     )
 }
@@ -491,7 +509,7 @@ SENTRIX_TLS=false
 # Optional: agent signing key (32-byte hex, no 0x prefix)
 # SENTRIX_AGENT_KEY=deadbeef...
 "#,
-        name     = name,
+        name = name,
         disc_url = disc_url,
     )
 }
@@ -503,9 +521,15 @@ fn gen_ts_readme(name: &str, discovery: &Discovery, did: bool, stream: bool, x40
         "This agent uses **HTTP** discovery registry."
     };
     let mut extras = Vec::new();
-    if did    { extras.push("- **DID** key generation example included (`src/agent.ts`)"); }
-    if stream { extras.push("- **SSE streaming** available at `POST /invoke/stream`"); }
-    if x402   { extras.push("- **x402 micropayment** middleware stub included"); }
+    if did {
+        extras.push("- **DID** key generation example included (`src/agent.ts`)");
+    }
+    if stream {
+        extras.push("- **SSE streaming** available at `POST /invoke/stream`");
+    }
+    if x402 {
+        extras.push("- **x402 micropayment** middleware stub included");
+    }
     let extras_section = if extras.is_empty() {
         String::new()
     } else {
@@ -560,8 +584,8 @@ npm start
 └── tsconfig.json
 ```
 "#,
-        name          = name,
-        disc_note     = disc_note,
+        name = name,
+        disc_note = disc_note,
         extras_section = extras_section,
     )
 }
@@ -625,7 +649,11 @@ fn gen_rust_agent(
     stream: bool,
     x402: bool,
 ) -> String {
-    let disc_type = if *discovery == Discovery::Libp2p { "libp2p" } else { "http" };
+    let disc_type = if *discovery == Discovery::Libp2p {
+        "libp2p"
+    } else {
+        "http"
+    };
     let mut lines: Vec<String> = Vec::new();
 
     lines.push("use anyhow::Result;".into());
@@ -660,7 +688,10 @@ fn gen_rust_agent(
     lines.push("}".into());
     lines.push(String::new());
 
-    lines.push(format!("pub struct {agent_class} {{", agent_class = agent_class));
+    lines.push(format!(
+        "pub struct {agent_class} {{",
+        agent_class = agent_class
+    ));
     lines.push("    info: AgentInfo,".into());
     lines.push("}".into());
     lines.push(String::new());
@@ -673,7 +704,10 @@ fn gen_rust_agent(
         "                agent_id: format!(\"sentrix://agent/{name}/{{uuid}}\", uuid = uuid_v4()),",
         name = name
     ));
-    lines.push(format!("                name:     \"{name}\",", name = name));
+    lines.push(format!(
+        "                name:     \"{name}\",",
+        name = name
+    ));
     lines.push("            },".into());
     lines.push("        }".into());
     lines.push("    }".into());
@@ -688,27 +722,46 @@ fn gen_rust_agent(
         lines.push("        }".into());
     } else {
         lines.push("        // TODO: delegate to the appropriate plugin".into());
-        lines.push("        json!({ \"status\": \"success\", \"result\": { \"message\": \"stub\" } })".into());
+        lines.push(
+            "        json!({ \"status\": \"success\", \"result\": { \"message\": \"stub\" } })"
+                .into(),
+        );
     }
     lines.push("    }".into());
     lines.push(String::new());
 
     lines.push("    async fn register_discovery(&self) {".into());
-    lines.push(format!("        let disc_type = \"{disc_type}\";", disc_type = disc_type));
+    lines.push(format!(
+        "        let disc_type = \"{disc_type}\";",
+        disc_type = disc_type
+    ));
     lines.push("        let url = match std::env::var(\"SENTRIX_DISCOVERY_URL\") {".into());
     lines.push("            Ok(u) => u,".into());
     lines.push("            Err(_) => {".into());
-    lines.push("                eprintln!(\"[discovery] SENTRIX_DISCOVERY_URL not set — skipping\");".into());
+    lines.push(
+        "                eprintln!(\"[discovery] SENTRIX_DISCOVERY_URL not set — skipping\");"
+            .into(),
+    );
     lines.push("                return;".into());
     lines.push("            }".into());
     lines.push("        };".into());
-    lines.push("        let key  = std::env::var(\"SENTRIX_DISCOVERY_KEY\").unwrap_or_default();".into());
+    lines.push(
+        "        let key  = std::env::var(\"SENTRIX_DISCOVERY_KEY\").unwrap_or_default();".into(),
+    );
     lines.push("        let host = std::env::var(\"SENTRIX_HOST\").unwrap_or_else(|_| \"localhost\".into());".into());
     lines.push("        let port: u16 = std::env::var(\"PORT\").ok().and_then(|p| p.parse().ok()).unwrap_or(6174);".into());
     lines.push("        let body = json!({".into());
-    lines.push(format!("            \"agentId\":      &self.info.agent_id,"));
-    lines.push(format!("            \"name\":         \"{name}\",", name = name));
-    lines.push(format!("            \"capabilities\": [\"{name}\"],", name = name));
+    lines.push(format!(
+        "            \"agentId\":      &self.info.agent_id,"
+    ));
+    lines.push(format!(
+        "            \"name\":         \"{name}\",",
+        name = name
+    ));
+    lines.push(format!(
+        "            \"capabilities\": [\"{name}\"],",
+        name = name
+    ));
     lines.push("            \"network\": {".into());
     lines.push(format!("                \"protocol\": disc_type,"));
     lines.push("                \"host\":     host,".into());
@@ -722,9 +775,13 @@ fn gen_rust_agent(
     lines.push("            .send()".into());
     lines.push("        {".into());
     lines.push("            Ok(r) if r.status().is_success() =>".into());
-    lines.push("                println!(\"[discovery] registered {}\", self.info.agent_id),".into());
+    lines.push(
+        "                println!(\"[discovery] registered {}\", self.info.agent_id),".into(),
+    );
     lines.push("            Ok(r) =>".into());
-    lines.push("                eprintln!(\"[discovery] registration failed: {}\", r.status()),".into());
+    lines.push(
+        "                eprintln!(\"[discovery] registration failed: {}\", r.status()),".into(),
+    );
     lines.push("            Err(e) =>".into());
     lines.push("                eprintln!(\"[discovery] error: {e}\"),".into());
     lines.push("        }".into());
@@ -738,7 +795,10 @@ fn gen_rust_agent(
     lines.push(String::new());
     lines.push("        // Register with discovery in a blocking thread".into());
     lines.push("        tokio::task::spawn_blocking(move || {".into());
-    lines.push("            tokio::runtime::Handle::current().block_on(me_disc.register_discovery());".into());
+    lines.push(
+        "            tokio::runtime::Handle::current().block_on(me_disc.register_discovery());"
+            .into(),
+    );
     lines.push("        });".into());
     lines.push(String::new());
     lines.push("        // Minimal HTTP server using tokio".into());
@@ -760,7 +820,10 @@ fn gen_rust_agent(
     lines.push("                if n == 0 { return; }".into());
     lines.push("                let raw = String::from_utf8_lossy(&buf[..n]);".into());
     lines.push("                // naive body extraction".into());
-    lines.push("                let body_str = raw.splitn(2, \"\\r\\n\\r\\n\").nth(1).unwrap_or(\"\");".into());
+    lines.push(
+        "                let body_str = raw.splitn(2, \"\\r\\n\\r\\n\").nth(1).unwrap_or(\"\");"
+            .into(),
+    );
     lines.push("                let response_body = if let Ok(req) = serde_json::from_str::<InvokeRequest>(body_str) {".into());
     lines.push("                    serde_json::to_string(&agent.process_task(&req).await).unwrap_or_default()".into());
     lines.push("                } else {".into());
@@ -771,7 +834,9 @@ fn gen_rust_agent(
     }
 
     if stream {
-        lines.push("                    // Streaming: for /invoke/stream, chunk the response".into());
+        lines.push(
+            "                    // Streaming: for /invoke/stream, chunk the response".into(),
+        );
         lines.push("                    // TODO: send chunked Transfer-Encoding response".into());
     }
 
@@ -797,9 +862,7 @@ fn gen_rust_agent(
 }
 
 fn gen_rust_plugin_mod(plugins: &[String]) -> String {
-    let mods: Vec<String> = plugins.iter()
-        .map(|p| format!("pub mod {};", p))
-        .collect();
+    let mods: Vec<String> = plugins.iter().map(|p| format!("pub mod {};", p)).collect();
     mods.join("\n") + "\n"
 }
 
@@ -821,7 +884,7 @@ impl {plugin_upper}Plugin {{
     }}
 }}
 "#,
-        plugin       = plugin,
+        plugin = plugin,
         plugin_upper = pascal_case(plugin),
     )
 }
@@ -841,7 +904,7 @@ SENTRIX_DISCOVERY_KEY=your-api-key-here
 SENTRIX_HOST=localhost
 PORT=6174
 "#,
-        name     = name,
+        name = name,
         disc_url = disc_url,
     )
 }
@@ -883,7 +946,7 @@ cargo build --release
 ```
 "#,
         name = name,
-        lib  = lib,
+        lib = lib,
     )
 }
 
@@ -959,7 +1022,11 @@ fn gen_zig_agent(
     stream: bool,
     x402: bool,
 ) -> String {
-    let disc_type = if *discovery == Discovery::Libp2p { "libp2p" } else { "http" };
+    let disc_type = if *discovery == Discovery::Libp2p {
+        "libp2p"
+    } else {
+        "http"
+    };
     let mut lines: Vec<String> = Vec::new();
 
     lines.push("const std = @import(\"std\");".into());
@@ -975,7 +1042,10 @@ fn gen_zig_agent(
         lines.push(String::new());
     }
 
-    lines.push(format!("pub const {agent_struct} = struct {{", agent_struct = agent_struct));
+    lines.push(format!(
+        "pub const {agent_struct} = struct {{",
+        agent_struct = agent_struct
+    ));
     lines.push("    allocator: std.mem.Allocator,".into());
     lines.push("    agent_id:  [64]u8 = undefined,".into());
     lines.push(String::new());
@@ -1021,10 +1091,16 @@ fn gen_zig_agent(
     // registerDiscovery
     lines.push("    pub fn registerDiscovery(self: *@This()) void {".into());
     lines.push("        _ = self;".into());
-    lines.push(format!("        const disc_type: []const u8 = \"{disc_type}\";", disc_type = disc_type));
+    lines.push(format!(
+        "        const disc_type: []const u8 = \"{disc_type}\";",
+        disc_type = disc_type
+    ));
     lines.push("        _ = disc_type;".into());
     lines.push("        const url = std.posix.getenv(\"SENTRIX_DISCOVERY_URL\") orelse {".into());
-    lines.push("            std.debug.print(\"[discovery] SENTRIX_DISCOVERY_URL not set\\n\", .{});".into());
+    lines.push(
+        "            std.debug.print(\"[discovery] SENTRIX_DISCOVERY_URL not set\\n\", .{});"
+            .into(),
+    );
     lines.push("            return;".into());
     lines.push("        };".into());
     lines.push("        _ = url;".into());
@@ -1080,7 +1156,10 @@ fn gen_zig_agent(
     lines.push("            if (std.mem.indexOf(u8, raw, \"\\r\\n\\r\\n\")) |hdr_end| {".into());
     lines.push("                const body = raw[hdr_end + 4..];".into());
     lines.push("                // Extract capability from body (minimal JSON parse)".into());
-    lines.push("                const cap = extractJsonField(body, \"capability\") orelse \"echo\";".into());
+    lines.push(
+        "                const cap = extractJsonField(body, \"capability\") orelse \"echo\";"
+            .into(),
+    );
     lines.push("                try self.processTask(cap, body, &out);".into());
     lines.push("            } else {".into());
     lines.push("                try out.appendSlice(\"{\\\"status\\\":\\\"error\\\",\\\"errorMessage\\\":\\\"bad request\\\"}\");".into());
@@ -1104,12 +1183,15 @@ fn gen_zig_agent(
     lines.push("    const needle = key;".into());
     lines.push("    const idx = std.mem.indexOf(u8, json, needle) orelse return null;".into());
     lines.push("    const after_key = json[idx + needle.len..];".into());
-    lines.push("    const colon = std.mem.indexOf(u8, after_key, \":\") orelse return null;".into());
+    lines
+        .push("    const colon = std.mem.indexOf(u8, after_key, \":\") orelse return null;".into());
     lines.push("    const val_start_raw = after_key[colon + 1..];".into());
     lines.push("    var val_start = std.mem.trimLeft(u8, val_start_raw, \" \\t\");".into());
     lines.push("    if (val_start.len == 0 or val_start[0] != '\"') return null;".into());
     lines.push("    val_start = val_start[1..];".into());
-    lines.push("    const end = std.mem.indexOf(u8, val_start, \"\\\"\") orelse return null;".into());
+    lines.push(
+        "    const end = std.mem.indexOf(u8, val_start, \"\\\"\") orelse return null;".into(),
+    );
     lines.push("    return val_start[0..end];".into());
     lines.push("}".into());
     lines.push(String::new());
@@ -1118,7 +1200,8 @@ fn gen_zig_agent(
 }
 
 fn gen_zig_plugin_mod(plugins: &[String]) -> String {
-    let pubs: Vec<String> = plugins.iter()
+    let pubs: Vec<String> = plugins
+        .iter()
         .map(|p| format!("pub const {} = @import(\"{}.zig\");", pascal_case(p), p))
         .collect();
     pubs.join("\n") + "\n"
@@ -1142,7 +1225,7 @@ pub const {class}Plugin = struct {{
     }}
 }};
 "#,
-        class  = class,
+        class = class,
         plugin = plugin,
     )
 }
@@ -1162,7 +1245,7 @@ SENTRIX_DISCOVERY_KEY=your-api-key-here
 SENTRIX_HOST=localhost
 PORT=6174
 "#,
-        name     = name,
+        name = name,
         disc_url = disc_url,
     )
 }
@@ -1208,25 +1291,34 @@ zig build -Doptimize=ReleaseFast
 // ── File list assembly ─────────────────────────────────────────────────────────
 
 fn collect_files(
-    name:      &str,
-    lang:      &Lang,
-    plugins:   &[String],
+    name: &str,
+    lang: &Lang,
+    plugins: &[String],
     discovery: &Discovery,
-    did:       bool,
-    stream:    bool,
-    x402:      bool,
+    did: bool,
+    stream: bool,
+    x402: bool,
 ) -> Vec<GenFile> {
     let agent_class = pascal_case(name);
     let mut files: Vec<GenFile> = Vec::new();
 
     match lang {
         Lang::TypeScript => {
-            files.push(GenFile::new("package.json",          gen_ts_package_json(name)));
-            files.push(GenFile::new("tsconfig.json",         gen_ts_tsconfig()));
-            files.push(GenFile::new("src/index.ts",          gen_ts_index(&agent_class)));
-            files.push(GenFile::new("src/agent.ts",          gen_ts_agent(name, &agent_class, plugins, discovery, did, stream, x402)));
-            files.push(GenFile::new(".env.example",          gen_ts_env_example(name, discovery)));
-            files.push(GenFile::new("README.md",             gen_ts_readme(name, discovery, did, stream, x402)));
+            files.push(GenFile::new("package.json", gen_ts_package_json(name)));
+            files.push(GenFile::new("tsconfig.json", gen_ts_tsconfig()));
+            files.push(GenFile::new("src/index.ts", gen_ts_index(&agent_class)));
+            files.push(GenFile::new(
+                "src/agent.ts",
+                gen_ts_agent(name, &agent_class, plugins, discovery, did, stream, x402),
+            ));
+            files.push(GenFile::new(
+                ".env.example",
+                gen_ts_env_example(name, discovery),
+            ));
+            files.push(GenFile::new(
+                "README.md",
+                gen_ts_readme(name, discovery, did, stream, x402),
+            ));
             for plugin in plugins {
                 files.push(GenFile::new(
                     format!("src/plugins/{}", plugin_file_name(plugin)),
@@ -1235,13 +1327,22 @@ fn collect_files(
             }
         }
         Lang::Rust => {
-            files.push(GenFile::new("Cargo.toml",  gen_rust_cargo_toml(name)));
+            files.push(GenFile::new("Cargo.toml", gen_rust_cargo_toml(name)));
             files.push(GenFile::new("src/main.rs", gen_rust_main(&agent_class)));
-            files.push(GenFile::new("src/agent.rs",gen_rust_agent(name, &agent_class, plugins, discovery, did, stream, x402)));
-            files.push(GenFile::new(".env.example",gen_rust_env_example(name, discovery)));
-            files.push(GenFile::new("README.md",   gen_rust_readme(name)));
+            files.push(GenFile::new(
+                "src/agent.rs",
+                gen_rust_agent(name, &agent_class, plugins, discovery, did, stream, x402),
+            ));
+            files.push(GenFile::new(
+                ".env.example",
+                gen_rust_env_example(name, discovery),
+            ));
+            files.push(GenFile::new("README.md", gen_rust_readme(name)));
             if !plugins.is_empty() {
-                files.push(GenFile::new("src/plugins/mod.rs", gen_rust_plugin_mod(plugins)));
+                files.push(GenFile::new(
+                    "src/plugins/mod.rs",
+                    gen_rust_plugin_mod(plugins),
+                ));
                 for plugin in plugins {
                     files.push(GenFile::new(
                         format!("src/plugins/{}.rs", plugin),
@@ -1251,13 +1352,22 @@ fn collect_files(
             }
         }
         Lang::Zig => {
-            files.push(GenFile::new("build.zig",      gen_zig_build(name)));
-            files.push(GenFile::new("src/main.zig",   gen_zig_main(&agent_class)));
-            files.push(GenFile::new("src/agent.zig",  gen_zig_agent(name, &agent_class, plugins, discovery, did, stream, x402)));
-            files.push(GenFile::new(".env.example",   gen_zig_env_example(name, discovery)));
-            files.push(GenFile::new("README.md",      gen_zig_readme(name)));
+            files.push(GenFile::new("build.zig", gen_zig_build(name)));
+            files.push(GenFile::new("src/main.zig", gen_zig_main(&agent_class)));
+            files.push(GenFile::new(
+                "src/agent.zig",
+                gen_zig_agent(name, &agent_class, plugins, discovery, did, stream, x402),
+            ));
+            files.push(GenFile::new(
+                ".env.example",
+                gen_zig_env_example(name, discovery),
+            ));
+            files.push(GenFile::new("README.md", gen_zig_readme(name)));
             if !plugins.is_empty() {
-                files.push(GenFile::new("src/plugins/mod.zig", gen_zig_plugin_mod(plugins)));
+                files.push(GenFile::new(
+                    "src/plugins/mod.zig",
+                    gen_zig_plugin_mod(plugins),
+                ));
                 for plugin in plugins {
                     files.push(GenFile::new(
                         format!("src/plugins/{}.zig", plugin),
@@ -1282,7 +1392,7 @@ fn print_tree(name: &str, files: &[GenFile]) {
     let n = paths.len();
     for (i, path) in paths.iter().enumerate() {
         let is_last = i == n - 1;
-        let sym     = if is_last { "└──" } else { "├──" };
+        let sym = if is_last { "└──" } else { "├──" };
         logger::tree(sym, path);
     }
 }
@@ -1320,7 +1430,7 @@ pub fn run(args: ScaffoldArgs) -> Result<()> {
     // ── Output directory ──────────────────────────────────────────────────────
     let base_dir = match &args.output {
         Some(d) => d.clone(),
-        None    => std::env::current_dir().context("Cannot determine current directory")?,
+        None => std::env::current_dir().context("Cannot determine current directory")?,
     };
     let project_dir = base_dir.join(&args.name);
 
@@ -1372,9 +1482,8 @@ pub fn run(args: ScaffoldArgs) -> Result<()> {
 
         // Create parent directories
         if let Some(parent) = dest.parent() {
-            std::fs::create_dir_all(parent).with_context(|| {
-                format!("Failed to create directory '{}'", parent.display())
-            })?;
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("Failed to create directory '{}'", parent.display()))?;
         }
 
         let mut file = std::fs::File::create(&dest)
