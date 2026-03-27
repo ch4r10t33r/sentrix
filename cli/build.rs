@@ -16,6 +16,11 @@ fn main() {
     let date = chrono::Utc::now().format("%Y-%m-%d").to_string();
     println!("cargo:rustc-env=INAI_BUILD_DATE={date}");
 
+    // ── rustc used for this build (CARGO_PKG_RUST_VERSION is only MSRV from manifest) ──
+    let rustc_line = rustc_version_line().unwrap_or_else(|| "unknown".into());
+    println!("cargo:rustc-env=INAI_RUSTC_VERSION={rustc_line}");
+    println!("cargo:rerun-if-env-changed=RUSTC");
+
     // ── Template files (debug-embed fast iteration) ───────────────────────────
     println!("cargo:rerun-if-changed=../templates");
 }
@@ -37,5 +42,21 @@ fn read_npm_version() -> Option<String> {
         None
     } else {
         Some(version)
+    }
+}
+
+/// Full `rustc --version` line for the compiler building this crate (e.g. `rustc 1.85.0 (...)`).
+fn rustc_version_line() -> Option<String> {
+    let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
+    let out = std::process::Command::new(rustc)
+        .arg("--version")
+        .output()
+        .ok()
+        .filter(|o| o.status.success())?;
+    let line = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    if line.is_empty() {
+        None
+    } else {
+        Some(line)
     }
 }

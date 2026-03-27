@@ -16,10 +16,8 @@ pub fn run() -> Result<()> {
     println!("  {:20} {}", "Arch:".bright_black(), std::env::consts::ARCH);
     println!(
         "  {:20} {}",
-        "Rust:".bright_black(),
-        option_env!("CARGO_PKG_RUST_VERSION")
-            .unwrap_or("stable")
-            .bright_black()
+        "Rust compiler:".bright_black(),
+        env!("INAI_RUSTC_VERSION").bright_black()
     );
     Ok(())
 }
