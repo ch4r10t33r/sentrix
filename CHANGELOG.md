@@ -4,6 +4,12 @@ All notable changes to `sentrix-cli` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0](https://github.com/ch4r10t33r/sentrix/compare/v1.18.0...v1.19.0) (2026-03-27)
+
+### Features
+
+* **zig:** full Kademlia DHT discovery — pure Zig UDP/JSON implementation ([b721d06](https://github.com/ch4r10t33r/sentrix/commit/b721d06465695e913d8035f406b91e8ae6b104f2))
+
 ## [1.18.0](https://github.com/ch4r10t33r/sentrix/compare/v1.17.0...v1.18.0) (2026-03-27)
 
 ### Features
