@@ -657,12 +657,7 @@ npm start
 
 // ── Rust generators ───────────────────────────────────────────────────────────
 
-fn gen_rust_cargo_toml(
-    name: &str,
-    plugins: &[String],
-    discovery: &Discovery,
-    did: bool,
-) -> String {
+fn gen_rust_cargo_toml(name: &str, plugins: &[String], discovery: &Discovery, did: bool) -> String {
     let lib_name = name.replace('-', "_");
 
     let mut extra: Vec<String> = Vec::new();
