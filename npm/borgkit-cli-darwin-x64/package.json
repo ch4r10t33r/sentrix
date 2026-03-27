@@ -1,6 +1,6 @@
 {
   "name": "@ch4r10teer41/borgkit-cli-darwin-x64",
-  "version": "1.22.0",
+  "version": "0.1.0",
   "description": "Prebuilt borgkit CLI binary for macOS x64",
   "license": "Apache-2.0",
   "os": [
