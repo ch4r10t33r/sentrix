@@ -17,11 +17,11 @@ if (!version || typeof version !== "string") {
 function writeCargoToml() {
   const p = path.join(root, "Cargo.toml");
   let s = fs.readFileSync(p, "utf8");
-  const next = s.replace(/^version\s*=\s*"[^"]*"/m, `version     = "${version}"`);
-  if (next === s) {
-    console.error("Could not patch Cargo.toml workspace version");
+  if (!/^version\s*=\s*"[^"]*"/m.test(s)) {
+    console.error("Could not find version field in Cargo.toml");
     process.exit(1);
   }
+  const next = s.replace(/^version\s*=\s*"[^"]*"/m, `version     = "${version}"`);
   fs.writeFileSync(p, next);
 }
 
